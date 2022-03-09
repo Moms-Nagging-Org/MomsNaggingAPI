@@ -1,7 +1,7 @@
 ---
 name: Feature request
 about: 프로젝트에 대한 아이디어를 제안합니다.
-title: "[:star2:]"
+title: "[feature]"
 labels: enhancement
 assignees: ''
 
