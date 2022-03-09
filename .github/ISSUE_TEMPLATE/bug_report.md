@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: 버그를 빨리 해결할 수 있게 도와주세요
+about: 버그를 빨리 해결할 수 있게 도와주세요.
 title: "[:bug:]"
 labels: bug
 assignees: ''
