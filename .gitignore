@@ -340,3 +340,5 @@ transaction-logs
 .flattened-pom.xml
 secrets.yml
 .gradletasknamecache
+
+src/main/resources/application-local.yml
