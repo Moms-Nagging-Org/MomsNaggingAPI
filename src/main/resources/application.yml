@@ -2,6 +2,15 @@ server:
   port: 8080
 
 spring:
+  profiles:
+    group:
+      prod:
+        - console-logging
+        - slack-logging
+      local:
+        - console-logging
+    active: prod
+
   jwt:
     secret:
   datasource:
@@ -18,3 +27,10 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
       show-sql: true
+
+logging:
+  slack:
+    webhook-uri: https://hooks.slack.com/services/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
+  config: classpath:logback-spring.xml
+  level:
+    root: info
