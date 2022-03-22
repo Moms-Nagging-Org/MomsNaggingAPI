@@ -10,14 +10,16 @@ spring:
       local:
         - console-logging
     active: prod
-
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
   jwt:
     secret:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url:
-    username:
-    password:
+    url: jdbc:mysql://localhost:3306/momsnagging
+    username: user
+    password: user
 
   jpa:
     hibernate:
@@ -34,3 +36,11 @@ logging:
   config: classpath:logback-spring.xml
   level:
     root: info
+
+springdoc:
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  swagger-ui:
+    path: /swagger-ui.html
+    disable-swagger-default-url: true
+    display-query-params-without-oauth2: true
