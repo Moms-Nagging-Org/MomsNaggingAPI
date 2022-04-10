@@ -9,7 +9,7 @@ import javax.persistence.*;
 @Entity
 @Getter
 @NoArgsConstructor
-public class Release {
+public class Release extends BaseTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

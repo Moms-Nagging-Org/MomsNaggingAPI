@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor
-public class Diary {
+public class Diary extends BaseTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

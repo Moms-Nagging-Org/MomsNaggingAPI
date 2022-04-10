@@ -9,7 +9,7 @@ import javax.persistence.*;
 @Entity
 @Getter
 @NoArgsConstructor
-public class Nagging {
+public class Nagging extends BaseTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
