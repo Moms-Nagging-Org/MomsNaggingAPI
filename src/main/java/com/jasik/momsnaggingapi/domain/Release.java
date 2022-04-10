@@ -1,5 +1,6 @@
 package com.jasik.momsnaggingapi.domain;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -18,5 +19,11 @@ public class Release {
     private String version;
     @Column(columnDefinition = "boolean default true")
     private boolean isRequired;
+
+    @Builder
+    public Release(String version, boolean isRequired) {
+        this.version = version;
+        this.isRequired = isRequired;
+    }
 
 }
