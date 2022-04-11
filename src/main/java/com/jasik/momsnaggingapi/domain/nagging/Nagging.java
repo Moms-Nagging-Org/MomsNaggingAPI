@@ -1,5 +1,6 @@
-package com.jasik.momsnaggingapi.domain;
+package com.jasik.momsnaggingapi.domain.nagging;
 
+import com.jasik.momsnaggingapi.domain.BaseTime;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
