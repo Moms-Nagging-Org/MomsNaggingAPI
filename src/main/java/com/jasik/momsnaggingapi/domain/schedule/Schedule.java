@@ -1,12 +1,11 @@
 package com.jasik.momsnaggingapi.domain.schedule;
 
-import com.jasik.momsnaggingapi.domain.BaseTime;
+import com.jasik.momsnaggingapi.domain.common.BaseTime;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
