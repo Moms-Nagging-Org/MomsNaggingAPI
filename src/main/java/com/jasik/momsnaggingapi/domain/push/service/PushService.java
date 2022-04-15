@@ -9,5 +9,5 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class PushService {
-    private final PushRepository pushRepository;
+//    private final PushRepository pushRepository;
 }

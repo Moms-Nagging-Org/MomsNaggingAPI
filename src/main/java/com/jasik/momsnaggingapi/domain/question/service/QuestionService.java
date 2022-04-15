@@ -9,5 +9,5 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class QuestionService {
-    private final QuestionRepository questionRepository;
+//    private final QuestionRepository questionRepository;
 }

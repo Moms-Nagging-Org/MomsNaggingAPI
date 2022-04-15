@@ -9,5 +9,5 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class ReleaseService {
-    private final ReleaseRepository releaseRepository;
+//    private final ReleaseRepository releaseRepository;
 }
