@@ -18,6 +18,8 @@ target/
 *.iws
 *.iml
 *.ipr
+src/main/resources/application.yml
+src/main/resources/application-local.yml
 
 ### NetBeans ###
 /nbproject/private/
@@ -341,4 +343,4 @@ transaction-logs
 secrets.yml
 .gradletasknamecache
 
-src/main/resources/application-local.yml
+*.yml
