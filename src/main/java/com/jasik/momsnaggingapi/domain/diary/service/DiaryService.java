@@ -9,5 +9,5 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class DiaryService {
-    private final DiaryRepository diaryRepository;
+//    private final DiaryRepository diaryRepository;
 }

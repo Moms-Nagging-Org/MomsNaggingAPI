@@ -9,5 +9,5 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class NaggingService {
-    private final NaggingRepository naggingRepository;
+//    private final NaggingRepository naggingRepository;
 }
