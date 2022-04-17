@@ -10,5 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class GradeService {
-//    private final GradeRepository gradeRepository;
+    private final GradeRepository gradeRepository;
 }
+
