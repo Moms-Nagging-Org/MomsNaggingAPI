@@ -1,11 +1,13 @@
 package com.jasik.momsnaggingapi.domain.user;
 
 import com.jasik.momsnaggingapi.domain.common.BaseTime;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -49,6 +51,45 @@ public class User extends BaseTime {
         this.personalId = personalId;
         this.profileImage = profileImage;
         this.statusMsg = statusMsg;
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class UserResponse {
+        private Long id;
+        private String email;
+        private String provider;
+        private String nickName;
+        private String personalId;
+        private int naggingLevel;
+        private String statusMsg;
+        private String profileImage;
+        private boolean allowGeneralNotice;
+        private boolean allowTodoNotice;
+        private boolean allowRoutineNotice;
+        private boolean allowWeeklyNotice;
+        private boolean allowOtherNotice;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class UserRequest {
+        private Long id;
+        private String email;
+        private String provider;
+        private String nickName;
+        private String personalId;
+        private int naggingLevel;
+        private String statusMsg;
+        private String profileImage;
+        private boolean allowGeneralNotice;
+        private boolean allowTodoNotice;
+        private boolean allowRoutineNotice;
+        private boolean allowWeeklyNotice;
+        private boolean allowOtherNotice;
     }
 
 }
