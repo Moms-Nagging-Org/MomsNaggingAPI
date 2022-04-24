@@ -1,4 +1,4 @@
-package com.jasik.momsnaggingapi.domain.release;
+package com.jasik.momsnaggingapi.domain.appVersion;
 
 import com.jasik.momsnaggingapi.domain.common.BaseTime;
 import lombok.Builder;
@@ -10,19 +10,20 @@ import javax.persistence.*;
 @Entity
 @Getter
 @NoArgsConstructor
-public class Release extends BaseTime {
+public class AppVersion extends BaseTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(columnDefinition = "TEXT")
+//    @Column(columnDefinition = "TEXT")
     private String version;
+
     @Column(columnDefinition = "boolean default true")
     private boolean isRequired;
 
     @Builder
-    public Release(String version, boolean isRequired) {
+    public AppVersion(String version, boolean isRequired) {
         this.version = version;
         this.isRequired = isRequired;
     }
