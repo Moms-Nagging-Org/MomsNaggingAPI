@@ -1,12 +1,8 @@
 package com.jasik.momsnaggingapi.domain.schedule;
 
 import com.jasik.momsnaggingapi.domain.common.BaseTime;
-import com.jasik.momsnaggingapi.infra.config.AppConfig;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
-import org.modelmapper.ModelMapper;
-import org.springframework.context.ApplicationContext;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
@@ -37,7 +33,7 @@ public class Schedule extends BaseTime {
     private int doneCount;
 
     @Column(nullable = false)
-    private String title;
+    private String scheduleName;
 
     private String scheduleTime;
 
@@ -49,8 +45,6 @@ public class Schedule extends BaseTime {
 
     @Column(columnDefinition = "boolean default null", name = "is_done")
     private boolean done;
-//    @Column(columnDefinition = "boolean default false")
-//    private boolean isTemplate;
     @Column(columnDefinition = "boolean default false", name = "is_mon")
     private boolean mon;
     @Column(columnDefinition = "boolean default false", name = "is_tue")
@@ -67,22 +61,21 @@ public class Schedule extends BaseTime {
     private boolean sun;
 
     @Builder
-    public Schedule(Long userId, Long originalId, int seqNumber, int goalCount, int doneCount, String title,
+    public Schedule(Long userId, Long originalId, int seqNumber, int goalCount, int doneCount, String scheduleName,
                     String scheduleTime, LocalDate scheduleDate, LocalDateTime alarmTime, boolean done,
-//                    LocalDateTime routineEndDate, boolean isTemplate,
+//                    LocalDateTime routineEndDate,
                     boolean mon, boolean tue, boolean wed, boolean thu, boolean fri, boolean sat, boolean sun) {
         this.userId = userId;
         this.originalId = originalId;
         this.seqNumber = seqNumber;
         this.goalCount = goalCount;
         this.doneCount = doneCount;
-        this.title = title;
+        this.scheduleName = scheduleName;
         this.scheduleTime = scheduleTime;
         this.scheduleDate = scheduleDate;
         this.alarmTime = alarmTime;
 //        this.routineEndDate = routineEndDate;
         this.done = done;
-//        this.isTemplate = isTemplate;
         this.mon = mon;
         this.tue = tue;
         this.wed = wed;
@@ -100,7 +93,7 @@ public class Schedule extends BaseTime {
 
         @Schema(description = "스케줄 이름", defaultValue = "술 마시기")
         @NotNull
-        private String title;
+        private String scheduleName;
 
         @Schema(description = "n회 습관일 경우 목표 횟수", defaultValue = "0")
         private int goalCount;
@@ -147,7 +140,7 @@ public class Schedule extends BaseTime {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class ScheduleResponse {
-        @Schema(description = "스케줄 ID", defaultValue = "8f886d50-70ff-11ea-b498-02dd0a2dce82")
+        @Schema(description = "스케줄 ID", defaultValue = "2")
         private Long id;
 
         @Schema(description = "n회 습관의 수행 목표 수", defaultValue = "0")
@@ -157,7 +150,7 @@ public class Schedule extends BaseTime {
         private int doneCount;
 
         @Schema(description = "스케줄 이름", defaultValue = "술 마시기")
-        private String title;
+        private String scheduleName;
 
         @Schema(description = "스케줄 수행 시간", defaultValue = "아무때나")
         private String scheduleTime;
@@ -204,14 +197,14 @@ public class Schedule extends BaseTime {
     @NoArgsConstructor
     public static class SchedulesResponse {
 
-        @Schema(description = "스케줄 ID", defaultValue = "8f886d50-70ff-11ea-b498-02dd0a2dce82")
+        @Schema(description = "스케줄 ID", defaultValue = "2")
         private Long id;
 
         @Schema(description = "스케줄 정렬 순서", defaultValue = "0")
         private int seqNumber;
 
         @Schema(description = "스케줄 이름", defaultValue = "술 마시기")
-        private String title;
+        private String scheduleName;
 
         @Schema(description = "스케줄 수행 시간", defaultValue = "아무때나")
         private String scheduleTime;
@@ -221,5 +214,18 @@ public class Schedule extends BaseTime {
 
         @Schema(description = "스케줄 유형(할일/습관)", defaultValue = "todo")        // originalId 있으면 routine
         private String scheduleType;
+    }
+
+    @Schema(description = "추천 스케줄 리스트 조회 시 응답 클래스")
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class CategorySchedulesResponse {
+
+        @Schema(description = "스케줄 ID", defaultValue = "2")
+        private Long id;
+
+        @Schema(description = "스케줄 이름", defaultValue = "술 마시기")
+        private String scheduleName;
     }
 }

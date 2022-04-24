@@ -1,10 +1,8 @@
 package com.jasik.momsnaggingapi.domain.schedule.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jasik.momsnaggingapi.domain.schedule.Category;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
-import com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleRequest;
-import com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleResponse;
-import com.jasik.momsnaggingapi.domain.schedule.Schedule.SchedulesResponse;
 import com.jasik.momsnaggingapi.domain.schedule.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,16 +27,16 @@ public class ScheduleService {
     private final ObjectMapper objectMapper;
 
     @Transactional(readOnly = true)
-    public Collection<SchedulesResponse> getSchedules() {
+    public Collection<Schedule.SchedulesResponse> getSchedules() {
 
 //        log.error("test error");
 //        log.info("test info");
-        Collection<SchedulesResponse> scheduleAllResponses = new ArrayList<SchedulesResponse>();
-        scheduleAllResponses.add(new SchedulesResponse());
+        Collection<Schedule.SchedulesResponse> schedulesResponses = new ArrayList<Schedule.SchedulesResponse>();
+        schedulesResponses.add(new Schedule.SchedulesResponse());
 //        Collection<Schedule> schedules = scheduleRepository.findAllByScheduleDateAndUserId(scheduleDate, userId);
 ////
 //        schedules.forEach(schedule ->
-//                scheduleAllResponses.add(new AllResponse(
+//                scheduleAllResponse.add(new AllResponse(
 //                        schedule.getId(),
 //                        schedule.getSeqNumber(),
 //                        schedule.getTitle(),
@@ -47,32 +45,32 @@ public class ScheduleService {
 //                        schedule.getScheduleType()
 //                        )));
 
-        return scheduleAllResponses;
+        return schedulesResponses;
     }
 
     @Transactional
-    public ScheduleResponse postSchedule(ScheduleRequest schedule) {
+    public Schedule.ScheduleResponse postSchedule(Schedule.ScheduleRequest schedule) {
 
-        ScheduleResponse new_schedule = new ScheduleResponse();
+        Schedule.ScheduleResponse new_schedule = new Schedule.ScheduleResponse();
 
         return new_schedule;
     }
 
     @Transactional(readOnly = true)
-    public ScheduleResponse getSchedule(Long scheduleId) {
+    public Schedule.ScheduleResponse getSchedule(Long scheduleId) {
 
-        ScheduleResponse scheduleResponse = new ScheduleResponse();
+        Schedule.ScheduleResponse scheduleResponse = new Schedule.ScheduleResponse();
 
         return scheduleResponse;
     }
 
     @Transactional
-    public ScheduleResponse putSchedule(Long scheduleId, JsonPatch jsonPatch) {
+    public Schedule.ScheduleResponse putSchedule(Long scheduleId, JsonPatch jsonPatch) {
 
         Optional<Schedule> originalSchedule = scheduleRepository.findById(scheduleId);
         Schedule modifiedSchedule = mergeSchedule(originalSchedule, jsonPatch); //패치처리
         scheduleRepository.save(modifiedSchedule);
-        ScheduleResponse scheduleResponse = modelMapper.map(originalSchedule, ScheduleResponse.class);
+        Schedule.ScheduleResponse scheduleResponse = modelMapper.map(originalSchedule, Schedule.ScheduleResponse.class);
 
         return scheduleResponse;
     }
@@ -90,5 +88,32 @@ public class ScheduleService {
 
 //        scheduleRepository.deleteById(scheduleId);
 
+    }
+
+    @Transactional
+    public Collection<Schedule.SchedulesResponse> postSchedulesArray(Collection<Long> scheduleArrayRequest) {
+
+        Collection<Schedule.SchedulesResponse> scheduleAllResponses = new ArrayList<Schedule.SchedulesResponse>();
+        scheduleAllResponses.add(new Schedule.SchedulesResponse());
+
+        return scheduleAllResponses;
+    }
+
+    @Transactional(readOnly = true)
+    public Collection<Category.CategoryResponse> getCategories() {
+
+        Collection<Category.CategoryResponse> categoriesResponses = new ArrayList<Category.CategoryResponse>();
+        categoriesResponses.add(new Category.CategoryResponse());
+
+        return categoriesResponses;
+    }
+
+    @Transactional(readOnly = true)
+    public Collection<Schedule.CategorySchedulesResponse> getCategorySchedules(Long categoryId) {
+
+        Collection<Schedule.CategorySchedulesResponse> categorySchedulesResponses = new ArrayList<Schedule.CategorySchedulesResponse>();
+        categorySchedulesResponses.add(new Schedule.CategorySchedulesResponse());
+
+        return categorySchedulesResponses;
     }
 }
