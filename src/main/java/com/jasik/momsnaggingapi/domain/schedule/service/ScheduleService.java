@@ -9,13 +9,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.json.JsonPatch;
 import javax.json.JsonStructure;
 import javax.json.JsonValue;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -26,53 +27,49 @@ public class ScheduleService {
     private final ModelMapper modelMapper;
     private final ObjectMapper objectMapper;
 
+
+    @Transactional
+    public Schedule.Response postSchedule(Schedule.Request dto) {
+        // TODO : 반복에 따른 습관 추가
+
+        Schedule saveSchedule = modelMapper.map(dto, Schedule.class);
+        Schedule schedule = scheduleRepository.save(saveSchedule);
+        return modelMapper.map(schedule, Schedule.Response.class);
+    }
+
     @Transactional(readOnly = true)
-    public Collection<Schedule.SchedulesResponse> getSchedules() {
+    public List<Schedule.ListResponse> getSchedules(Long userId, LocalDate scheduleDate) {
 
 //        log.error("test error");
 //        log.info("test info");
-        Collection<Schedule.SchedulesResponse> schedulesResponses = new ArrayList<Schedule.SchedulesResponse>();
-        schedulesResponses.add(new Schedule.SchedulesResponse());
-//        Collection<Schedule> schedules = scheduleRepository.findAllByScheduleDateAndUserId(scheduleDate, userId);
-////
-//        schedules.forEach(schedule ->
-//                scheduleAllResponse.add(new AllResponse(
-//                        schedule.getId(),
-//                        schedule.getSeqNumber(),
-//                        schedule.getTitle(),
-//                        schedule.getScheduleTime(),
-//                        schedule.,
-//                        schedule.getScheduleType()
-//                        )));
+        List<Schedule> schedules = scheduleRepository.findAllByScheduleDateAndUserId(scheduleDate, userId);
+        List<Schedule.ListResponse> resultList = schedules.stream()
+                                                        .map(Schedule -> modelMapper.map(Schedule, Schedule.ListResponse.class))
+                                                        .collect(Collectors.toList());
+//        List<Schedule.ListResponse> resultList = Arrays.asList(modelMapper.map(Schedule, Schedule.ListResponse.class));
 
-        return schedulesResponses;
-    }
-
-    @Transactional
-    public Schedule.ScheduleResponse postSchedule(Schedule.ScheduleRequest schedule) {
-
-        Schedule.ScheduleResponse new_schedule = new Schedule.ScheduleResponse();
-
-        return new_schedule;
+        return resultList;
     }
 
     @Transactional(readOnly = true)
-    public Schedule.ScheduleResponse getSchedule(Long scheduleId) {
+    public Schedule.Response getSchedule(Long scheduleId) {
 
-        Schedule.ScheduleResponse scheduleResponse = new Schedule.ScheduleResponse();
-
-        return scheduleResponse;
+        Optional<Schedule> schedule = scheduleRepository.findById(scheduleId);
+        if (schedule.isPresent()){
+            return modelMapper.map(schedule.get(), Schedule.Response.class);
+        }
+            return null;
     }
 
     @Transactional
-    public Schedule.ScheduleResponse putSchedule(Long scheduleId, JsonPatch jsonPatch) {
+    public Schedule.Response putSchedule(Long scheduleId, JsonPatch jsonPatch) {
 
         Optional<Schedule> originalSchedule = scheduleRepository.findById(scheduleId);
         Schedule modifiedSchedule = mergeSchedule(originalSchedule, jsonPatch); //패치처리
         scheduleRepository.save(modifiedSchedule);
-        Schedule.ScheduleResponse scheduleResponse = modelMapper.map(originalSchedule, Schedule.ScheduleResponse.class);
+        Schedule.Response response = modelMapper.map(originalSchedule, Schedule.Response.class);
 
-        return scheduleResponse;
+        return response;
     }
 
     private Schedule mergeSchedule(Optional<Schedule> originalSchedule, JsonPatch jsonPatch) {
@@ -86,34 +83,34 @@ public class ScheduleService {
     @Transactional
     public void deleteSchedule(Long scheduleId) {
 
-//        scheduleRepository.deleteById(scheduleId);
-
+        // TODO : 삭제 Exception 추가
+        scheduleRepository.deleteById(scheduleId);
     }
 
     @Transactional
-    public Collection<Schedule.SchedulesResponse> postSchedulesArray(Collection<Long> scheduleArrayRequest) {
+    public List<Schedule.ListResponse> postSchedulesArray(List<Long> scheduleArrayRequest) {
 
-        Collection<Schedule.SchedulesResponse> scheduleAllResponses = new ArrayList<Schedule.SchedulesResponse>();
-        scheduleAllResponses.add(new Schedule.SchedulesResponse());
+        List<Schedule.ListResponse> scheduleAllResponses = new ArrayList<Schedule.ListResponse>();
+        scheduleAllResponses.add(new Schedule.ListResponse());
 
         return scheduleAllResponses;
     }
 
     @Transactional(readOnly = true)
-    public Collection<Category.CategoryResponse> getCategories() {
+    public List<Category.Response> getCategories() {
 
-        Collection<Category.CategoryResponse> categoriesResponses = new ArrayList<Category.CategoryResponse>();
-        categoriesResponses.add(new Category.CategoryResponse());
+        List<Category.Response> categoriesResponses = new ArrayList<Category.Response>();
+        categoriesResponses.add(new Category.Response());
 
         return categoriesResponses;
     }
 
     @Transactional(readOnly = true)
-    public Collection<Schedule.CategorySchedulesResponse> getCategorySchedules(Long categoryId) {
+    public List<Category.ScheduleResponse> getCategorySchedules(Long categoryId) {
 
-        Collection<Schedule.CategorySchedulesResponse> categorySchedulesResponses = new ArrayList<Schedule.CategorySchedulesResponse>();
-        categorySchedulesResponses.add(new Schedule.CategorySchedulesResponse());
+        List<Category.ScheduleResponse> scheduleResponses = new ArrayList<Category.ScheduleResponse>();
+        scheduleResponses.add(new Category.ScheduleResponse());
 
-        return categorySchedulesResponses;
+        return scheduleResponses;
     }
 }
