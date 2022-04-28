@@ -3,6 +3,10 @@ package com.jasik.momsnaggingapi.domain.schedule;
 import com.jasik.momsnaggingapi.domain.common.BaseTime;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.cfg.AvailableSettings;
+import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
@@ -17,7 +21,20 @@ import java.time.LocalDateTime;
 public class Schedule extends BaseTime {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GenericGenerator(
+            name = "SequenceGenerator",
+            strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+            parameters = {
+                    @Parameter(name = "sequence_name", value = "hibernate_sequence"),
+                    @Parameter(name = "optimizer", value = "pooled"),
+                    @Parameter(name = "initial_value", value = "1"),
+                    @Parameter(name = "increment_size", value = "500")
+            }
+    )
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "SequenceGenerator"
+    )
     private Long id;
 
     private Long userId;
@@ -60,16 +77,14 @@ public class Schedule extends BaseTime {
     private boolean sat;
     @Column(columnDefinition = "boolean default false", name = "is_sun")
     private boolean sun;
+
+    // TODO: Enumerated -> Converter 사용
     @Schema(description = "스케줄 유형(할일/습관)", defaultValue = "todo")
+    @Enumerated(EnumType.STRING)
     private ScheduleType scheduleType;
 
-    enum ScheduleType{
-        TODO, ROUTINE
-    }
-
     @Builder
-    public Schedule(Long userId, Long originalId, int seqNumber, int goalCount, int doneCount, String scheduleName,
-                    String scheduleTime, LocalDate scheduleDate, LocalDateTime alarmTime, boolean done,
+    public Schedule(Long userId, Long originalId, int seqNumber, int goalCount, int doneCount, String scheduleName, String scheduleTime, LocalDate scheduleDate, LocalDateTime alarmTime, boolean done,
 //                    LocalDateTime routineEndDate,
                     boolean mon, boolean tue, boolean wed, boolean thu, boolean fri, boolean sat, boolean sun) {
         this.userId = userId;
@@ -92,6 +107,29 @@ public class Schedule extends BaseTime {
         this.sun = sun;
     }
 
+    public void initOriginalId(Long scheduleId) {
+        originalId = scheduleId;
+    }
+
+    // TODO: ModelMapper에서 DTO로 넘겨주고 싶음.
+//    public ScheduleType getType(){
+//        if (goalCount > 0 | mon | tue | wed | thu | fri | sat | sun){
+//            return ScheduleType.ROUTINE;
+//        }else{
+//            return ScheduleType.TODO;
+//        }
+//    }
+
+    public boolean[] getRepeatDays() {
+        boolean[] dayArray = {mon, tue, wed, thu, fri, sat, sun};
+
+        return dayArray;
+    }
+
+    public enum ScheduleType {
+        TODO, ROUTINE
+    }
+
     @Schema(description = "스케줄 생성 시 요청 클래스")
     @Getter
     @Setter
@@ -102,6 +140,9 @@ public class Schedule extends BaseTime {
         @Schema(description = "사용자 ID", defaultValue = "1")
         @NotNull
         private Long userId;
+
+//        @Schema(description = "원본 습관 ID", defaultValue = "null")
+//        private Long originalId;
 
         @Schema(description = "스케줄 이름", defaultValue = "술 마시기")
         @NotNull
@@ -143,8 +184,8 @@ public class Schedule extends BaseTime {
         @Schema(description = "일요일 반복 여부", defaultValue = "false")
         private boolean sun;
 
-        @Schema(description = "수행 완료 여부", defaultValue = "false", allowableValues = {"true", "false", "null"})
-        private boolean done;
+//        @Schema(description = "수행 완료 여부", defaultValue = "false", allowableValues = {"true", "false", "null"})
+//        private boolean done;
 
         @Schema(description = "스케줄 유형(할일/습관)", defaultValue = "TODO")
         private ScheduleType scheduleType;
@@ -237,5 +278,4 @@ public class Schedule extends BaseTime {
         private ScheduleType scheduleType;
 
     }
-
 }

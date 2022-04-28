@@ -7,15 +7,18 @@ import com.jasik.momsnaggingapi.domain.schedule.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import javax.json.JsonPatch;
 import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import java.time.LocalDate;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -27,14 +30,73 @@ public class ScheduleService {
     private final ModelMapper modelMapper;
     private final ObjectMapper objectMapper;
 
-
     @Transactional
     public Schedule.Response postSchedule(Schedule.Request dto) {
-        // TODO : 반복에 따른 습관 추가
 
-        Schedule saveSchedule = modelMapper.map(dto, Schedule.class);
-        Schedule schedule = scheduleRepository.save(saveSchedule);
-        return modelMapper.map(schedule, Schedule.Response.class);
+        // 스케줄 원본 저장
+        Schedule schedule = scheduleRepository.save(modelMapper.map(dto, Schedule.class));
+        // TODO : 생성 -> 업데이트 로직 개선사항 찾기 -> select last_insert_id()
+        // 원본 ID 저장
+        Long originalId = schedule.getId();
+        schedule.initOriginalId(originalId);
+        Schedule originSchedule = scheduleRepository.save(schedule);
+        
+        // TODO: routine 생성 비동기 실행 -> interface로 구현하면 프록시 개별로 생성 됨,
+        createRoutine(originSchedule, dto);
+
+        return modelMapper.map(originSchedule, Schedule.Response.class);
+    }
+
+    @Async
+    public void createRoutine(Schedule originSchedule, Schedule.Request dto){
+        // 습관 스케줄 저장 로직
+        if (originSchedule.getScheduleType() == Schedule.ScheduleType.ROUTINE) {
+            // 원본 스케줄의 날짜, 알람시간
+            LocalDate originScheduleDate = originSchedule.getScheduleDate();
+            Optional<LocalDateTime> originAlarmTime = Optional.ofNullable(originSchedule.getAlarmTime());
+
+            int dayOfWeekNumber = originScheduleDate.getDayOfWeek().getValue() - 1;
+            boolean[] repeatDays = originSchedule.getRepeatDays();
+            // 반복 설정에 해당하는 날짜인지 확인
+            if (repeatDays[dayOfWeekNumber]) {
+                int nextDay = (7 - dayOfWeekNumber);
+                ArrayList<Integer> nextDayList = new ArrayList<>();
+                // 반복 요일마다 기준 날짜에서 더해야 하는 일수
+                for (boolean i : repeatDays) {
+                    if (i) {
+                        nextDayList.add(nextDay);
+                    }
+                    nextDay += 1;
+                }
+                List<Schedule> nextSchedules = new ArrayList<>();
+                int weekCount = 0;
+                boolean limitDateFlag = true;
+                while (limitDateFlag) {
+                    // 7일씩 더해야 함
+                    int nextWeek = 7 * weekCount;
+                    // 반복 요일마다 주차 더함
+                    for (int i : nextDayList) {
+                        long plusDays = i + nextWeek;
+                        LocalDate nextScheduleDate = originScheduleDate.plusDays(plusDays);
+                        // 10년 후까지만 생성함
+                        // TODO: 추가 년수 환경변수로 사용하기
+                        if (nextScheduleDate.isAfter(originScheduleDate.plusYears(1))) {
+                            limitDateFlag = false;
+                            break;
+                        }
+                        dto.setScheduleDate(nextScheduleDate);
+                        originAlarmTime.ifPresent(localDateTime -> dto.setAlarmTime(localDateTime.plusDays(plusDays)));
+                        Schedule nextSchedule = modelMapper.map(dto, Schedule.class);
+                        nextSchedule.initOriginalId(originSchedule.getOriginalId());
+                        nextSchedules.add(nextSchedule);
+                        log.info("비동기 1");
+                    }
+                    weekCount += 1;
+                }
+                scheduleRepository.saveAll(nextSchedules);
+            }
+        }
+        log.info("비동기 2");
     }
 
     @Transactional(readOnly = true)
@@ -43,9 +105,7 @@ public class ScheduleService {
 //        log.error("test error");
 //        log.info("test info");
         List<Schedule> schedules = scheduleRepository.findAllByScheduleDateAndUserId(scheduleDate, userId);
-        List<Schedule.ListResponse> resultList = schedules.stream()
-                                                        .map(Schedule -> modelMapper.map(Schedule, Schedule.ListResponse.class))
-                                                        .collect(Collectors.toList());
+        List<Schedule.ListResponse> resultList = schedules.stream().map(Schedule -> modelMapper.map(Schedule, Schedule.ListResponse.class)).collect(Collectors.toList());
 //        List<Schedule.ListResponse> resultList = Arrays.asList(modelMapper.map(Schedule, Schedule.ListResponse.class));
 
         return resultList;
@@ -55,17 +115,17 @@ public class ScheduleService {
     public Schedule.Response getSchedule(Long scheduleId) {
 
         Optional<Schedule> schedule = scheduleRepository.findById(scheduleId);
-        if (schedule.isPresent()){
+        if (schedule.isPresent()) {
             return modelMapper.map(schedule.get(), Schedule.Response.class);
         }
-            return null;
+        return null;
     }
 
     @Transactional
     public Schedule.Response putSchedule(Long scheduleId, JsonPatch jsonPatch) {
 
         Optional<Schedule> originalSchedule = scheduleRepository.findById(scheduleId);
-        Schedule modifiedSchedule = mergeSchedule(originalSchedule, jsonPatch); //패치처리
+        Schedule modifiedSchedule = mergeSchedule(originalSchedule, jsonPatch); //패치 처리
         scheduleRepository.save(modifiedSchedule);
         Schedule.Response response = modelMapper.map(originalSchedule, Schedule.Response.class);
 
@@ -83,14 +143,18 @@ public class ScheduleService {
     @Transactional
     public void deleteSchedule(Long scheduleId) {
 
-        // TODO : 삭제 Exception 추가
-        scheduleRepository.deleteById(scheduleId);
+        Long userId = Long.valueOf(1);
+        Optional<Schedule> schedule = scheduleRepository.findById(scheduleId);
+        if (schedule.isPresent()){
+            scheduleRepository.deleteWithIdAfter(scheduleId, userId, schedule.get().getOriginalId());
+        }
+        // TODO : Exception 추가
     }
 
     @Transactional
     public List<Schedule.ListResponse> postSchedulesArray(List<Long> scheduleArrayRequest) {
 
-        List<Schedule.ListResponse> scheduleAllResponses = new ArrayList<Schedule.ListResponse>();
+        List<Schedule.ListResponse> scheduleAllResponses = new ArrayList<>();
         scheduleAllResponses.add(new Schedule.ListResponse());
 
         return scheduleAllResponses;
@@ -99,7 +163,7 @@ public class ScheduleService {
     @Transactional(readOnly = true)
     public List<Category.Response> getCategories() {
 
-        List<Category.Response> categoriesResponses = new ArrayList<Category.Response>();
+        List<Category.Response> categoriesResponses = new ArrayList<>();
         categoriesResponses.add(new Category.Response());
 
         return categoriesResponses;
@@ -108,7 +172,7 @@ public class ScheduleService {
     @Transactional(readOnly = true)
     public List<Category.ScheduleResponse> getCategorySchedules(Long categoryId) {
 
-        List<Category.ScheduleResponse> scheduleResponses = new ArrayList<Category.ScheduleResponse>();
+        List<Category.ScheduleResponse> scheduleResponses = new ArrayList<>();
         scheduleResponses.add(new Category.ScheduleResponse());
 
         return scheduleResponses;
