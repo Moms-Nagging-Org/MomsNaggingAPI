@@ -2,17 +2,24 @@ package com.jasik.momsnaggingapi.domain.schedule;
 
 import com.jasik.momsnaggingapi.domain.common.BaseTime;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-import org.hibernate.cfg.AvailableSettings;
-import org.hibernate.id.enhanced.SequenceStyleGenerator;
-import org.springframework.format.annotation.DateTimeFormat;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
 @Getter
@@ -21,20 +28,12 @@ import java.time.LocalDateTime;
 public class Schedule extends BaseTime {
 
     @Id
-    @GenericGenerator(
-            name = "SequenceGenerator",
-            strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
-            parameters = {
-                    @Parameter(name = "sequence_name", value = "hibernate_sequence"),
-                    @Parameter(name = "optimizer", value = "pooled"),
-                    @Parameter(name = "initial_value", value = "1"),
-                    @Parameter(name = "increment_size", value = "500")
-            }
-    )
-    @GeneratedValue(
-            strategy = GenerationType.SEQUENCE,
-            generator = "SequenceGenerator"
-    )
+    @GenericGenerator(name = "SequenceGenerator", strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator", parameters = {
+        @Parameter(name = "sequence_name", value = "hibernate_sequence"),
+        @Parameter(name = "optimizer", value = "pooled"),
+        @Parameter(name = "initial_value", value = "1"),
+        @Parameter(name = "increment_size", value = "500")})
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SequenceGenerator")
     private Long id;
 
     private Long userId;
@@ -84,9 +83,11 @@ public class Schedule extends BaseTime {
     private ScheduleType scheduleType;
 
     @Builder
-    public Schedule(Long userId, Long originalId, int seqNumber, int goalCount, int doneCount, String scheduleName, String scheduleTime, LocalDate scheduleDate, LocalDateTime alarmTime, boolean done,
+    public Schedule(Long userId, Long originalId, int seqNumber, int goalCount, int doneCount,
+        String scheduleName, String scheduleTime, LocalDate scheduleDate, LocalDateTime alarmTime,
+        boolean done,
 //                    LocalDateTime routineEndDate,
-                    boolean mon, boolean tue, boolean wed, boolean thu, boolean fri, boolean sat, boolean sun) {
+        boolean mon, boolean tue, boolean wed, boolean thu, boolean fri, boolean sat, boolean sun) {
         this.userId = userId;
         this.originalId = originalId;
         this.seqNumber = seqNumber;
@@ -197,6 +198,7 @@ public class Schedule extends BaseTime {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class Response {
+
         @Schema(description = "스케줄 ID", defaultValue = "2")
         private Long id;
 
@@ -271,7 +273,8 @@ public class Schedule extends BaseTime {
         @Schema(description = "스케줄 수행 시간", defaultValue = "아무때나")
         private String scheduleTime;
 
-        @Schema(description = "수행 완료 여부", defaultValue = "false", allowableValues = {"true", "false", "null"})
+        @Schema(description = "수행 완료 여부", defaultValue = "false", allowableValues = {"true",
+            "false", "null"})
         private boolean isDone;
 
         @Schema(description = "스케줄 유형(할일/습관)", defaultValue = "todo")
