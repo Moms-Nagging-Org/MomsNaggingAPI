@@ -1,6 +1,8 @@
 package com.jasik.momsnaggingapi.domain.schedule.repository;
 
+import com.jasik.momsnaggingapi.domain.schedule.Category;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -27,4 +29,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
             @Param("originalId") Long originalId
     );
 
+    List<Schedule> findAllByCategoryId(Long categoryId);
+
+    Optional<Schedule> findByIdAndUserId(Long id, Long userId);
 }

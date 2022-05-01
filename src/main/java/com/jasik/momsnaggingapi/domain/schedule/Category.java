@@ -8,9 +8,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import lombok.Setter;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 public class Category extends BaseTime {
 
@@ -32,27 +34,13 @@ public class Category extends BaseTime {
 
     @Schema(description = "스케줄 추천 종류 조회 시 응답 클래스")
     @Getter
+    @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     public static class Response {
 
-        @Schema(description = "스케줄 추천 종류 ID", defaultValue = "2")
         private Long id;
-
-        @Schema(description = "스케줄 추천 종류 이름", defaultValue = "운동")
         private String categoryName;
     }
 
-    @Schema(description = "추천 스케줄 리스트 조회 시 응답 클래스")
-    @Getter
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class ScheduleResponse {
-
-        @Schema(description = "스케줄 ID", defaultValue = "2")
-        private Long id;
-
-        @Schema(description = "스케줄 이름", defaultValue = "술 마시기")
-        private String scheduleName;
-    }
 }
