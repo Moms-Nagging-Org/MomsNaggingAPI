@@ -3,6 +3,7 @@ package com.jasik.momsnaggingapi.domain.schedule.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jasik.momsnaggingapi.domain.schedule.Category;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
+import com.jasik.momsnaggingapi.domain.schedule.repository.CategoryRepository;
 import com.jasik.momsnaggingapi.domain.schedule.repository.ScheduleRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
+    private final CategoryRepository categoryRepository;
     private final ModelMapper modelMapper;
     private final ObjectMapper objectMapper;
 
@@ -58,7 +60,7 @@ public class ScheduleService {
             originSchedule.getAlarmTime());
 
         int dayOfWeekNumber = originScheduleDate.getDayOfWeek().getValue() - 1;
-        boolean[] repeatDays = originSchedule.getRepeatDays();
+        boolean[] repeatDays = originSchedule.calculateRepeatDays();
         int nextDay = (7 - dayOfWeekNumber);
         ArrayList<Integer> nextDayList = new ArrayList<>();
         // 반복 요일마다 기준 날짜에서 더해야 하는 일수
@@ -121,17 +123,30 @@ public class ScheduleService {
     @Transactional
     public Schedule.Response putSchedule(Long scheduleId, JsonPatch jsonPatch) {
 
-        // 해당 스케줄만 수정
+        // 수행 완료 -> n회 반복 습관인 경우 별도 처리
+        // 아닌 경우
         // 해당 스케줄의 원본이 같은 스케줄 모두 수정
+        // 반복 옵션 변경할 경우
+        // 이후 일정 모두 삭제 후 새로 생성, originId, index 등 나머지 값 유지
+
         // 컬럼은?
         Optional<Schedule> originalSchedule = scheduleRepository.findById(scheduleId);
-        Schedule modifiedSchedule = mergeSchedule(originalSchedule, jsonPatch); //패치 처리
-        scheduleRepository.save(modifiedSchedule);
+        if (originalSchedule.isPresent()){
+            // 해당 스케줄만 수정
+            Schedule modifiedSchedule = scheduleRepository.save(mergeSchedule(originalSchedule.get(), jsonPatch));
 
-        return modelMapper.map(originalSchedule, Schedule.Response.class);
+            if (modifiedSchedule.getScheduleType() == Schedule.ScheduleType.ROUTINE) {
+
+            }
+            return modelMapper.map(modifiedSchedule, Schedule.Response.class);
+        }
+        else{
+            // TODO: NOT FOUND Exception 추가
+            return null;
+        }
     }
 
-    private Schedule mergeSchedule(Optional<Schedule> originalSchedule, JsonPatch jsonPatch) {
+    private Schedule mergeSchedule(Schedule originalSchedule, JsonPatch jsonPatch) {
 
         JsonStructure target = objectMapper.convertValue(originalSchedule, JsonStructure.class);
         JsonValue patchedSchedule = jsonPatch.apply(target);
@@ -143,10 +158,9 @@ public class ScheduleService {
     public void deleteSchedule(Long scheduleId) {
 
         Long userId = 1L;
-        Optional<Schedule> schedule = scheduleRepository.findById(scheduleId);
+        Optional<Schedule> schedule = scheduleRepository.findByIdAndUserId(userId, scheduleId);
         schedule.ifPresent(value -> scheduleRepository.deleteWithIdAfter(scheduleId, userId,
             value.getOriginalId()));
-        // TODO : Exception 추가
     }
 
     @Transactional
@@ -161,18 +175,20 @@ public class ScheduleService {
     @Transactional(readOnly = true)
     public List<Category.Response> getCategories() {
 
-        List<Category.Response> categoriesResponses = new ArrayList<>();
-        categoriesResponses.add(new Category.Response());
+        List<Category> categories = categoryRepository.findAllByUsed(true);
 
-        return categoriesResponses;
+        return categories.stream()
+            .map(Category -> modelMapper.map(Category, Category.Response.class))
+            .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public List<Category.ScheduleResponse> getCategorySchedules(Long categoryId) {
+    public List<Schedule.CategoryResponse> getCategorySchedules(Long categoryId) {
 
-        List<Category.ScheduleResponse> scheduleResponses = new ArrayList<>();
-        scheduleResponses.add(new Category.ScheduleResponse());
+        List<Schedule> schedules = scheduleRepository.findAllByCategoryId(categoryId);
 
-        return scheduleResponses;
+        return schedules.stream()
+            .map(Schedule -> modelMapper.map(Schedule, Schedule.CategoryResponse.class))
+            .collect(Collectors.toList());
     }
 }

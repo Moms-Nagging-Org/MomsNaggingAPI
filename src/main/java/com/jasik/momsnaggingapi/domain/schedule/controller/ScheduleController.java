@@ -98,13 +98,9 @@ public class ScheduleController {
     @ApiResponse(responseCode = "204", description = "삭제 성공")
     public ResponseEntity<? extends BasicResponse> deleteSchedule(
         @Schema(description = "삭제할 스케줄 ID", example = "2", required = true) @Parameter(name = "scheduleId", description = "삭제할 스케줄 ID", in = ParameterIn.PATH) @PathVariable Long scheduleId) {
-        try {
-            scheduleService.deleteSchedule(scheduleId);
-            return ResponseEntity.noContent().build();
-        } catch (TaskRejectedException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("일치하는 스케줄이 없습니다. 스케줄 id를 확인해주세요."));
-        }
+        scheduleService.deleteSchedule(scheduleId);
+
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/array")
@@ -119,18 +115,18 @@ public class ScheduleController {
 
     @GetMapping("/categories")
     @Operation(summary = "추천 습관 종류 조회", description = "추천 습관의 종류를 조회합니다.")
-    public ResponseEntity<List<Category.Response>> getScheduleCategories() {
+    public ResponseEntity<? extends BasicResponse> getScheduleCategories() {
         List<Category.Response> result = scheduleService.getCategories();
 
-        return ResponseEntity.ok().body(result);
+        return ResponseEntity.ok().body(new CommonResponse<>(result));
     }
 
     @GetMapping("/categories/{categoryId}")
     @Operation(summary = "추천 습관 리스트 조회", description = "추천 습관을 조회합니다.")
-    public ResponseEntity<List<Category.ScheduleResponse>> getScheduleCategories(
-        @Schema(description = "조회할 습관 종류 ID", example = "2", required = true) @Parameter(name = "categoryId", description = "조회할 습관 종류 ID", in = ParameterIn.PATH) @PathVariable Long categoryId) {
-        List<Category.ScheduleResponse> result = scheduleService.getCategorySchedules(categoryId);
+    public ResponseEntity<? extends BasicResponse> getScheduleCategories(
+        @Schema(description = "조회할 추천 습관 종류 ID", example = "2", required = true) @Parameter(name = "categoryId", description = "조회할 습관 종류 ID", in = ParameterIn.PATH) @PathVariable Long categoryId) {
+        List<Schedule.CategoryResponse> result = scheduleService.getCategorySchedules(categoryId);
 
-        return ResponseEntity.ok().body(result);
+        return ResponseEntity.ok().body(new CommonResponse<>(result));
     }
 }
