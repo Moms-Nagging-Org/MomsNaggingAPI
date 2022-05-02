@@ -4,6 +4,7 @@ import com.jasik.momsnaggingapi.domain.common.BaseTime;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -12,6 +13,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
+import jdk.vm.ci.meta.Local;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -59,7 +61,7 @@ public class Schedule extends BaseTime {
     @Column(nullable = false)
     private LocalDate scheduleDate;
 
-    private LocalDateTime alarmTime;
+    private LocalTime alarmTime;
 //    private LocalDateTime routineEndDate;
 
     @Column(columnDefinition = "boolean default false", name = "is_done")
@@ -87,34 +89,45 @@ public class Schedule extends BaseTime {
     @Builder
     public Schedule(Long userId, Long originalId, Long categoryId, int seqNumber, int goalCount,
         int doneCount, String scheduleName, String scheduleTime, LocalDate scheduleDate,
-        LocalDateTime alarmTime, boolean done,
+        LocalTime alarmTime, boolean done,
 //                    LocalDateTime routineEndDate,
         boolean mon, boolean tue, boolean wed, boolean thu, boolean fri, boolean sat, boolean sun) {
         this.userId = userId;
         this.originalId = originalId;
         this.categoryId = categoryId;
         this.seqNumber = seqNumber;
-        this.scheduleName = scheduleName;
-        this.scheduleTime = scheduleTime;
-        this.scheduleDate = scheduleDate;
-        this.alarmTime = alarmTime;
-//        this.routineEndDate = routineEndDate;
+        this.scheduleName = scheduleName;   // 수정가능 -> 이후 전부 변경 -> update all -> index 유지
+        this.scheduleTime = scheduleTime;   // 수정가능 -> 이후 전부 변경 -> update all -> index 유지
+        this.scheduleDate = scheduleDate;   // 수정가능 -> 타겟만 변경 -> update
+        this.alarmTime = alarmTime;   // 수정가능 -> 이후 전부 변경 -> update all -> index 유지
         this.done = done;
-        this.goalCount = goalCount;
+        this.goalCount = goalCount;   // 수정가능 ->-> 보류
         this.doneCount = doneCount;
-        this.mon = mon;
-        this.tue = tue;
-        this.wed = wed;
-        this.thu = thu;
-        this.fri = fri;
-        this.sat = sat;
-        this.sun = sun;
+        this.mon = mon;   // 수정가능 -> 이후 전부 변경 -> delete -> create
+        this.tue = tue;   // 수정가능 -> 이후 전부 변경 -> delete -> create
+        this.wed = wed;   // 수정가능 -> 이후 전부 변경 -> delete -> create
+        this.thu = thu;   // 수정가능 -> 이후 전부 변경 -> delete -> create
+        this.fri = fri;   // 수정가능 -> 이후 전부 변경 -> delete -> create
+        this.sat = sat;   // 수정가능 -> 이후 전부 변경 -> delete -> create
+        this.sun = sun;   // 수정가능 -> 이후 전부 변경 -> delete -> create
     }
 
-    public void initOriginalId(Long scheduleId) {
-        originalId = scheduleId;
+    public void initOriginalId() {
+        originalId = id;
     }
 
+    public void initScheduleDate(LocalDate nextDate) { scheduleDate = nextDate; }
+
+    public boolean plusDoneCount() {
+        doneCount += 1;
+        return doneCount >= goalCount;
+    }
+
+    public void initNextSchedule(){
+        id = null;
+        scheduleDate = scheduleDate.plusDays(1);
+        done = false;
+    }
     // TODO: ModelMapper에서 DTO로 넘겨주고 싶음.
 //    public ScheduleType getType(){
 //        if (goalCount > 0 | mon | tue | wed | thu | fri | sat | sun){
@@ -162,8 +175,8 @@ public class Schedule extends BaseTime {
         private LocalDate scheduleDate;
 
         @Schema(description = "스케줄 알람 시간")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-        private LocalDateTime alarmTime;
+        @DateTimeFormat(pattern = "HH:mm:ss")
+        private LocalTime alarmTime;
 
         @Schema(description = "월요일 반복 여부", defaultValue = "false")
         private boolean mon;
@@ -190,7 +203,7 @@ public class Schedule extends BaseTime {
         private ScheduleType scheduleType;
     }
 
-//    @Schema(description = "단일 스케줄 조회 시 응답 클래스")
+    //    @Schema(description = "단일 스케줄 조회 시 응답 클래스")
     @Getter
     @Setter
     @AllArgsConstructor
@@ -205,8 +218,8 @@ public class Schedule extends BaseTime {
         private String scheduleTime;
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         private LocalDate scheduleDate;
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-        private LocalDateTime alarmTime;
+        @DateTimeFormat(pattern = "HH:mm:ss")
+        private LocalTime alarmTime;
         private boolean done;
         private boolean mon;
         private boolean tue;
@@ -218,7 +231,7 @@ public class Schedule extends BaseTime {
         private ScheduleType scheduleType;
     }
 
-//    @Schema(description = "스케줄 리스트 조회 시 응답 클래스")
+    //    @Schema(description = "스케줄 리스트 조회 시 응답 클래스")
     @Getter
     @Setter
     @AllArgsConstructor
@@ -234,7 +247,7 @@ public class Schedule extends BaseTime {
 
     }
 
-//    @Schema(description = "추천 스케줄 리스트 조회 시 응답 클래스")
+    //    @Schema(description = "추천 스케줄 리스트 조회 시 응답 클래스")
     @Getter
     @Setter
     @AllArgsConstructor

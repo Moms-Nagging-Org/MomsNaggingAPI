@@ -80,7 +80,19 @@ public class ScheduleController {
     }
 
     @PatchMapping(value = "/{scheduleId}", consumes = "application/json-patch+json")
-    @Operation(summary = "할일/습관 수정", description = "할일 또는 습관 정보를 수정합니다. \n\nRFC6902 형식을 따릅니다.\n\nhttps://datatracker.ietf.org/doc/html/rfc6902")
+    @Operation(summary = "할일/습관 수정", description = "할일 또는 습관 정보를 수정합니다. \n\nRFC6902 형식을 따릅니다.\n\nhttps://datatracker.ietf.org/doc/html/rfc6902 \n\n "
+        + "[\n\n"
+        + "    {\n\n"
+        + "        \"op\": \"replace\",\n\n"
+        + "        \"path\": \"/name\",\n\n"
+        + "        \"value\": \"kildong\"\n\n"
+        + "    },\n\n"
+        + "    {\n\n"
+        + "        \"op\": \"replace\",\n\n"
+        + "        \"path\": \"/email\",\n\n"
+        + "        \"value\": \"kildong@test.com\"\n\n"
+        + "    }\n\n]"
+        )
     public ResponseEntity<? extends BasicResponse> patchSchedule(
         @Schema(example = "2", required = true) @Parameter(name = "scheduleId", description = "수정할 스케줄 ID", in = ParameterIn.PATH) @PathVariable Long scheduleId,
         @RequestBody JsonPatch jsonPatch) {
