@@ -3,10 +3,10 @@ package com.jasik.momsnaggingapi.domain.schedule.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jasik.momsnaggingapi.domain.schedule.Category;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
+import com.jasik.momsnaggingapi.domain.schedule.Schedule.Response;
 import com.jasik.momsnaggingapi.domain.schedule.repository.CategoryRepository;
 import com.jasik.momsnaggingapi.domain.schedule.repository.ScheduleRepository;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -17,6 +17,7 @@ import javax.json.JsonValue;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.BeanUtils;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,27 +39,24 @@ public class ScheduleService {
         Schedule schedule = scheduleRepository.save(modelMapper.map(dto, Schedule.class));
         // TODO : 생성 -> 업데이트 로직 개선사항 찾기 -> select last_insert_id()
         // 원본 ID 저장
-        Long originalId = schedule.getId();
-        schedule.initOriginalId(originalId);
+        schedule.initOriginalId();
         Schedule originSchedule = scheduleRepository.save(schedule);
 
         // 습관 스케줄 저장 로직
         if (originSchedule.getScheduleType() == Schedule.ScheduleType.ROUTINE) {
             // TODO: routine 생성 비동기 실행 -> interface로 구현하면 프록시 개별로 생성 됨,
-            createRoutine(originSchedule, dto);
+            createRoutine(originSchedule);
         }
+        // TODO: n회 반복 습관 -> 모든 주차의 첫날에 원본으로 생성 -> 수정 시 추적이 불가능함 -> 달성 실패한 주 이후로 생성 불가능 -> 모든 일자에 생성해버림 -> 목표 달성한 주차의 이후 습관 삭제(해당 주차의 모든 미수행 습관 삭제할 지) ->
 
         return modelMapper.map(originSchedule, Schedule.Response.class);
     }
 
     @Async
-    public void createRoutine(Schedule originSchedule, Schedule.Request dto) {
+    public void createRoutine(Schedule originSchedule) {
 
-        // 원본 스케줄의 날짜, 알람시간
+        // 원본 스케줄의 날짜
         LocalDate originScheduleDate = originSchedule.getScheduleDate();
-        Optional<LocalDateTime> originAlarmTime = Optional.ofNullable(
-            originSchedule.getAlarmTime());
-
         int dayOfWeekNumber = originScheduleDate.getDayOfWeek().getValue() - 1;
         boolean[] repeatDays = originSchedule.calculateRepeatDays();
         int nextDay = (7 - dayOfWeekNumber);
@@ -86,11 +84,9 @@ public class ScheduleService {
                     limitDateFlag = false;
                     break;
                 }
-                dto.setScheduleDate(nextScheduleDate);
-                originAlarmTime.ifPresent(
-                    localDateTime -> dto.setAlarmTime(localDateTime.plusDays(plusDays)));
-                Schedule nextSchedule = modelMapper.map(dto, Schedule.class);
-                nextSchedule.initOriginalId(originSchedule.getOriginalId());
+                Schedule nextSchedule = new Schedule();
+                BeanUtils.copyProperties(originSchedule, nextSchedule, "id", "scheduleDate");
+                nextSchedule.initScheduleDate(nextScheduleDate);
                 nextSchedules.add(nextSchedule);
                 log.info("비동기 1");
             }
@@ -121,27 +117,62 @@ public class ScheduleService {
     }
 
     @Transactional
-    public Schedule.Response putSchedule(Long scheduleId, JsonPatch jsonPatch) {
+    public Response putSchedule(Long scheduleId, JsonPatch jsonPatch) {
 
-        // 수행 완료 -> n회 반복 습관인 경우 별도 처리
-        // 아닌 경우
-        // 해당 스케줄의 원본이 같은 스케줄 모두 수정
-        // 반복 옵션 변경할 경우
-        // 이후 일정 모두 삭제 후 새로 생성, originId, index 등 나머지 값 유지
+        Long userId = 1L;
 
-        // 컬럼은?
-        Optional<Schedule> originalSchedule = scheduleRepository.findById(scheduleId);
-        if (originalSchedule.isPresent()){
-            // 해당 스케줄만 수정
-            Schedule modifiedSchedule = scheduleRepository.save(mergeSchedule(originalSchedule.get(), jsonPatch));
-
-            if (modifiedSchedule.getScheduleType() == Schedule.ScheduleType.ROUTINE) {
-
+        Optional<Schedule> optionalTargetSchedule = scheduleRepository.findById(scheduleId);
+        if (optionalTargetSchedule.isPresent()) {
+            Schedule targetSchedule = optionalTargetSchedule.get();
+            // 타겟 스케줄 변경사항 적용
+            Schedule modifiedSchedule = scheduleRepository.save(
+                mergeSchedule(targetSchedule, jsonPatch));
+            ArrayList<String> columnList = new ArrayList<>();
+            for (JsonValue i : jsonPatch.toJsonArray()) {
+                columnList.add(String.valueOf(i.asJsonObject().get("path")).replaceAll("\"", "").replaceAll("/", ""));
+            }
+//            if (columnList.contains("/done")) {
+//                boolean value = Boolean.parseBoolean(String.valueOf(i.asJsonObject().get("value")));
+//                // n회 반복 습관의 수행 완료 처리인 경우
+//                if ((value)
+//                    && (modifiedSchedule.getScheduleType() == ScheduleType.ROUTINE)
+//                    && (modifiedSchedule.getGoalCount() > 0)) {
+//                    Optional<Schedule> optionalOriginSchedule = scheduleRepository.findById(modifiedSchedule.getOriginalId());
+//                    if (optionalOriginSchedule.isPresent()) {
+//                        // 원본 스케줄
+//                        Schedule originSchedule = optionalOriginSchedule.get();
+//                        int originWeek = originSchedule.getScheduleDate().get(WeekFields.ISO.weekOfYear());
+//                        int targetWeek = modifiedSchedule.getScheduleDate().get(WeekFields.ISO.weekOfYear());
+//                        if (originWeek == targetWeek){
+//                            // 목표 미완 and 내일 주차 == 원본 주차
+//                            if (!originSchedule.plusDoneCount()
+//                                && modifiedSchedule.getScheduleDate().plusDays(1).get(WeekFields.ISO.weekOfYear()) == originWeek){
+//                                // 다음날 한개 더 생성
+//                                modifiedSchedule.initNextSchedule();
+//                                scheduleRepository.save(modifiedSchedule);
+//                            }
+//                        }
+            // 반복 옵션 수정이 포함된 경우 삭제 후 재 생성
+            if (columnList.contains("mon") || columnList.contains("tue") || columnList.contains(
+                "wed") || columnList.contains("thu") || columnList.contains("fri")
+                || columnList.contains("sat") || columnList.contains("sun")) {
+                scheduleRepository.deleteWithIdAfter(modifiedSchedule.getId(),
+                    modifiedSchedule.getUserId(), modifiedSchedule.getOriginalId());
+                modifiedSchedule.initOriginalId();
+                scheduleRepository.save(modifiedSchedule);
+                // TODO: aysnc
+                createRoutine(modifiedSchedule);
+            }
+            // 반복 옵션은 수정하지 않고 이름, 시간대, 알람시간 만 수정하는 경우 -> 이후 일정도 업데이트
+            else if (columnList.contains("scheduleName") || columnList.contains("scheduleTime")
+                || columnList.contains("alarmTime")) {
+                scheduleRepository.updateWithIdAfter(modifiedSchedule.getScheduleName(),
+                    modifiedSchedule.getScheduleTime(), modifiedSchedule.getAlarmTime(),
+                    modifiedSchedule.getId(), modifiedSchedule.getUserId(),
+                    modifiedSchedule.getOriginalId());
             }
             return modelMapper.map(modifiedSchedule, Schedule.Response.class);
-        }
-        else{
-            // TODO: NOT FOUND Exception 추가
+        } else {
             return null;
         }
     }
