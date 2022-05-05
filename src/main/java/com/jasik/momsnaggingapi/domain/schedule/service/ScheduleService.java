@@ -19,6 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +43,6 @@ public class ScheduleService {
         // 원본 ID 저장
         schedule.initOriginalId();
         Schedule originSchedule = scheduleRepository.save(schedule);
-
         // 습관 스케줄 저장 로직
         if (originSchedule.getScheduleType() == Schedule.ScheduleType.ROUTINE) {
             // TODO: routine 생성 비동기 실행 -> interface로 구현하면 프록시 개별로 생성 됨,
@@ -117,9 +118,10 @@ public class ScheduleService {
     }
 
     @Transactional
-    public Response putSchedule(Long scheduleId, JsonPatch jsonPatch) {
+    public Response patchSchedule(Long scheduleId, JsonPatch jsonPatch) {
 
         Long userId = 1L;
+
 
         Optional<Schedule> optionalTargetSchedule = scheduleRepository.findById(scheduleId);
         if (optionalTargetSchedule.isPresent()) {
@@ -163,7 +165,7 @@ public class ScheduleService {
                 // TODO: aysnc
                 createRoutine(modifiedSchedule);
             }
-            // 반복 옵션은 수정하지 않고 이름, 시간대, 알람시간 만 수정하는 경우 -> 이후 일정도 업데이트
+            // 반복 옵션은 수정하지 않고 이름, 시간대, 알람시간 만 수정하는 경우 -> 이후 스케줄도 업데이트
             else if (columnList.contains("scheduleName") || columnList.contains("scheduleTime")
                 || columnList.contains("alarmTime")) {
                 scheduleRepository.updateWithIdAfter(modifiedSchedule.getScheduleName(),

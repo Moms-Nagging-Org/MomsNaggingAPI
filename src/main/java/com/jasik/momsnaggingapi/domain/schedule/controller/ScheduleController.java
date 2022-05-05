@@ -96,7 +96,7 @@ public class ScheduleController {
     public ResponseEntity<? extends BasicResponse> patchSchedule(
         @Schema(example = "2", required = true) @Parameter(name = "scheduleId", description = "수정할 스케줄 ID", in = ParameterIn.PATH) @PathVariable Long scheduleId,
         @RequestBody JsonPatch jsonPatch) {
-        Schedule.Response result = scheduleService.putSchedule(scheduleId, jsonPatch);
+        Schedule.Response result = scheduleService.patchSchedule(scheduleId, jsonPatch);
 
         if (result == null) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
