@@ -29,6 +29,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 @NoArgsConstructor
 public class Schedule extends BaseTime {
 
+    
     @Id
     @GenericGenerator(name = "SequenceGenerator", strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator", parameters = {
         @Parameter(name = "sequence_name", value = "hibernate_sequence"),
