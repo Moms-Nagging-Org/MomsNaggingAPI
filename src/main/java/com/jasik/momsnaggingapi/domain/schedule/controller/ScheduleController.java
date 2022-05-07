@@ -24,7 +24,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/schedules")
 @RequiredArgsConstructor
-@Tag(name = "ScheduleAPI !!!", description = "할일/습관 API")
+@Tag(name = "Schedule API !!!", description = "할일/습관 API")
 public class ScheduleController {
 
     private final ScheduleService scheduleService;
@@ -44,12 +44,10 @@ public class ScheduleController {
     @GetMapping("")
     @Operation(summary = "할일/습관 목록 조회", description = "해당 일자의 모든 스케줄을 조회합니다.")
     public ResponseEntity<List<Schedule.ScheduleListResponse>> getSchedules(
-            @Schema(description = "사용자 ID", example = "1", required = true)
-            @Parameter(name = "userId", description = "조회할 사용자 ID", in = ParameterIn.QUERY) @RequestParam Long userId,
             @Schema(description = "일자", example = "2022-04-16", required = true)
-            @Parameter(name = "scheduleDate", description = "조회 일자", in = ParameterIn.QUERY) @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate scheduleDate
+            @Parameter(name = "retrieveDate", description = "조회 일자", in = ParameterIn.QUERY) @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate retrieveDate
     ) {
-        List<Schedule.ScheduleListResponse> result = scheduleService.getSchedules(userId, scheduleDate);
+        List<Schedule.ScheduleListResponse> result = scheduleService.getSchedules(retrieveDate);
 
         return ResponseEntity.ok().body(result);
     }
