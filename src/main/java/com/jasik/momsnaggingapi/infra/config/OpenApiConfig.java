@@ -1,5 +1,6 @@
 package com.jasik.momsnaggingapi.infra.config;
 
+import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
