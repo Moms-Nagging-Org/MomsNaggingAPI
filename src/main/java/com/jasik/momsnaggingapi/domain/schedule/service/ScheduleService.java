@@ -3,26 +3,24 @@ package com.jasik.momsnaggingapi.domain.schedule.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jasik.momsnaggingapi.domain.schedule.Category;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
-import com.jasik.momsnaggingapi.domain.schedule.Schedule.Response;
 import com.jasik.momsnaggingapi.domain.schedule.repository.CategoryRepository;
 import com.jasik.momsnaggingapi.domain.schedule.repository.ScheduleRepository;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import javax.json.JsonPatch;
-import javax.json.JsonStructure;
-import javax.json.JsonValue;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.json.JsonPatch;
+import javax.json.JsonStructure;
+import javax.json.JsonValue;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -35,7 +33,7 @@ public class ScheduleService {
     private final ObjectMapper objectMapper;
 
     @Transactional
-    public Schedule.Response postSchedule(Schedule.Request dto) {
+    public Schedule.ScheduleResponse postSchedule(Schedule.ScheduleRequest dto) {
 
         // 스케줄 원본 저장
         Schedule schedule = scheduleRepository.save(modelMapper.map(dto, Schedule.class));
@@ -50,7 +48,7 @@ public class ScheduleService {
         }
         // TODO: n회 반복 습관 -> 모든 주차의 첫날에 원본으로 생성 -> 수정 시 추적이 불가능함 -> 달성 실패한 주 이후로 생성 불가능 -> 모든 일자에 생성해버림 -> 목표 달성한 주차의 이후 습관 삭제(해당 주차의 모든 미수행 습관 삭제할 지) ->
 
-        return modelMapper.map(originSchedule, Schedule.Response.class);
+        return modelMapper.map(originSchedule, Schedule.ScheduleResponse.class);
     }
 
     @Async
@@ -98,27 +96,27 @@ public class ScheduleService {
     }
 
     @Transactional(readOnly = true)
-    public List<Schedule.ListResponse> getSchedules(Long userId, LocalDate scheduleDate) {
+    public List<Schedule.ScheduleListResponse> getSchedules(Long userId, LocalDate scheduleDate) {
 
 //        log.error("test error");
 //        log.info("test info");
         List<Schedule> schedules = scheduleRepository.findAllByScheduleDateAndUserId(scheduleDate,
-            userId);
+                userId);
 
         return schedules.stream()
-            .map(Schedule -> modelMapper.map(Schedule, Schedule.ListResponse.class))
-            .collect(Collectors.toList());
+                .map(Schedule -> modelMapper.map(Schedule, com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleListResponse.class))
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public Schedule.Response getSchedule(Long scheduleId) {
+    public Schedule.ScheduleResponse getSchedule(Long scheduleId) {
 
         Optional<Schedule> schedule = scheduleRepository.findById(scheduleId);
-        return schedule.map(value -> modelMapper.map(value, Schedule.Response.class)).orElse(null);
+        return schedule.map(value -> modelMapper.map(value, Schedule.ScheduleResponse.class)).orElse(null);
     }
 
     @Transactional
-    public Response patchSchedule(Long scheduleId, JsonPatch jsonPatch) {
+    public Schedule.ScheduleResponse patchSchedule(Long scheduleId, JsonPatch jsonPatch) {
 
         Long userId = 1L;
 
@@ -128,7 +126,7 @@ public class ScheduleService {
             Schedule targetSchedule = optionalTargetSchedule.get();
             // 타겟 스케줄 변경사항 적용
             Schedule modifiedSchedule = scheduleRepository.save(
-                mergeSchedule(targetSchedule, jsonPatch));
+                    mergeSchedule(targetSchedule, jsonPatch));
             ArrayList<String> columnList = new ArrayList<>();
             for (JsonValue i : jsonPatch.toJsonArray()) {
                 columnList.add(String.valueOf(i.asJsonObject().get("path")).replaceAll("\"", "").replaceAll("/", ""));
@@ -173,7 +171,7 @@ public class ScheduleService {
                     modifiedSchedule.getId(), modifiedSchedule.getUserId(),
                     modifiedSchedule.getOriginalId());
             }
-            return modelMapper.map(modifiedSchedule, Schedule.Response.class);
+            return modelMapper.map(modifiedSchedule, Schedule.ScheduleResponse.class);
         } else {
             return null;
         }
@@ -197,31 +195,45 @@ public class ScheduleService {
     }
 
     @Transactional
-    public List<Schedule.ListResponse> postSchedulesArray(List<Long> scheduleArrayRequest) {
+    public List<Schedule.ScheduleListResponse> postSchedulesArray(List<Long> scheduleArrayRequest) {
 
-        List<Schedule.ListResponse> scheduleAllResponses = new ArrayList<>();
-        scheduleAllResponses.add(new Schedule.ListResponse());
+        List<Schedule.ScheduleListResponse> scheduleAllResponses = new ArrayList<>();
+        scheduleAllResponses.add(new Schedule.ScheduleListResponse());
 
         return scheduleAllResponses;
     }
 
+    @Transactional
+    public Category.CategoryResponse postCategory(Category.CategoryRequest dto) {
+
+
+        Optional<Category> nullCategory = categoryRepository.findByCategoryName(dto.getCategoryName());
+        if (nullCategory.isPresent()) return null;
+        Long userId = 1L;
+        Category category = modelMapper.map(dto, Category.class);
+        category.initUserId(userId);
+        Category newCategory = categoryRepository.save(category);
+
+        return modelMapper.map(newCategory, Category.CategoryResponse.class);
+    }
+
     @Transactional(readOnly = true)
-    public List<Category.Response> getCategories() {
+    public List<Category.CategoryResponse> getCategories() {
 
         List<Category> categories = categoryRepository.findAllByUsed(true);
 
         return categories.stream()
-            .map(Category -> modelMapper.map(Category, Category.Response.class))
-            .collect(Collectors.toList());
+                .map(Category -> modelMapper.map(Category, com.jasik.momsnaggingapi.domain.schedule.Category.CategoryResponse.class))
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public List<Schedule.CategoryResponse> getCategorySchedules(Long categoryId) {
+    public List<Schedule.CategoryListResponse> getCategorySchedules(Long categoryId) {
 
         List<Schedule> schedules = scheduleRepository.findAllByCategoryId(categoryId);
 
         return schedules.stream()
-            .map(Schedule -> modelMapper.map(Schedule, Schedule.CategoryResponse.class))
-            .collect(Collectors.toList());
+                .map(Schedule -> modelMapper.map(Schedule, com.jasik.momsnaggingapi.domain.schedule.Schedule.CategoryListResponse.class))
+                .collect(Collectors.toList());
     }
 }

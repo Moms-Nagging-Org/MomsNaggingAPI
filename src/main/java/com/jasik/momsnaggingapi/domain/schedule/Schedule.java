@@ -103,20 +103,22 @@ public class Schedule extends BaseTime {
     }
 
     public void initOriginalId() {
-        originalId = id;
+        this.originalId = this.id;
     }
 
-    public void initScheduleDate(LocalDate nextDate) { scheduleDate = nextDate; }
+    public void initScheduleDate(LocalDate nextDate) {
+        this.scheduleDate = nextDate;
+    }
 
     public boolean plusDoneCount() {
-        doneCount += 1;
-        return doneCount >= goalCount;
+        this.doneCount += 1;
+        return this.doneCount >= this.goalCount;
     }
 
-    public void initNextSchedule(){
-        id = null;
-        scheduleDate = scheduleDate.plusDays(1);
-        done = false;
+    public void initNextSchedule() {
+        this.id = null;
+        this.scheduleDate = this.scheduleDate.plusDays(1);
+        this.done = false;
     }
     // TODO: ModelMapper에서 DTO로 넘겨주고 싶음.
 //    public ScheduleType getType(){
@@ -143,7 +145,7 @@ public class Schedule extends BaseTime {
     @Setter
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class Request {
+    public static class ScheduleRequest {
 
         @Schema(description = "사용자 ID", defaultValue = "1")
         @NotNull
@@ -198,7 +200,7 @@ public class Schedule extends BaseTime {
     @Setter
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class Response {
+    public static class ScheduleResponse {
 
         @Schema(description = "스케줄 ID", defaultValue = "2")
         private Long id;
@@ -243,7 +245,7 @@ public class Schedule extends BaseTime {
     @Setter
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class ListResponse {
+    public static class ScheduleListResponse {
 
         @Schema(description = "스케줄 ID", defaultValue = "2")
         private Long id;
@@ -266,7 +268,7 @@ public class Schedule extends BaseTime {
     @Setter
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class CategoryResponse {
+    public static class CategoryListResponse {
 
         @Schema(description = "스케줄 ID", defaultValue = "2")
         private Long id;
