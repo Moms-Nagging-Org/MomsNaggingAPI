@@ -2,13 +2,9 @@ package com.jasik.momsnaggingapi.domain.schedule;
 
 import com.jasik.momsnaggingapi.domain.common.BaseTime;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
-import lombok.Setter;
 
 @Entity
 @Getter
@@ -39,7 +35,9 @@ public class Category extends BaseTime {
     @NoArgsConstructor
     public static class Response {
 
+        @Schema(description = "추천 종류 id", defaultValue = "1")
         private Long id;
+        @Schema(description = "추천 종류 이름", defaultValue = "운동하기")
         private String categoryName;
     }
 

@@ -2,26 +2,15 @@ package com.jasik.momsnaggingapi.domain.schedule;
 
 import com.jasik.momsnaggingapi.domain.common.BaseTime;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.validation.constraints.NotNull;
-import jdk.vm.ci.meta.Local;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.springframework.format.annotation.DateTimeFormat;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Entity
 @Getter
@@ -204,58 +193,84 @@ public class Schedule extends BaseTime {
         private ScheduleType scheduleType;
     }
 
-    //    @Schema(description = "단일 스케줄 조회 시 응답 클래스")
+    @Schema(description = "단일 스케줄 조회 시 응답 클래스")
     @Getter
     @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     public static class Response {
 
+        @Schema(description = "스케줄 ID", defaultValue = "2")
         private Long id;
+        @Schema(description = "사용자 ID", defaultValue = "1")
         private Long userId;
+        @Schema(description = "n회 습관의 수행 목표 수", defaultValue = "0")
         private int goalCount;
+        @Schema(description = "n회 습관의 수행 완료 수", defaultValue = "0")
         private int doneCount;
+        @Schema(description = "스케줄 이름", defaultValue = "술 마시기")
         private String scheduleName;
+        @Schema(description = "스케줄 수행 시간", defaultValue = "아무때나")
         private String scheduleTime;
+        @Schema(description = "스케줄 수행 일자")
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         private LocalDate scheduleDate;
+        @Schema(description = "스케줄 알람 시간")
         @DateTimeFormat(pattern = "HH:mm:ss")
         private LocalTime alarmTime;
+        @Schema(description = "스케줄 수행 여부", defaultValue = "false")
         private boolean done;
+        @Schema(description = "월요일 반복 여부", defaultValue = "false")
         private boolean mon;
+        @Schema(description = "화요일 반복 여부", defaultValue = "false")
         private boolean tue;
+        @Schema(description = "수요일 반복 여부", defaultValue = "false")
         private boolean wed;
+        @Schema(description = "목요일 반복 여부", defaultValue = "false")
         private boolean thu;
+        @Schema(description = "금요일 반복 여부", defaultValue = "false")
         private boolean fri;
+        @Schema(description = "토요일 반복 여부", defaultValue = "false")
         private boolean sat;
+        @Schema(description = "일요일 반복 여부", defaultValue = "false")
         private boolean sun;
+        @Schema(description = "스케줄 유형(할일/습관)", defaultValue = "todo")
         private ScheduleType scheduleType;
     }
 
-    //    @Schema(description = "스케줄 리스트 조회 시 응답 클래스")
+    @Schema(description = "스케줄 리스트 조회 시 응답 클래스")
     @Getter
     @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     public static class ListResponse {
 
+        @Schema(description = "스케줄 ID", defaultValue = "2")
         private Long id;
+        @Schema(description = "스케줄 정렬 순서", defaultValue = "0")
         private int seqNumber;
+        @Schema(description = "스케줄 이름", defaultValue = "술 마시기")
         private String scheduleName;
+        @Schema(description = "스케줄 수행 시간", defaultValue = "아무때나")
         private String scheduleTime;
+        @Schema(description = "수행 완료 여부", defaultValue = "false", allowableValues = {"true",
+                "false"})
         private boolean isDone;
+        @Schema(description = "스케줄 유형(할일/습관)", defaultValue = "todo")
         private ScheduleType scheduleType;
 
     }
 
-    //    @Schema(description = "추천 스케줄 리스트 조회 시 응답 클래스")
+    @Schema(description = "추천 스케줄 리스트 조회 시 응답 클래스")
     @Getter
     @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     public static class CategoryResponse {
 
+        @Schema(description = "스케줄 ID", defaultValue = "2")
         private Long id;
+        @Schema(description = "스케줄 이름", defaultValue = "술 마시기")
         private String scheduleName;
     }
 }
