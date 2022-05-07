@@ -24,6 +24,7 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .components(new Components())
                 .addServersItem(new Server().url("https://api.momsnagging.ml"))
+                .addServersItem(new Server().url("http://localhost"))
                 .info(info);
     }
 
