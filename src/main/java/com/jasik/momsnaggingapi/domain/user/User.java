@@ -76,10 +76,14 @@ public class User extends BaseTime {
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class UserRequest {
-        private Long id;
-        private String email;
+    public static class AuthenticateRequest {
         private String provider;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class UpdateRequest {
         private String nickName;
         private String personalId;
         private int naggingLevel;
@@ -91,5 +95,4 @@ public class User extends BaseTime {
         private boolean allowWeeklyNotice;
         private boolean allowOtherNotice;
     }
-
 }

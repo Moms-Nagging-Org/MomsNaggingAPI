@@ -19,14 +19,14 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping("")
-    @Operation(summary = "회원가입/로그인", description = "유저 정보를 전송해 회원가입/로그인 합니다. 유저가 존재한다면 로그인, 유저가 없다면 회원가입을 수행합니다. (new 값으로 구분)")
-    public ResponseEntity<Map<String, String>> createUser(@RequestBody User.UserRequest request) {
+    @PostMapping("/authentication")
+    @Operation(summary = "회원가입/로그인", description = "유저 정보를 전송해 회원가입/로그인 합니다. 유저가 있다면 로그인을, 없다면 회원가입을 진행합니다.")
+    public ResponseEntity<Map<String, String>> authenticateUser(@RequestBody User.AuthenticateRequest request) {
 //        User.UserResponse response = userService.create(request);
         Map<String, String> response = new HashMap<>(); // TODO: DTO 생성 예정
         response.put("id", "user id");
         response.put("token", "token");
-        response.put("new", "true");
+        response.put("refreshToken", "refreshToken");
         return ResponseEntity.ok().body(response);
     }
 
@@ -39,7 +39,7 @@ public class UserController {
 
     @PutMapping("/{userId}")
     @Operation(summary = "회원 정보 수정", description = "param 으로 유저 id를, body 로 수정할 정보를 보내 유저 정보를 수정합니다.")
-    public ResponseEntity<User.UserResponse> updateUser(@RequestParam String userId, @RequestBody User.UserRequest request) {
+    public ResponseEntity<User.UserResponse> updateUser(@RequestParam String userId, @RequestBody User.UpdateRequest request) {
         User.UserResponse response = new User.UserResponse();
         return ResponseEntity.ok().body(response);
     }
