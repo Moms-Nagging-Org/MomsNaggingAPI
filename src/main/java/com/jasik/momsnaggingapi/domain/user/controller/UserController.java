@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -21,11 +22,25 @@ public class UserController {
 
     @PostMapping("/authentication/{provider}")
     @Operation(summary = "회원가입/로그인", description = "유저 정보를 전송해 회원가입/로그인 합니다. 유저가 있다면 로그인을, 없다면 회원가입을 진행합니다.")
-    public ResponseEntity<Map<String, String>> authenticateUser(@PathVariable String provider, @RequestParam String code, @RequestParam String email) {
-//        User.UserResponse response = userService.create(request);
+    public ResponseEntity<Map<String, String>> authenticateUser(@PathVariable String provider, @RequestParam String code, @RequestParam(required = false) String email) {
+        // TODO: email exist 확인
+        Map<String, String> response = new HashMap<>();
 
-        Map<String, String> response = new HashMap<>(); // TODO: DTO 생성 예정
-        response.put("token", "token");
+        Optional<User> existUser = userService.existUser(code);
+        if(existUser.isPresent()) {
+            User.AuthRequest req = new User.AuthRequest();
+            req.setCode(code);
+            req.setProvider(provider);
+            response.put("token", userService.loginUser(req).getToken());
+        } else {
+            User.CreateRequest req = new User.CreateRequest();
+            req.setCode(code);
+            req.setProvider(provider);
+            req.setEmail(email);
+            User.CreateResponse res = userService.registerUser(req);
+            response.put("provider", res.getProvider());
+            response.put("code", res.getCode());
+        }
         return ResponseEntity.ok().body(response);
     }
 
