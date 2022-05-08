@@ -19,14 +19,13 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping("/authentication")
+    @PostMapping("/authentication/{provider}")
     @Operation(summary = "회원가입/로그인", description = "유저 정보를 전송해 회원가입/로그인 합니다. 유저가 있다면 로그인을, 없다면 회원가입을 진행합니다.")
-    public ResponseEntity<Map<String, String>> authenticateUser(@RequestBody User.AuthenticateRequest request) {
+    public ResponseEntity<Map<String, String>> authenticateUser(@PathVariable String provider, @RequestParam String code, @RequestParam String email) {
 //        User.UserResponse response = userService.create(request);
+
         Map<String, String> response = new HashMap<>(); // TODO: DTO 생성 예정
-        response.put("id", "user id");
         response.put("token", "token");
-        response.put("refreshToken", "refreshToken");
         return ResponseEntity.ok().body(response);
     }
 
