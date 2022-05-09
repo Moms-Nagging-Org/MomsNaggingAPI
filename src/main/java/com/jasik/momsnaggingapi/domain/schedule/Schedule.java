@@ -34,6 +34,8 @@ public class Schedule extends BaseTime {
 
     private Long categoryId;
 
+    private Long naggingId;
+
     @Column(columnDefinition = "int default 0")
     private int seqNumber;
 
@@ -81,7 +83,8 @@ public class Schedule extends BaseTime {
         int doneCount, String scheduleName, String scheduleTime, LocalDate scheduleDate,
         LocalTime alarmTime, boolean done,
 //                    LocalDateTime routineEndDate,
-        boolean mon, boolean tue, boolean wed, boolean thu, boolean fri, boolean sat, boolean sun) {
+        boolean mon, boolean tue, boolean wed, boolean thu, boolean fri, boolean sat, boolean sun,
+        long naggingId) {
         this.userId = userId;
         this.originalId = originalId;
         this.categoryId = categoryId;
@@ -100,6 +103,7 @@ public class Schedule extends BaseTime {
         this.fri = fri;   // 수정가능 -> 이후 전부 변경 -> delete -> create
         this.sat = sat;   // 수정가능 -> 이후 전부 변경 -> delete -> create
         this.sun = sun;   // 수정가능 -> 이후 전부 변경 -> delete -> create
+        this.naggingId = naggingId;
     }
 
     public void initOriginalId() {
@@ -214,7 +218,7 @@ public class Schedule extends BaseTime {
         private String scheduleName;
         @Schema(description = "스케줄 수행 시간", defaultValue = "아무때나")
         private String scheduleTime;
-        @Schema(description = "스케줄 수행 일자")
+        @Schema(description = "스케줄 수행 일자", defaultValue = "2022-05-08")
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         private LocalDate scheduleDate;
         @Schema(description = "스케줄 알람 시간")

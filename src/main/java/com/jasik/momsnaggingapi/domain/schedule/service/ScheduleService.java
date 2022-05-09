@@ -35,6 +35,7 @@ public class ScheduleService {
     @Transactional
     public Schedule.ScheduleResponse postSchedule(Schedule.ScheduleRequest dto) {
 
+        // TODO: 하루 최대 생성갯수 조건 추가
         // 스케줄 원본 저장
         Schedule schedule = scheduleRepository.save(modelMapper.map(dto, Schedule.class));
         // TODO : 생성 -> 업데이트 로직 개선사항 찾기 -> select last_insert_id()
