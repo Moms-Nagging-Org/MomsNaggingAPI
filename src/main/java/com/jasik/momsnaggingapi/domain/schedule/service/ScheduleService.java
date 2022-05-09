@@ -95,10 +95,12 @@ public class ScheduleService {
     }
 
     @Transactional(readOnly = true)
-    public List<Schedule.ScheduleListResponse> getSchedules(Long userId, LocalDate scheduleDate) {
+    public List<Schedule.ScheduleListResponse> getSchedules(LocalDate scheduleDate) {
 
 //        log.error("test error");
 //        log.info("test info");
+        Long userId = 1L;
+
         List<Schedule> schedules = scheduleRepository.findAllByScheduleDateAndUserId(scheduleDate,
                 userId);
 

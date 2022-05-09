@@ -31,7 +31,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 @RestController
 @RequestMapping("/api/v1/schedules")
 @RequiredArgsConstructor
-@Tag(name = "ScheduleAPI !!!", description = "할일/습관 API")
+@Tag(name = "Schedule API !!!", description = "할일/습관 API")
 public class ScheduleController {
 
     private final ScheduleService scheduleService;
@@ -56,7 +56,7 @@ public class ScheduleController {
         @Schema(description = "일자", example = "2022-04-16", required = true)
         @Parameter(name = "scheduleDate", description = "조회 일자", in = ParameterIn.QUERY) @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate scheduleDate
     ) {
-        List<Schedule.ScheduleListResponse> result = scheduleService.getSchedules(userId, scheduleDate);
+        List<Schedule.ScheduleListResponse> result = scheduleService.getSchedules(retrieveDate);
 
         return ResponseEntity.ok().body(result);
     }

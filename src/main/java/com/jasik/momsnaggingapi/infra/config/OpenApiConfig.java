@@ -1,5 +1,6 @@
 package com.jasik.momsnaggingapi.infra.config;
 
+import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +23,8 @@ public class OpenApiConfig {
 
         return new OpenAPI()
                 .components(new Components())
+                .addServersItem(new Server().url("https://api.momsnagging.ml"))
+                .addServersItem(new Server().url("http://localhost"))
                 .info(info);
     }
 
