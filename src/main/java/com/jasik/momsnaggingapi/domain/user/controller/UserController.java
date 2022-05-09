@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -49,7 +48,6 @@ public class UserController {
 
             return ResponseEntity.ok().body(res);
         }
-
     }
 
     @GetMapping("/{userId}")
@@ -61,7 +59,7 @@ public class UserController {
 
     @PutMapping("/{userId}")
     @Operation(summary = "회원 정보 수정", description = "param 으로 유저 id를, body 로 수정할 정보를 보내 유저 정보를 수정합니다.")
-    public ResponseEntity<User.UserResponse> updateUser(@RequestParam String userId, @RequestBody User.UpdateRequest request) {
+    public ResponseEntity<User.UserResponse> updateUser(@RequestParam String userId, @RequestBody User.UserRequest request) {
         User.UserResponse response = new User.UserResponse();
         return ResponseEntity.ok().body(response);
     }
