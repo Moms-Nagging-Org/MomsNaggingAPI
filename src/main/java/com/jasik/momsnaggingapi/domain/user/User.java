@@ -55,8 +55,8 @@ public class User extends BaseTime {
         this.statusMsg = statusMsg;
     }
 
-    @Getter
-    @Setter
+    @Schema(description = "사용자 조회 시 응답 클래스")
+    @Getter @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     public static class UserResponse {
@@ -75,37 +75,47 @@ public class User extends BaseTime {
         private boolean allowOtherNotice;
     }
 
-    @Getter
-    @Setter
+    @Schema(description = "로그인 요청 클래스")
+    @Getter @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     public static class AuthRequest {
+        @Schema(description = "소셜로그인 플랫폼")
         private String provider;
+        @Schema(description = "플랫폼 인증 코드")
         private String code;
     }
 
+    @Schema(description = "로그인 응답 클래스")
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
     public static class AuthResponse {
+        @Schema(description = "JWT 토큰")
         private String token;
     }
 
-    @Getter
-    @Setter
+    @Schema(description = "회원가입 요청 클래스")
+    @Getter @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     public static class CreateRequest {
+        @Schema(description = "소셜로그인 플랫폼")
         private String provider;
+        @Schema(description = "사용자 이메일")
         private String email;
+        @Schema(description = "플랫폼 인증 코드")
         private String code;
     }
 
+    @Schema(description = "회원가입 응답 클래스")
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
     public static class CreateResponse {
+        @Schema(description = "소셜로그인 플랫폼")
         private String provider;
+        @Schema(description = "플랫폼 인증 코드")
         private String code;
     }
 

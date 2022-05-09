@@ -3,6 +3,7 @@ package com.jasik.momsnaggingapi.domain.user.controller;
 import com.jasik.momsnaggingapi.domain.user.User;
 import com.jasik.momsnaggingapi.domain.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,10 @@ public class UserController {
 
     @PostMapping("/authentication/{provider}")
     @Operation(summary = "회원가입/로그인", description = "유저 정보를 전송해 회원가입/로그인 합니다. 유저가 있다면 로그인을, 없다면 회원가입을 진행합니다.")
-    public ResponseEntity<Map<String, String>> authenticateUser(@PathVariable String provider, @RequestParam String code, @RequestParam(required = false) String email) {
+    public ResponseEntity<Map<String, String>> authenticateUser(
+            @Parameter(description = "소셜로그인 플랫폼") @PathVariable String provider,
+            @Parameter(description = "플랫폼 코드") @RequestParam String code,
+            @Parameter(description = "유저 이메일(회원가입시 필수 전달)") @RequestParam(required = false) String email) {
         // TODO: email exist 확인
         Map<String, String> response = new HashMap<>();
 
