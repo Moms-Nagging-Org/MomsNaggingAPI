@@ -22,6 +22,7 @@ public class User extends BaseTime {
     private String nickName;
     private String email;
     private String provider;
+    private String providerCode;
     private String personalId;
     private String profileImage;
 
@@ -43,11 +44,12 @@ public class User extends BaseTime {
 
     @Builder
     public User(int naggingLevel, String nickName, String email,
-                String provider, String personalId, String profileImage, String statusMsg) {
+                String provider, String providerCode, String personalId, String profileImage, String statusMsg) {
         this.naggingLevel = naggingLevel;
         this.nickName = nickName;
         this.email = email;
         this.provider = provider;
+        this.providerCode = providerCode;
         this.personalId = personalId;
         this.profileImage = profileImage;
         this.statusMsg = statusMsg;
@@ -74,12 +76,43 @@ public class User extends BaseTime {
     }
 
     @Getter
+    @Setter
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class UserRequest {
-        private Long id;
-        private String email;
+    public static class AuthRequest {
         private String provider;
+        private String code;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class AuthResponse {
+        private String token;
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class CreateRequest {
+        private String provider;
+        private String email;
+        private String code;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class CreateResponse {
+        private String provider;
+        private String code;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class UpdateRequest {
         private String nickName;
         private String personalId;
         private int naggingLevel;
@@ -91,5 +124,4 @@ public class User extends BaseTime {
         private boolean allowWeeklyNotice;
         private boolean allowOtherNotice;
     }
-
 }
