@@ -24,6 +24,7 @@ public class User extends BaseTime {
     private String provider;
     private String providerCode;
     private String personalId;
+    private String device;
     private String profileImage;
 
     @Column(columnDefinition = "varchar(30) default 'MEMBER'")
@@ -44,15 +45,14 @@ public class User extends BaseTime {
 
     @Builder
     public User(int naggingLevel, String nickName, String email,
-                String provider, String providerCode, String personalId, String profileImage, String statusMsg) {
+                String provider, String providerCode, String personalId, String device) {
         this.naggingLevel = naggingLevel;
         this.nickName = nickName;
         this.email = email;
         this.provider = provider;
         this.providerCode = providerCode;
         this.personalId = personalId;
-        this.profileImage = profileImage;
-        this.statusMsg = statusMsg;
+        this.device = device;
     }
 
     @Schema(description = "사용자 조회 시 응답 클래스")
@@ -66,8 +66,7 @@ public class User extends BaseTime {
         private String nickName;
         private String personalId;
         private int naggingLevel;
-        private String statusMsg;
-        private String profileImage;
+        private String device;
         private boolean allowGeneralNotice;
         private boolean allowTodoNotice;
         private boolean allowRoutineNotice;
@@ -137,10 +136,7 @@ public class User extends BaseTime {
     @NoArgsConstructor
     public static class UpdateRequest {
         private String nickName;
-        private String personalId;
         private int naggingLevel;
-        private String statusMsg;
-        private String profileImage;
         private boolean allowGeneralNotice;
         private boolean allowTodoNotice;
         private boolean allowRoutineNotice;
