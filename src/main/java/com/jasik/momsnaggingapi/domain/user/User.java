@@ -147,4 +147,13 @@ public class User extends BaseTime {
         private boolean allowWeeklyNotice;
         private boolean allowOtherNotice;
     }
+
+    @Schema(description = "아이디 중복확인 응답 클래스")
+    @Getter @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ValidateResponse {
+        @Schema(description = "존재 유무")
+        private Boolean isExist;
+    }
 }

@@ -52,21 +52,31 @@ public class UserController {
 
     }
 
-    @GetMapping("/{userId}")
+    @GetMapping("/validate/{id}")
+    @Operation(summary = "회원 검색 아이디 중복 확인", description = "id가 존재하는지 확인합니다.")
+    public ResponseEntity<User.ValidateResponse> validateId(
+            @Parameter(description = "아이디") @PathVariable String id) {
+        User.ValidateResponse res = new User.ValidateResponse();
+        res.setIsExist(userService.validateDuplicatedId(id));
+
+        return ResponseEntity.ok().body(res);
+    }
+
+    @GetMapping("/")
     @Operation(summary = "회원 정보 가져오기", description = "유저 id로 유저를 조회합니다.")
     public ResponseEntity<User.UserResponse> getUser(@RequestParam String userId) {
         User.UserResponse response = new User.UserResponse();
         return ResponseEntity.ok().body(response);
     }
 
-    @PutMapping("/{userId}")
+    @PutMapping("/")
     @Operation(summary = "회원 정보 수정", description = "param 으로 유저 id를, body 로 수정할 정보를 보내 유저 정보를 수정합니다.")
     public ResponseEntity<User.UserResponse> updateUser(@RequestParam String userId, @RequestBody User.UpdateRequest request) {
         User.UserResponse response = new User.UserResponse();
         return ResponseEntity.ok().body(response);
     }
 
-    @DeleteMapping("/{userId}")
+    @DeleteMapping("/")
     @Operation(summary = "회원 탈퇴", description = "유저 id로 유저를 삭제합니다.")
     public ResponseEntity<Map<String, String>> deleteUser(@RequestParam String userId) {
         Map<String, String> response = new HashMap<>();

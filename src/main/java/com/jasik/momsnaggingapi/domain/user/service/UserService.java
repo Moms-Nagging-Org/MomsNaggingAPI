@@ -29,9 +29,8 @@ public class UserService {
      *  유저의 id가 중복된 값을 가지는지 확인
      *  @param personalId
      */
-    public void validateDuplicatedId(String personalId) {
-//        if (userRepository.findByPersonalId(personalId).isPresent())
-//            throw new UserAlreadyExistsException();
+    public Boolean validateDuplicatedId(String personalId) {
+        return userRepository.findByPersonalId(personalId).isPresent();
     }
 
     @Transactional
