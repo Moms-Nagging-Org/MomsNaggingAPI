@@ -36,19 +36,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
     Optional<Schedule> findByIdAndUserId(Long id, Long userId);
 
-    @Transactional
-    @Modifying(clearAutomatically = true)
-    @Query("select count(a) from Schedule a where a.scheduleDate between :startDate and :endDate and a.userId = :userId and a.done = true")
-    Long selectDoneCountBetweenDate(
-        @Param("startDate") LocalDate startDate,
-        @Param("endDate") LocalDate endDate,
-        @Param("userId") Long userId);
+    List<Schedule> findAllByScheduleDateGreaterThanEqualAndScheduleDateLessThanEqualAndUserIdAndDone(LocalDate startDate, LocalDate endDate, Long userId, Boolean isDone);
 
-    @Transactional
-    @Modifying(clearAutomatically = true)
-    @Query("select count(a) from Schedule a where a.scheduleDate between :startDate and :endDate and a.userId = :userId")
-    Long selectTotalCountBetweenDate(
-        @Param("startDate") LocalDate startDate,
-        @Param("endDate") LocalDate endDate,
-        @Param("userId") Long userId);
-}
+    List<Schedule> findAllByScheduleDateGreaterThanEqualAndScheduleDateLessThanEqualAndUserId(LocalDate startDate, LocalDate endDate, Long userId);
+    }

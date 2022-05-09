@@ -54,7 +54,7 @@ public class ScheduleController {
         @Schema(description = "사용자 DB ID", example = "1", required = true)
         @Parameter(name = "userId", description = "조회할 사용자 DB ID", in = ParameterIn.QUERY) @RequestParam Long userId,
         @Schema(description = "일자", example = "2022-04-16", required = true)
-        @Parameter(name = "scheduleDate", description = "조회 일자", in = ParameterIn.QUERY) @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate scheduleDate
+        @Parameter(name = "scheduleDate", description = "조회 일자", in = ParameterIn.QUERY) @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate retrieveDate
     ) {
         List<Schedule.ScheduleListResponse> result = scheduleService.getSchedules(retrieveDate);
 

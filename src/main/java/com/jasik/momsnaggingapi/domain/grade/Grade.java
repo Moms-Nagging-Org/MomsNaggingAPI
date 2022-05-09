@@ -45,7 +45,8 @@ public class Grade extends BaseTime {
 
         @Schema(description = "주간평가 id", defaultValue = "1")
         private Long id;
-        @Schema(description = "추천 종류 이름", defaultValue = "운동하기")
+        @Schema(description = "평가 단계(오름차순)", defaultValue = "3", allowableValues = {"1", "2", "3",
+            "4", "5"})
         private int gradeLevel;
         @Schema(description = "년도", defaultValue = "2022")
         private int createdYear;
