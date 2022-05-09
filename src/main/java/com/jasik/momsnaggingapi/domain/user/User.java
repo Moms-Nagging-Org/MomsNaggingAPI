@@ -86,13 +86,26 @@ public class User extends BaseTime {
         private String code;
     }
 
-    @Schema(description = "로그인 응답 클래스")
-    @Getter
+    @Schema(description = "로그인/회원가입 응답 클래스")
+    @Getter @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     public static class AuthResponse {
-        @Schema(description = "JWT 토큰")
+        @Schema(description = "JWT 토큰(로그인 응답)")
         private String token;
+        @Schema(description = "소셜로그인 플랫폼(회원가입 응답)")
+        private String provider;
+        @Schema(description = "플랫폼 인증 코드(회원가입 응답)")
+        private String code;
+
+        public AuthResponse(String provider, String providerCode) {
+            this.provider = provider;
+            this.code = providerCode;
+        }
+
+        public AuthResponse(String token) {
+            this.token = token;
+        }
     }
 
     @Schema(description = "회원가입 요청 클래스")

@@ -23,29 +23,33 @@ public class UserController {
 
     @PostMapping("/authentication/{provider}")
     @Operation(summary = "회원가입/로그인", description = "유저 정보를 전송해 회원가입/로그인 합니다. 유저가 있다면 로그인을, 없다면 회원가입을 진행합니다.")
-    public ResponseEntity<Map<String, String>> authenticateUser(
+    public ResponseEntity<User.AuthResponse> authenticateUser(
             @Parameter(description = "소셜로그인 플랫폼") @PathVariable String provider,
             @Parameter(description = "플랫폼 코드") @RequestParam String code,
             @Parameter(description = "유저 이메일(회원가입시 필수 전달)") @RequestParam(required = false) String email) {
         // TODO: email exist 확인
-        Map<String, String> response = new HashMap<>();
 
         Optional<User> existUser = userService.existUser(code);
         if(existUser.isPresent()) {
             User.AuthRequest req = new User.AuthRequest();
             req.setCode(code);
             req.setProvider(provider);
-            response.put("token", userService.loginUser(req).getToken());
+
+            User.AuthResponse res = new User.AuthResponse();
+            res.setToken(userService.loginUser(req).getToken());
+
+            return ResponseEntity.ok().body(res);
         } else {
             User.CreateRequest req = new User.CreateRequest();
             req.setCode(code);
             req.setProvider(provider);
             req.setEmail(email);
-            User.CreateResponse res = userService.registerUser(req);
-            response.put("provider", res.getProvider());
-            response.put("code", res.getCode());
+
+            User.AuthResponse res = userService.registerUser(req);
+
+            return ResponseEntity.ok().body(res);
         }
-        return ResponseEntity.ok().body(response);
+
     }
 
     @GetMapping("/{userId}")

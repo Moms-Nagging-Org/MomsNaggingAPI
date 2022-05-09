@@ -35,14 +35,14 @@ public class UserService {
     }
 
     @Transactional
-    public User.CreateResponse registerUser(User.CreateRequest request) {
+    public User.AuthResponse registerUser(User.CreateRequest request) {
         User user = userRepository.save(
                 User.builder()
                         .email(request.getEmail())
                         .provider(request.getProvider())
                         .providerCode(request.getCode())
                         .build());
-        return new User.CreateResponse(user.getProvider(), user.getProviderCode());
+        return new User.AuthResponse(user.getProvider(), user.getProviderCode());
     }
 
     public User.AuthResponse loginUser(User.AuthRequest request) {
