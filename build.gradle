@@ -30,10 +30,6 @@ dependencies {
     implementation 'org.glassfish:javax.json:1.1.4' // 기본
     //implementation 'org.apache.johnzon:johnzon-core:1.2.14' //서드파티 (의존성 추가시 서비스로더에 의해 우선 선택됨, 없으면 기본 glassfish를 선택)
 
-    // jwt
-    implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
-    implementation 'io.jsonwebtoken:jjwt-impl:0.11.2'
-    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.2'
     //Json 라이브러리로 Jackson 사용시 JSR-374 Serialize/Deserialize 를 처리하기 위한 의존성 추가
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr353'
     runtimeOnly 'org.springframework.boot:spring-boot-devtools:2.6.4'
