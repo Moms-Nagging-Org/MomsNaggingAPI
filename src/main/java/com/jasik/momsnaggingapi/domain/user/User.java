@@ -103,10 +103,14 @@ public class User extends BaseTime {
         private String provider;
         @Schema(description = "사용자 이메일")
         private String email;
-        @Schema(description = "소셜 토큰")
+        @Schema(description = "소셜 코드")
         private String code;
         @Schema(description = "디바이스")
         private String device;
+        @Schema(description = "아이디")
+        private String personalId;
+        @Schema(description = "호칭")
+        private String nickname;
     }
 
     @Getter

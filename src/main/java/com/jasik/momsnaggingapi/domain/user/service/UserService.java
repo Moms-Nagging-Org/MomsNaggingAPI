@@ -41,15 +41,17 @@ public class UserService {
                         .provider(request.getProvider())
                         .providerCode(request.getCode())
                         .device(request.getDevice())
+                        .personalId(request.getPersonalId())
+                        .nickName(request.getNickname())
                         .build());
-        return new User.AuthResponse(AuthToken.createToken(request.getProvider(), user.getEmail()));
+        return new User.AuthResponse(AuthToken.createToken(request.getProvider(), user.getEmail(), user.getPersonalId()));
     }
 
     public User.AuthResponse loginUser(User.AuthRequest request) {
         // TODO: provider 도 확인
         User user = userRepository.findByProviderCode(request.getCode()).orElseThrow(LoginFailureException::new);;
 
-        return new User.AuthResponse(AuthToken.createToken(request.getProvider(), user.getEmail()));
+        return new User.AuthResponse(AuthToken.createToken(request.getProvider(), user.getEmail(), user.getPersonalId()));
 
     }
 }

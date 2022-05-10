@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class AuthToken {
-    public static String createToken(String provider, String email) {
+    public static String createToken(String provider, String email, String personalId) {
         // header
         Map<String, Object> header = new HashMap<>();
         header.put("typ", "JWT");
@@ -17,6 +17,7 @@ public class AuthToken {
         Map<String, Object> claims = new HashMap<>();
         claims.put("email", email);
         claims.put("provider", provider);
+        claims.put("id", personalId);
 
 //        Claims claims = Jwts.claims().setSubject(email);
         Date now = new Date();
