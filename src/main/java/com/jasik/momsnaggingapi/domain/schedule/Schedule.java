@@ -2,15 +2,24 @@ package com.jasik.momsnaggingapi.domain.schedule;
 
 import com.jasik.momsnaggingapi.domain.common.BaseTime;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.springframework.format.annotation.DateTimeFormat;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
-import java.time.LocalTime;
 
 @Entity
 @Getter
@@ -147,7 +156,7 @@ public class Schedule extends BaseTime {
     @NoArgsConstructor
     public static class ScheduleRequest {
 
-        @Schema(description = "사용자 ID", defaultValue = "1")
+        @Schema(description = "사용자 DB ID", defaultValue = "1")
         @NotNull
         private Long userId;
 
@@ -204,7 +213,7 @@ public class Schedule extends BaseTime {
 
         @Schema(description = "스케줄 ID", defaultValue = "2")
         private Long id;
-        @Schema(description = "사용자 ID", defaultValue = "1")
+        @Schema(description = "사용자 DB ID", defaultValue = "1")
         private Long userId;
         @Schema(description = "n회 습관의 수행 목표 수", defaultValue = "0")
         private int goalCount;
