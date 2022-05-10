@@ -42,7 +42,7 @@ public class UserService {
                         .providerCode(request.getCode())
                         .device(request.getDevice())
                         .build());
-        return new User.AuthResponse(user.getProvider(), user.getProviderCode());
+        return new User.AuthResponse(AuthToken.createToken(request.getProvider(), user.getEmail()));
     }
 
     public User.AuthResponse loginUser(User.AuthRequest request) {
