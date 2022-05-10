@@ -38,6 +38,10 @@ public class Question extends BaseTime {
 //    @Column(columnDefinition = "boolean default false")
 //    private boolean isFreq;
 
+    public void initUserId(Long userId) {
+        this.userId = userId;
+    }
+
     @Builder
     public Question(
 //        boolean isFreq,

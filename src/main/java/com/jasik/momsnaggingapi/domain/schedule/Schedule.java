@@ -2,15 +2,24 @@ package com.jasik.momsnaggingapi.domain.schedule;
 
 import com.jasik.momsnaggingapi.domain.common.BaseTime;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.springframework.format.annotation.DateTimeFormat;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
-import java.time.LocalTime;
 
 @Entity
 @Getter
@@ -18,7 +27,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 public class Schedule extends BaseTime {
 
-    
+
     @Id
     @GenericGenerator(name = "SequenceGenerator", strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator", parameters = {
         @Parameter(name = "sequence_name", value = "hibernate_sequence"),
@@ -110,6 +119,10 @@ public class Schedule extends BaseTime {
         this.scheduleDate = nextDate;
     }
 
+    public void initUserId(Long userId) {
+        this.userId = userId;
+    }
+
     public boolean plusDoneCount() {
         this.doneCount += 1;
         return this.doneCount >= this.goalCount;
@@ -146,10 +159,6 @@ public class Schedule extends BaseTime {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class ScheduleRequest {
-
-        @Schema(description = "사용자 ID", defaultValue = "1")
-        @NotNull
-        private Long userId;
 
         @Schema(description = "스케줄 이름", defaultValue = "술 마시기")
         @NotNull
@@ -256,7 +265,7 @@ public class Schedule extends BaseTime {
         @Schema(description = "스케줄 수행 시간", defaultValue = "아무때나")
         private String scheduleTime;
         @Schema(description = "수행 완료 여부", defaultValue = "false", allowableValues = {"true",
-                "false"})
+            "false"})
         private boolean isDone;
         @Schema(description = "스케줄 유형(할일/습관)", defaultValue = "todo")
         private ScheduleType scheduleType;
