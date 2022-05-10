@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class authToken {
+public class AuthToken {
     public static String createToken(String provider, String email) {
         // header
         Map<String, Object> header = new HashMap<>();

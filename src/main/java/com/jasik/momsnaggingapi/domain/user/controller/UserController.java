@@ -26,6 +26,7 @@ public class UserController {
     public ResponseEntity<User.AuthResponse> authenticateUser(
             @Parameter(description = "소셜로그인 플랫폼") @PathVariable String provider,
             @Parameter(description = "플랫폼 코드") @RequestParam String code,
+            @Parameter(description = "디바이스") @RequestParam String device,
             @Parameter(description = "유저 이메일(회원가입시 필수 전달)") @RequestParam(required = false) String email) {
         // TODO: email exist 확인
 
@@ -44,6 +45,7 @@ public class UserController {
             req.setCode(code);
             req.setProvider(provider);
             req.setEmail(email);
+            req.setDevice(device);
 
             User.AuthResponse res = userService.registerUser(req);
 
