@@ -35,4 +35,8 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     List<Schedule> findAllByCategoryId(Long categoryId);
 
     Optional<Schedule> findByIdAndUserId(Long id, Long userId);
-}
+
+    List<Schedule> findAllByScheduleDateGreaterThanEqualAndScheduleDateLessThanEqualAndUserIdAndDone(LocalDate startDate, LocalDate endDate, Long userId, Boolean isDone);
+
+    List<Schedule> findAllByScheduleDateGreaterThanEqualAndScheduleDateLessThanEqualAndUserId(LocalDate startDate, LocalDate endDate, Long userId);
+    }
