@@ -90,21 +90,8 @@ public class User extends BaseTime {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class AuthResponse {
-        @Schema(description = "JWT 토큰(로그인 응답)")
+        @Schema(description = "JWT 토큰")
         private String token;
-        @Schema(description = "소셜로그인 플랫폼(회원가입 응답)")
-        private String provider;
-        @Schema(description = "플랫폼 인증 코드(회원가입 응답)")
-        private String code;
-
-        public AuthResponse(String provider, String providerCode) {
-            this.provider = provider;
-            this.code = providerCode;
-        }
-
-        public AuthResponse(String token) {
-            this.token = token;
-        }
     }
 
     @Schema(description = "회원가입 요청 클래스")
@@ -116,19 +103,14 @@ public class User extends BaseTime {
         private String provider;
         @Schema(description = "사용자 이메일")
         private String email;
-        @Schema(description = "플랫폼 인증 코드")
+        @Schema(description = "소셜 코드")
         private String code;
-    }
-
-    @Schema(description = "회원가입 응답 클래스")
-    @Getter
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class CreateResponse {
-        @Schema(description = "소셜로그인 플랫폼")
-        private String provider;
-        @Schema(description = "플랫폼 인증 코드")
-        private String code;
+        @Schema(description = "디바이스")
+        private String device;
+        @Schema(description = "아이디")
+        private String personalId;
+        @Schema(description = "호칭")
+        private String nickname;
     }
 
     @Getter
