@@ -1,7 +1,7 @@
 package com.jasik.momsnaggingapi.domain.user.service;
 
 import com.jasik.momsnaggingapi.domain.auth.exception.LoginFailureException;
-import com.jasik.momsnaggingapi.domain.auth.jwt.authToken;
+import com.jasik.momsnaggingapi.domain.auth.jwt.AuthToken;
 import com.jasik.momsnaggingapi.domain.user.User;
 import com.jasik.momsnaggingapi.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -40,15 +40,18 @@ public class UserService {
                         .email(request.getEmail())
                         .provider(request.getProvider())
                         .providerCode(request.getCode())
+                        .device(request.getDevice())
+                        .personalId(request.getPersonalId())
+                        .nickName(request.getNickname())
                         .build());
-        return new User.AuthResponse(user.getProvider(), user.getProviderCode());
+        return new User.AuthResponse(AuthToken.createToken(request.getProvider(), user.getEmail(), user.getPersonalId()));
     }
 
     public User.AuthResponse loginUser(User.AuthRequest request) {
         // TODO: provider 도 확인
         User user = userRepository.findByProviderCode(request.getCode()).orElseThrow(LoginFailureException::new);;
 
-        return new User.AuthResponse(authToken.createToken(request.getProvider(), user.getEmail()));
+        return new User.AuthResponse(AuthToken.createToken(request.getProvider(), user.getEmail(), user.getPersonalId()));
 
     }
 }
