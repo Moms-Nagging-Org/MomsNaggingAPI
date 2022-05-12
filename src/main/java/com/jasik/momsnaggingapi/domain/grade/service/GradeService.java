@@ -32,11 +32,11 @@ public class GradeService {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
 
-        int inYear = cal.get(cal.YEAR);
-        int inMonth = cal.get(cal.MONTH);
-        int inDay = cal.get(cal.DAY_OF_MONTH);
+        int inYear = cal.get(Calendar.YEAR);
+        int inMonth = cal.get(Calendar.MONTH);
+        int inDay = cal.get(Calendar.DAY_OF_MONTH);
 
-        int yoil = cal.get(cal.DAY_OF_WEEK); //요일나오게하기(숫자로)
+        int yoil = cal.get(Calendar.DAY_OF_WEEK); //요일나오게하기(숫자로)
         if (yoil != 1) {   //해당요일이 일요일이 아닌경우
             yoil = yoil - 2;
         } else {           //해당요일이 일요일인경우
@@ -46,9 +46,9 @@ public class GradeService {
 
         for (int i = 0; i < 7; i += 6) {
             cal.set(inYear, inMonth, inDay + i);  //
-            String y = Integer.toString(cal.get(cal.YEAR));
-            String m = Integer.toString(cal.get(cal.MONTH) + 1);
-            String d = Integer.toString(cal.get(cal.DAY_OF_MONTH));
+            String y = Integer.toString(cal.get(Calendar.YEAR));
+            String m = Integer.toString(cal.get(Calendar.MONTH) + 1);
+            String d = Integer.toString(cal.get(Calendar.DAY_OF_MONTH));
             if (m.length() == 1) {
                 m = "0" + m;
             }
@@ -105,5 +105,24 @@ public class GradeService {
 
         return modelMapper.map(grade, Grade.GradeResponse.class);
     }
+
+    @Transactional(readOnly = true)
+    public long getAwards() {
+
+        Long userId = 1L;
+
+        return gradeRepository.countByUserIdAndGradeLevel(userId, 5);
+    }
+//
+//    @Transactional
+//    public Grade.GradeResponse getMonth(int retrieveYear, int retrieveMonth) {
+//
+//        Long userId = 1L;
+//
+//        // 한달의 모든 스케줄 조회
+//        //
+//
+//        return modelMapper.map(grade, Grade.GradeResponse.class);
+//    }
 }
 

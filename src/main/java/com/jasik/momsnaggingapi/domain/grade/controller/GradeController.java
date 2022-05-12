@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,7 +22,7 @@ public class GradeController {
 
     private final GradeService gradeService;
 
-    @GetMapping("/week")
+    @GetMapping("")
     @Operation(summary = "주간평가 조회", description = "해당 년도, 주차의 주간평가를 조회합니다.\n\ngradeLevel: 오름차순으로 높은 등급입니다.")
     public ResponseEntity<Grade.GradeResponse> getGrade(
         @Schema(example = "2022", required = true)
@@ -36,5 +35,11 @@ public class GradeController {
         Grade.GradeResponse result = gradeService.getGrade(createdYear, createdWeek);
 
         return ResponseEntity.ok().body(result);
+    }
+    @GetMapping("/awards")
+    @Operation(summary = "수 등급의 주간평가 총 개수 조회", description = "‘수’ 등급의 주간평가 개수를 반환합니다. \n\n프론트에서 개수를 기준으로 상장을 표시해주시면 됩니다.")
+    public ResponseEntity<Long> getAwards(
+    ) {
+        return ResponseEntity.ok().body(gradeService.getAwards());
     }
 }

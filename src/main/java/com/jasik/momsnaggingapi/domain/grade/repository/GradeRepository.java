@@ -8,4 +8,5 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
 
     Optional<Grade> findByCreatedYearAndCreatedWeekAndUserId(int createdYear, int createdWeek,
         Long userId);
+    long countByUserIdAndGradeLevel(Long userId, int gradeLevel);
 }
