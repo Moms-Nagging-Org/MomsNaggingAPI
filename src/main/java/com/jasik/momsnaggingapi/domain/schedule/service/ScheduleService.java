@@ -101,7 +101,7 @@ public class ScheduleService {
 //        log.info("test info");
         Long userId = 1L;
 
-        List<Schedule> schedules = scheduleRepository.findAllByScheduleDateAndUserId(scheduleDate,
+        List<Schedule> schedules = scheduleRepository.findAllByScheduleDateAndUserIdOrderByScheduleTimeAsc(scheduleDate,
                 userId);
 
         return schedules.stream()

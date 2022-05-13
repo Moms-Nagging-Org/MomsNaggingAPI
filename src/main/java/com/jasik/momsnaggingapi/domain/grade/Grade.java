@@ -43,8 +43,6 @@ public class Grade extends BaseTime {
     @NoArgsConstructor
     public static class GradeResponse {
 
-        @Schema(description = "주간평가 id", defaultValue = "1")
-        private Long id;
         @Schema(description = "평가 단계(오름차순)", defaultValue = "3", allowableValues = {"1", "2", "3",
             "4", "5"})
         private int gradeLevel;
@@ -52,6 +50,8 @@ public class Grade extends BaseTime {
         private int createdYear;
         @Schema(description = "주차", defaultValue = "15")
         private int createdWeek;
+        @Schema(description = "새롭게 달성한 상장의 단계, 0인 경우 새로 달성한 상장 없음.", defaultValue = "0")
+        private int awardLevel;
     }
 
 }
