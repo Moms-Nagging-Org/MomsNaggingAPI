@@ -24,6 +24,7 @@ public class User extends BaseTime {
     private String provider;
     private String providerCode;
     private String personalId;
+    private String device;
     private String profileImage;
 
     @Column(columnDefinition = "varchar(30) default 'MEMBER'")
@@ -44,19 +45,18 @@ public class User extends BaseTime {
 
     @Builder
     public User(int naggingLevel, String nickName, String email,
-                String provider, String providerCode, String personalId, String profileImage, String statusMsg) {
+                String provider, String providerCode, String personalId, String device) {
         this.naggingLevel = naggingLevel;
         this.nickName = nickName;
         this.email = email;
         this.provider = provider;
         this.providerCode = providerCode;
         this.personalId = personalId;
-        this.profileImage = profileImage;
-        this.statusMsg = statusMsg;
+        this.device = device;
     }
 
-    @Getter
-    @Setter
+    @Schema(description = "사용자 조회 시 응답 클래스")
+    @Getter @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     public static class UserResponse {
@@ -66,8 +66,7 @@ public class User extends BaseTime {
         private String nickName;
         private String personalId;
         private int naggingLevel;
-        private String statusMsg;
-        private String profileImage;
+        private String device;
         private boolean allowGeneralNotice;
         private boolean allowTodoNotice;
         private boolean allowRoutineNotice;
@@ -75,38 +74,43 @@ public class User extends BaseTime {
         private boolean allowOtherNotice;
     }
 
-    @Getter
-    @Setter
+    @Schema(description = "로그인 요청 클래스")
+    @Getter @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     public static class AuthRequest {
+        @Schema(description = "소셜로그인 플랫폼")
         private String provider;
+        @Schema(description = "플랫폼 인증 코드")
         private String code;
     }
 
-    @Getter
+    @Schema(description = "로그인/회원가입 응답 클래스")
+    @Getter @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     public static class AuthResponse {
+        @Schema(description = "JWT 토큰")
         private String token;
     }
 
-    @Getter
-    @Setter
+    @Schema(description = "회원가입 요청 클래스")
+    @Getter @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     public static class CreateRequest {
+        @Schema(description = "소셜로그인 플랫폼")
         private String provider;
+        @Schema(description = "사용자 이메일")
         private String email;
+        @Schema(description = "소셜 코드")
         private String code;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class CreateResponse {
-        private String provider;
-        private String code;
+        @Schema(description = "디바이스")
+        private String device;
+        @Schema(description = "아이디")
+        private String personalId;
+        @Schema(description = "호칭")
+        private String nickname;
     }
 
     @Getter
@@ -114,14 +118,20 @@ public class User extends BaseTime {
     @NoArgsConstructor
     public static class UpdateRequest {
         private String nickName;
-        private String personalId;
         private int naggingLevel;
-        private String statusMsg;
-        private String profileImage;
         private boolean allowGeneralNotice;
         private boolean allowTodoNotice;
         private boolean allowRoutineNotice;
         private boolean allowWeeklyNotice;
         private boolean allowOtherNotice;
+    }
+
+    @Schema(description = "아이디 중복확인 응답 클래스")
+    @Getter @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ValidateResponse {
+        @Schema(description = "존재 유무")
+        private Boolean isExist;
     }
 }
