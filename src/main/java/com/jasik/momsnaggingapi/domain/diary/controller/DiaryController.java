@@ -35,9 +35,13 @@ public class DiaryController {
 
     @PutMapping("")
     @Operation(summary = "일기장 수정",
-        description = "해당 일자의 일기장 내용을 수정합니다.\n\n"
-            + "null 값으로 보내는 컬럼은 그대로 저장됩니다.\n\n"
-            + "수정하지 않은 값도 저장될 내용 그대로 컬럼 값으로 보내야합니다.")
+        description = "<페이지>\n\n"
+            + "홈 → 일기장 → 특정 일 선택 → 작성하기 → 완료\n\n"
+            + "홈 → 일기장 → 특정 일 선택 → 오늘의 일기 → 완료\n\n"
+            + "홈 → 일기장 → 특정 일 선택 → 삭제\n\n"
+            + "<설명>\n\n"
+            + "해당 일자의 일기장 내용을 수정합니다.\n\n"
+            + "삭제인 경우 title, context 컬럼에 null 값으로 요청합니다.")
     public ResponseEntity<DiaryResponse> putDiary(
         final @Valid @RequestBody Diary.DiaryRequest request
     ) {
@@ -49,7 +53,10 @@ public class DiaryController {
     @GetMapping("")
     @Operation(
         summary = "일기장 조회",
-        description = "해당 일자의 일기장 내용을 조회합니다.\n\n"
+        description = "<페이지>\n\n"
+            + "홈 → 일기장 → 특정 일 선택\n\n\n"
+            + "<설명>\n\n"
+            + "해당 일자의 일기장 내용을 조회합니다.\n\n"
             + "today 컬럼을 통해 오늘 날짜 여부를 확인합니다.")
     public ResponseEntity<DiaryResponse> getDiary(
         @Schema(description = "일자", example = "2022-04-16", required = true)
