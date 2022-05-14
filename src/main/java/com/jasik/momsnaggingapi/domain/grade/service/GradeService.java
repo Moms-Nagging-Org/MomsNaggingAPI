@@ -13,7 +13,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Optional;
-import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -67,6 +66,7 @@ public class GradeService {
     public Grade.GradeResponse getGradeOfLastWeek() {
 
         // TODO: '수' 등급의 변수 환경변수로 관리
+        // 프론트 로직 : 로그인 시 마지막 평가 주차 조회(16주차) -> 프론트에서 오늘의 주차 계산(18주차) -> 오늘 주차(18주차) - 1 != 마지막 평가 주차(16) -> 주간 평가 요청
         Long userId = 1L;
         LocalDate weekAgoDate = LocalDate.now().minusDays(7);
         int createdYear = weekAgoDate.getYear();
@@ -79,6 +79,7 @@ public class GradeService {
         if (optionalGrade.isPresent()) {
             grade = optionalGrade.get();
         } else {
+            // TODO: 해당 주차의 n회 습관 생성
             List<String> daysOfWeek = getDaysOfWeek(weekAgoDate);
 
             List<Grade.Performance> performances = gradeRepository.findPerformanceOfPeriodByUserIdAndStartDateAndEndDate(

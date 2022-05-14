@@ -30,7 +30,8 @@ public class GradeController {
         + "홈\n\n"
         + "<설명>\n\n"
         + "직전 주차의 주간평가를 조회합니다. \n\n"
-        + "새롭게 달성한 상장 달성도를 함께 반환합니다.")
+        + "새롭게 달성한 상장 달성도를 함께 반환합니다.\n\n"
+        + "프론트 로직 : 로그인 시 마지막 평가 주차 조회(16주차) -> 프론트에서 오늘의 주차 계산(18주차) -> 오늘 주차(18주차) - 1 != 마지막 평가 주차(16주차) -> 주간 평가 요청")
     public ResponseEntity<Grade.GradeResponse> getGradeOfLastWeek() {
         return ResponseEntity.ok().body(gradeService.getGradeOfLastWeek());
     }
