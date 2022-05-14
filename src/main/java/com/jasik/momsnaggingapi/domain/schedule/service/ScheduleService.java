@@ -2,7 +2,10 @@ package com.jasik.momsnaggingapi.domain.schedule.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jasik.momsnaggingapi.domain.schedule.Category;
+import com.jasik.momsnaggingapi.domain.schedule.Category.CategoryResponse;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
+import com.jasik.momsnaggingapi.domain.schedule.Schedule.CategoryListResponse;
+import com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleListResponse;
 import com.jasik.momsnaggingapi.domain.schedule.repository.CategoryRepository;
 import com.jasik.momsnaggingapi.domain.schedule.repository.ScheduleRepository;
 import java.time.LocalDate;
@@ -95,25 +98,26 @@ public class ScheduleService {
     }
 
     @Transactional(readOnly = true)
-    public List<Schedule.ScheduleListResponse> getSchedules(LocalDate scheduleDate) {
+    public List<ScheduleListResponse> getSchedules(LocalDate scheduleDate) {
 
 //        log.error("test error");
 //        log.info("test info");
         Long userId = 1L;
 
-        List<Schedule> schedules = scheduleRepository.findAllByScheduleDateAndUserIdOrderByScheduleTimeAsc(scheduleDate,
-                userId);
+        List<Schedule> schedules = scheduleRepository.findAllByScheduleDateAndUserIdOrderByScheduleTimeAsc(
+            scheduleDate, userId);
 
         return schedules.stream()
-                .map(Schedule -> modelMapper.map(Schedule, com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleListResponse.class))
-                .collect(Collectors.toList());
+            .map(Schedule -> modelMapper.map(Schedule, ScheduleListResponse.class))
+            .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public Schedule.ScheduleResponse getSchedule(Long scheduleId) {
 
         Optional<Schedule> schedule = scheduleRepository.findById(scheduleId);
-        return schedule.map(value -> modelMapper.map(value, Schedule.ScheduleResponse.class)).orElse(null);
+        return schedule.map(value -> modelMapper.map(value, Schedule.ScheduleResponse.class))
+            .orElse(null);
     }
 
     @Transactional
@@ -126,10 +130,11 @@ public class ScheduleService {
             Schedule targetSchedule = optionalTargetSchedule.get();
             // 타겟 스케줄 변경사항 적용
             Schedule modifiedSchedule = scheduleRepository.save(
-                    mergeSchedule(targetSchedule, jsonPatch));
+                mergeSchedule(targetSchedule, jsonPatch));
             ArrayList<String> columnList = new ArrayList<>();
             for (JsonValue i : jsonPatch.toJsonArray()) {
-                columnList.add(String.valueOf(i.asJsonObject().get("path")).replaceAll("\"", "").replaceAll("/", ""));
+                columnList.add(String.valueOf(i.asJsonObject().get("path")).replaceAll("\"", "")
+                    .replaceAll("/", ""));
             }
 //            if (columnList.contains("/done")) {
 //                boolean value = Boolean.parseBoolean(String.valueOf(i.asJsonObject().get("value")));
@@ -195,45 +200,47 @@ public class ScheduleService {
     }
 
     @Transactional
-    public List<Schedule.ScheduleListResponse> postSchedulesArray(List<Long> scheduleArrayRequest) {
+    public List<ScheduleListResponse> postSchedulesArray(List<Long> scheduleArrayRequest) {
 
-        List<Schedule.ScheduleListResponse> scheduleAllResponses = new ArrayList<>();
-        scheduleAllResponses.add(new Schedule.ScheduleListResponse());
+        List<ScheduleListResponse> scheduleAllResponses = new ArrayList<>();
+        scheduleAllResponses.add(new ScheduleListResponse());
 
         return scheduleAllResponses;
     }
 
     @Transactional
-    public Category.CategoryResponse postCategory(Category.CategoryRequest dto) {
+    public CategoryResponse postCategory(Category.CategoryRequest dto) {
 
-
-        Optional<Category> nullCategory = categoryRepository.findByCategoryName(dto.getCategoryName());
-        if (nullCategory.isPresent()) return null;
+        Optional<Category> nullCategory = categoryRepository.findByCategoryName(
+            dto.getCategoryName());
+        if (nullCategory.isPresent()) {
+            return null;
+        }
         Long userId = 1L;
         Category category = modelMapper.map(dto, Category.class);
         category.initUserId(userId);
         Category newCategory = categoryRepository.save(category);
 
-        return modelMapper.map(newCategory, Category.CategoryResponse.class);
+        return modelMapper.map(newCategory, CategoryResponse.class);
     }
 
     @Transactional(readOnly = true)
-    public List<Category.CategoryResponse> getCategories() {
+    public List<CategoryResponse> getCategories() {
 
         List<Category> categories = categoryRepository.findAllByUsed(true);
 
         return categories.stream()
-                .map(Category -> modelMapper.map(Category, com.jasik.momsnaggingapi.domain.schedule.Category.CategoryResponse.class))
-                .collect(Collectors.toList());
+            .map(Category -> modelMapper.map(Category, CategoryResponse.class))
+            .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public List<Schedule.CategoryListResponse> getCategorySchedules(Long categoryId) {
+    public List<CategoryListResponse> getCategorySchedules(Long categoryId) {
 
         List<Schedule> schedules = scheduleRepository.findAllByCategoryId(categoryId);
 
         return schedules.stream()
-                .map(Schedule -> modelMapper.map(Schedule, com.jasik.momsnaggingapi.domain.schedule.Schedule.CategoryListResponse.class))
-                .collect(Collectors.toList());
+            .map(Schedule -> modelMapper.map(Schedule, CategoryListResponse.class))
+            .collect(Collectors.toList());
     }
 }

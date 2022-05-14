@@ -1,5 +1,6 @@
 package com.jasik.momsnaggingapi.domain.schedule.repository;
 
+import com.jasik.momsnaggingapi.domain.grade.Grade;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
 import java.time.LocalDate;
 import java.time.LocalTime;

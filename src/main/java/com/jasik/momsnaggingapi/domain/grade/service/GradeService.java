@@ -1,17 +1,15 @@
 package com.jasik.momsnaggingapi.domain.grade.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jasik.momsnaggingapi.domain.grade.Grade;
+import com.jasik.momsnaggingapi.domain.grade.Grade.GradesOfMonthResponse;
+import com.jasik.momsnaggingapi.domain.grade.Grade.Performance;
 import com.jasik.momsnaggingapi.domain.grade.repository.GradeRepository;
-import com.jasik.momsnaggingapi.domain.schedule.Schedule;
-import com.jasik.momsnaggingapi.domain.schedule.repository.ScheduleRepository;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.WeekFields;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Optional;
@@ -26,12 +24,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class GradeService {
 
     private final GradeRepository gradeRepository;
-    private final ScheduleRepository scheduleRepository;
     private final ModelMapper modelMapper;
-    private final ObjectMapper objectMapper;
 
     public List<String> getDaysOfWeek(LocalDate localDate) {
-        List<String> arrYMD = new ArrayList<String>();
+        List<String> arrYMD = new ArrayList<>();
         Date date = java.sql.Date.valueOf(localDate);
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
@@ -66,42 +62,15 @@ public class GradeService {
         return arrYMD;
     }
 
-    public int getGradeLevel(Long userId) {
-        LocalDate weekAgoDate = LocalDate.now().minusDays(7);
-        List<String> daysOfWeek = getDaysOfWeek(weekAgoDate);
-        LocalDate startDate = LocalDate.parse(daysOfWeek.get(0), DateTimeFormatter.ISO_DATE);
-        LocalDate endDate = LocalDate.parse(daysOfWeek.get(1), DateTimeFormatter.ISO_DATE);
-        float doneCount = (float) scheduleRepository.findAllByScheduleDateGreaterThanEqualAndScheduleDateLessThanEqualAndUserIdAndDone(
-            startDate, endDate, userId, true).size();
-        float totalCount = (float) scheduleRepository.findAllByScheduleDateGreaterThanEqualAndScheduleDateLessThanEqualAndUserIdOrderByScheduleDateAscScheduleTimeAsc(
-            startDate, endDate, userId).size();
-        // 평가 로직 : 주간 수행 개수 / 주간 전체 개수 * 100
-        float score;
-        try {
-            score = (doneCount / totalCount) * 100L;
-        } catch (ArithmeticException e) {
-            score = 0;
-        }
-        int gradeLevel = 1;
-        if (90 <= score) {
-            gradeLevel = 5;
-        } else if (70 <= score) {
-            gradeLevel = 4;
-        } else if (50 <= score) {
-            gradeLevel = 3;
-        } else if (30 <= score) {
-            gradeLevel = 2;
-        }
-
-        return gradeLevel;
-    }
-
     @Transactional
-    public Grade.GradeResponse getGrade(int createdYear, int createdWeek) {
+    public Grade.GradeResponse getGradeOfLastWeek() {
 
         // TODO: '수' 등급의 변수 환경변수로 관리
-
         Long userId = 1L;
+        LocalDate weekAgoDate = LocalDate.now().minusDays(7);
+        int createdYear = weekAgoDate.getYear();
+        int createdWeek = weekAgoDate.get(WeekFields.ISO.weekOfYear());
+
         Grade grade;
         int awardLevel = 0;
         Optional<Grade> optionalGrade = gradeRepository.findByCreatedYearAndCreatedWeekAndUserId(
@@ -109,9 +78,29 @@ public class GradeService {
         if (optionalGrade.isPresent()) {
             grade = optionalGrade.get();
         } else {
+            List<String> daysOfWeek = getDaysOfWeek(weekAgoDate);
+
+            List<Grade.Performance> performances = gradeRepository.findPerformanceOfPeriodByUserIdAndStartDateAndEndDate(
+                userId, LocalDate.parse(daysOfWeek.get(0), DateTimeFormatter.ISO_DATE),
+                LocalDate.parse(daysOfWeek.get(1), DateTimeFormatter.ISO_DATE));
+
+            double avg =
+                performances.stream().filter(v -> v.getAvg() != null).mapToDouble(Performance::getAvg).sum() / (int) performances.stream()
+                    .filter(v -> v.getAvg() != null).count();
+
+            int gradeLevel = 1;
+            if (90 <= avg) {
+                gradeLevel = 5;
+            } else if (70 <= avg) {
+                gradeLevel = 4;
+            } else if (50 <= avg) {
+                gradeLevel = 3;
+            } else if (30 <= avg) {
+                gradeLevel = 2;
+            }
             grade = gradeRepository.save(
-                Grade.builder().userId(userId).gradeLevel(getGradeLevel(userId))
-                    .createdYear(createdYear).createdWeek(createdWeek).build());
+                Grade.builder().userId(userId).gradeLevel(gradeLevel).createdYear(createdYear)
+                    .createdWeek(createdWeek).build());
             if (grade.getGradeLevel() == 5) {
                 awardLevel = getAwardLevel(userId);
             }
@@ -141,66 +130,63 @@ public class GradeService {
         }
         return awardLevel;
     }
+
     @Transactional(readOnly = true)
-    public int getAwards() {
+    public Grade.AwardResponse getAwards() {
 
         Long userId = 1L;
 
-        return getAwardLevel(userId);
+        return new Grade.AwardResponse(getAwardLevel(userId));
     }
 
     @Transactional(readOnly = true)
-    public List<HashMap> getMonthly(int retrieveYear, int retrieveMonth) {
+    public List<Grade.Performance> getDailyGradesOfMonth(int retrieveYear, int retrieveMonth) {
 
         Long userId = 1L;
         LocalDate startDate = LocalDate.of(retrieveYear, retrieveMonth, 1);
         LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
 
-        List<LocalDate> durationDate = new ArrayList<>();
-        for (LocalDate nextDate = startDate; !nextDate.isAfter(endDate);
-            nextDate = nextDate.plusDays(1)) {
-            durationDate.add(nextDate);
-        }
+        return gradeRepository.findPerformanceOfPeriodByUserIdAndStartDateAndEndDate(userId,
+            startDate, endDate);
+    }
 
-        List<Schedule> schedules = scheduleRepository.findAllByScheduleDateGreaterThanEqualAndScheduleDateLessThanEqualAndUserIdOrderByScheduleDateAscScheduleTimeAsc(
-            startDate, endDate, userId);
-        ListIterator<Schedule> retrieveItr = schedules.listIterator();
+    @Transactional(readOnly = true)
+    public List<GradesOfMonthResponse> getWeeklyGradesOfMonth(int retrieveYear, int retrieveMonth) {
+        Long userId = 1L;
+        LocalDate startDate = LocalDate.of(retrieveYear, retrieveMonth, 1);
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+        int startWeek = startDate.get(WeekFields.ISO.weekOfYear());
+        int endWeek = endDate.get(WeekFields.ISO.weekOfYear());
 
-        // 하루씩 증가
-        List<HashMap> result = new ArrayList<>();
-        for (LocalDate date : durationDate) {
-            HashMap<String, Object> dailyMap = new HashMap<>();
-            Schedule retrieveSchedule;
-            List<Schedule.ScheduleResponse> scheduleDtoList = new ArrayList<>();
-            float doneCount = 0;
-            float totalCount = 0;
-            int performance;
-            while (retrieveItr.hasNext()) {
-                retrieveSchedule = retrieveItr.next();
-                if (date.isEqual(retrieveSchedule.getScheduleDate())) {
-                    totalCount++;
-                    if (retrieveSchedule.getDone()) {
-                        doneCount++;
-                    }
-                    scheduleDtoList.add(
-                        modelMapper.map(retrieveSchedule, Schedule.ScheduleResponse.class));
+        List<Grade> grades = gradeRepository.findAllByUserIdAndCreatedYearAndCreatedWeekGreaterThanEqualAndCreatedWeekLessThanEqualOrderByCreatedYearAscCreatedWeekAsc(
+            userId, retrieveYear, startWeek, endWeek);
+        ListIterator<Grade> retrieveItr = grades.listIterator();
+
+        List<GradesOfMonthResponse> response = new ArrayList<>();
+        int weekIndex = 1;
+        int gradeOfWeek;
+        for (int i = startWeek; i <= endWeek; i++) {
+            gradeOfWeek = 1;
+            if (retrieveItr.hasNext()) {
+                Grade nextGrade = retrieveItr.next();
+                if (nextGrade.getCreatedWeek() == i) {
+                    gradeOfWeek = nextGrade.getGradeLevel();
                 } else {
-                    break;
+                    retrieveItr.previous();
                 }
             }
-            if (doneCount == 0 || totalCount == 0) {
-                performance = 0;
-            } else {
-                performance = (int) ((doneCount / totalCount) * 100);
-            }
-            dailyMap.put("date", date);
-            dailyMap.put("performance", performance);
-            dailyMap.put("schedules", scheduleDtoList);
-            result.add(dailyMap);
-            retrieveItr.previous();
+            response.add(new GradesOfMonthResponse(weekIndex, gradeOfWeek));
+            weekIndex++;
         }
 
-        return result;
+        return response;
+    }
+
+    @Transactional(readOnly = true)
+    public Grade.StatisticsResponse getStatistics() {
+        Long userId = 1L;
+
+        return gradeRepository.findStatisticsByUserId(userId);
     }
 }
 
