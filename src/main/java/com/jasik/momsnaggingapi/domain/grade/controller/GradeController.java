@@ -25,7 +25,7 @@ public class GradeController {
     private final GradeService gradeService;
 
     @GetMapping("/lastWeek")
-    @Operation(summary = "주간평가 조회", description = "페이지 : 홈\n\n직전 주차의 주간평가를 조회합니다. \n\n새롭게 달성한 상장 달성도를 함께 반환합니다.")
+    @Operation(summary = "직전 주의 주간평가 조회", description = "페이지 : 홈\n\n직전 주차의 주간평가를 조회합니다. \n\n새롭게 달성한 상장 달성도를 함께 반환합니다.")
     public ResponseEntity<Grade.GradeResponse> getGradeOfLastWeek() {
         return ResponseEntity.ok().body(gradeService.getGradeOfLastWeek());
     }

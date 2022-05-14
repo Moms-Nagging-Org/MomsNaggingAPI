@@ -24,7 +24,7 @@ import org.hibernate.annotations.NamedNativeQuery;
 
 @Entity
 @NamedNativeQuery(name = "findPerformanceOfPeriod", query =
-    "select IF(a.performance is null, null, a.performance) as avg, b.date "
+    "select IF(a.performance is null, 100, a.performance) as avg, b.date "
         + "from "
         + "(select ((count(if(is_done=true,1,null))/count(*))*100) as performance, schedule_date "
         + "from schedule "

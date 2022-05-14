@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Optional;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -83,10 +84,8 @@ public class GradeService {
             List<Grade.Performance> performances = gradeRepository.findPerformanceOfPeriodByUserIdAndStartDateAndEndDate(
                 userId, LocalDate.parse(daysOfWeek.get(0), DateTimeFormatter.ISO_DATE),
                 LocalDate.parse(daysOfWeek.get(1), DateTimeFormatter.ISO_DATE));
-
             double avg =
-                performances.stream().filter(v -> v.getAvg() != null).mapToDouble(Performance::getAvg).sum() / (int) performances.stream()
-                    .filter(v -> v.getAvg() != null).count();
+                performances.stream().mapToDouble(Performance::getAvg).sum() / performances.size();
 
             int gradeLevel = 1;
             if (90 <= avg) {
