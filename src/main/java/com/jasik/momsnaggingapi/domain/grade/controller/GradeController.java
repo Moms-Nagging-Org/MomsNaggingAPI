@@ -30,7 +30,7 @@ public class GradeController {
         return ResponseEntity.ok().body(gradeService.getGradeOfLastWeek());
     }
     @GetMapping("/monthly")
-    @Operation(summary = "월간 주간평가 조회", description = "페이지 : 성적표 -> 통계\n\n해당 년도, 월의 모든 주간평가를 조회합니다.")
+    @Operation(summary = "월간 주간평가 조회", description = "페이지 : 성적표 -> 통계 -> 특정 월 선택\n\n해당 년도, 월의 모든 주간평가를 조회합니다.")
     public ResponseEntity<List<GradesOfMonthResponse>> getWeeklyGradesOfMonth(
         @Schema(example = "2022", required = true) @Parameter(name = "retrieveYear", description = "조회할 년도", in = ParameterIn.QUERY) @RequestParam int retrieveYear,
         @Schema(example = "5", required = true) @Parameter(name = "retrieveMonth", description = "조회할 월", in = ParameterIn.QUERY) @RequestParam int retrieveMonth) {
@@ -39,13 +39,13 @@ public class GradeController {
     }
     // TODO: Get-Me 엔드포인트에 포함시킬 데이터
     @GetMapping("/awards")
-    @Operation(summary = "상장 등급 조회", description = "페이지 : 성적표 -> 상장 아이콘\n\n사용자가 달성한 상장 등급을 조회합니다.")
+    @Operation(summary = "상장 등급 조회", description = "페이지 : 성적표 -> 상장\n\n사용자가 달성한 상장 등급을 조회합니다.")
     public ResponseEntity<Grade.AwardResponse> getAwards() {
         return ResponseEntity.ok().body(gradeService.getAwards());
     }
 
     @GetMapping("/calendar")
-    @Operation(summary = "월간 달력 성적표 조회", description = "페이지 : 성적표 -> 달력\n\n해당 년도, 월의 모든 일별 달성도를 조회합니다.")
+    @Operation(summary = "월간 달력 성적표 조회", description = "페이지 : 성적표 -> 달력 -> 특정 월 선택\n\n해당 년도, 월의 모든 일별 달성도를 조회합니다.")
     public ResponseEntity<List<Grade.Performance>> getDailyGradesOfMonth(
         @Schema(example = "2022", required = true) @Parameter(name = "retrieveYear", description = "조회할 년도", in = ParameterIn.QUERY) @RequestParam int retrieveYear,
         @Schema(example = "05", required = true) @Parameter(name = "retrieveMonth", description = "조회할 월", in = ParameterIn.QUERY) @RequestParam int retrieveMonth) {
