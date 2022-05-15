@@ -37,18 +37,15 @@ public class ScheduleService {
     @Transactional
     public Schedule.ScheduleResponse postSchedule(Schedule.ScheduleRequest dto) {
 
-        // 스케줄 원본 저장
         Schedule schedule = scheduleRepository.save(modelMapper.map(dto, Schedule.class));
-        // TODO : 생성 -> 업데이트 로직 개선사항 찾기 -> select last_insert_id()
         // 원본 ID 저장
+        // TODO : 생성 -> 업데이트 로직 개선사항 찾기 -> select last_insert_id()
         schedule.initOriginalId();
         Schedule originSchedule = scheduleRepository.save(schedule);
-        // 습관 스케줄 저장 로직
         if (originSchedule.getScheduleType() == Schedule.ScheduleType.ROUTINE) {
-            // TODO: routine 생성 비동기 실행 -> interface로 구현하면 프록시 개별로 생성 됨,
+            // TODO: 비동기 실행
             createRoutine(originSchedule);
         }
-        // TODO: n회 반복 습관 -> 모든 주차의 첫날에 원본으로 생성 -> 수정 시 추적이 불가능함 -> 달성 실패한 주 이후로 생성 불가능 -> 모든 일자에 생성해버림 -> 목표 달성한 주차의 이후 습관 삭제(해당 주차의 모든 미수행 습관 삭제할 지) ->
 
         return modelMapper.map(originSchedule, Schedule.ScheduleResponse.class);
     }
@@ -56,7 +53,6 @@ public class ScheduleService {
     @Async
     public void createRoutine(Schedule originSchedule) {
 
-        // 원본 스케줄의 날짜
         LocalDate originScheduleDate = originSchedule.getScheduleDate();
         int dayOfWeekNumber = originScheduleDate.getDayOfWeek().getValue() - 1;
         boolean[] repeatDays = originSchedule.calculateRepeatDays();
