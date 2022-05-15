@@ -41,7 +41,7 @@ public class ScheduleService {
 
     @Transactional
     public Schedule.ScheduleResponse postSchedule(Schedule.ScheduleRequest dto) {
-
+        // TODO: nagging ID 연동
         Long userId = 1L;
         // TODO: 하루 최대 생성갯수 조건 추가
         Schedule schedule = scheduleRepository.save(modelMapper.map(dto, Schedule.class));
