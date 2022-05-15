@@ -53,6 +53,7 @@ public class Diary extends BaseTime {
     private Long userId;
 
     private String title;
+    @Column(columnDefinition = "TEXT")
     private String context;
     private LocalDate diaryDate;
 
