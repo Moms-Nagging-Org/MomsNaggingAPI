@@ -1,5 +1,6 @@
 package com.jasik.momsnaggingapi.domain.schedule.repository;
 
+import com.jasik.momsnaggingapi.domain.grade.Grade;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -15,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
-    List<Schedule> findAllByScheduleDateAndUserId(LocalDate scheduleDate, Long userId);
+    List<Schedule> findAllByScheduleDateAndUserIdOrderByScheduleTimeAsc(LocalDate scheduleDate, Long userId);
 
     // 벌크 연산 시 clearAutomatically(JPA 1차 캐시) 옵션 필요
     @Transactional
@@ -47,5 +48,5 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
     List<Schedule> findAllByScheduleDateGreaterThanEqualAndScheduleDateLessThanEqualAndUserIdAndDone(LocalDate startDate, LocalDate endDate, Long userId, Boolean isDone);
 
-    List<Schedule> findAllByScheduleDateGreaterThanEqualAndScheduleDateLessThanEqualAndUserId(LocalDate startDate, LocalDate endDate, Long userId);
+    List<Schedule> findAllByScheduleDateGreaterThanEqualAndScheduleDateLessThanEqualAndUserIdOrderByScheduleDateAscScheduleTimeAsc(LocalDate startDate, LocalDate endDate, Long userId);
     }

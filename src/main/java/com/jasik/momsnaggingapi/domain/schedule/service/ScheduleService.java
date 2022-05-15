@@ -2,7 +2,10 @@ package com.jasik.momsnaggingapi.domain.schedule.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jasik.momsnaggingapi.domain.schedule.Category;
+import com.jasik.momsnaggingapi.domain.schedule.Category.CategoryResponse;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
+import com.jasik.momsnaggingapi.domain.schedule.Schedule.CategoryListResponse;
+import com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleListResponse;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleType;
 import com.jasik.momsnaggingapi.domain.schedule.repository.CategoryRepository;
 import com.jasik.momsnaggingapi.domain.schedule.repository.ScheduleRepository;
@@ -102,7 +105,7 @@ public class ScheduleService {
     }
 
     @Transactional(readOnly = true)
-    public List<Schedule.ScheduleListResponse> getSchedules(LocalDate scheduleDate) {
+    public List<ScheduleListResponse> getSchedules(LocalDate scheduleDate) {
 
 //        log.error("test error");
 //        log.info("test info");
@@ -208,10 +211,10 @@ public class ScheduleService {
     }
 
     @Transactional
-    public List<Schedule.ScheduleListResponse> postSchedulesArray(List<Long> scheduleArrayRequest) {
+    public List<ScheduleListResponse> postSchedulesArray(List<Long> scheduleArrayRequest) {
 
-        List<Schedule.ScheduleListResponse> scheduleAllResponses = new ArrayList<>();
-        scheduleAllResponses.add(new Schedule.ScheduleListResponse());
+        List<ScheduleListResponse> scheduleAllResponses = new ArrayList<>();
+        scheduleAllResponses.add(new ScheduleListResponse());
 
         return scheduleAllResponses;
     }
@@ -235,20 +238,26 @@ public class ScheduleService {
 //    }
 
     @Transactional(readOnly = true)
-    public List<Category.CategoryResponse> getCategories() {
+    public List<CategoryResponse> getCategories() {
 
         List<Category> categories = categoryRepository.findAllByUsed(true);
 
+        return categories.stream()
+            .map(Category -> modelMapper.map(Category, CategoryResponse.class))
+            .collect(Collectors.toList());
         return categories.stream().map(Category -> modelMapper.map(Category,
                 com.jasik.momsnaggingapi.domain.schedule.Category.CategoryResponse.class))
             .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public List<Schedule.CategoryListResponse> getCategorySchedules(Long categoryId) {
+    public List<CategoryListResponse> getCategorySchedules(Long categoryId) {
 
         List<Schedule> schedules = scheduleRepository.findAllByCategoryId(categoryId);
 
+        return schedules.stream()
+            .map(Schedule -> modelMapper.map(Schedule, CategoryListResponse.class))
+            .collect(Collectors.toList());
         return schedules.stream().map(Schedule -> modelMapper.map(Schedule,
                 com.jasik.momsnaggingapi.domain.schedule.Schedule.CategoryListResponse.class))
             .collect(Collectors.toList());
