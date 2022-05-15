@@ -110,7 +110,7 @@ public class ScheduleService {
 //        log.info("test info");
         Long userId = 1L;
 
-        List<Schedule> schedules = scheduleRepository.findAllByScheduleDateAndUserId(scheduleDate,
+        List<Schedule> schedules = scheduleRepository.findAllByScheduleDateAndUserIdOrderByScheduleTimeAsc(scheduleDate,
             userId);
 
         return schedules.stream().map(Schedule -> modelMapper.map(Schedule,
@@ -244,9 +244,6 @@ public class ScheduleService {
         return categories.stream()
             .map(Category -> modelMapper.map(Category, CategoryResponse.class))
             .collect(Collectors.toList());
-        return categories.stream().map(Category -> modelMapper.map(Category,
-                com.jasik.momsnaggingapi.domain.schedule.Category.CategoryResponse.class))
-            .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -256,9 +253,6 @@ public class ScheduleService {
 
         return schedules.stream()
             .map(Schedule -> modelMapper.map(Schedule, CategoryListResponse.class))
-            .collect(Collectors.toList());
-        return schedules.stream().map(Schedule -> modelMapper.map(Schedule,
-                com.jasik.momsnaggingapi.domain.schedule.Schedule.CategoryListResponse.class))
             .collect(Collectors.toList());
     }
 }

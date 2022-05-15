@@ -128,11 +128,6 @@ public class Schedule extends BaseTime {
         return dayArray;
     }
 
-
-    public boolean getDone() {
-        return done;
-    }
-
     public enum ScheduleType {
         TODO, ROUTINE
     }
