@@ -1,6 +1,7 @@
 package com.jasik.momsnaggingapi.domain.schedule.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jasik.momsnaggingapi.domain.common.AsyncService;
 import com.jasik.momsnaggingapi.domain.schedule.Category;
 import com.jasik.momsnaggingapi.domain.schedule.Category.CategoryResponse;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
@@ -36,15 +37,14 @@ public class ScheduleService {
     private final CategoryRepository categoryRepository;
     private final ModelMapper modelMapper;
     private final ObjectMapper objectMapper;
+    private final AsyncService asyncService;
 
     @Transactional
     public Schedule.ScheduleResponse postSchedule(Schedule.ScheduleRequest dto) {
 
         Long userId = 1L;
         // TODO: 하루 최대 생성갯수 조건 추가
-        // 스케줄 원본 저장
         Schedule schedule = scheduleRepository.save(modelMapper.map(dto, Schedule.class));
-        // 원본 ID 저장
         // TODO : 생성 -> 업데이트 로직 개선사항 찾기 -> select last_insert_id()
         schedule.initOriginalId();
         schedule.initScheduleTypeAndUserId(userId);
@@ -52,15 +52,12 @@ public class ScheduleService {
         // 습관 스케줄 저장 로직(n회 습관은 제외)
         if (originSchedule.getScheduleType() == Schedule.ScheduleType.ROUTINE
             && originSchedule.getGoalCount() == 0) {
-            // TODO: routine 생성 비동기 실행 -> interface로 구현하면 프록시 개별로 생성 됨,
-            createRoutine(originSchedule);
+            asyncService.run(()->createRoutine(originSchedule));
         }
-        // TODO: n회 반복 습관 -> 수행 완료 처리 시 추가 됨, 주간 평가 시 새로 생성
 
         return modelMapper.map(originSchedule, Schedule.ScheduleResponse.class);
     }
 
-    @Async
     public void createRoutine(Schedule originSchedule) {
 
         LocalDate originScheduleDate = originSchedule.getScheduleDate();

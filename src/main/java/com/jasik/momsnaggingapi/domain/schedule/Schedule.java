@@ -1,5 +1,7 @@
 package com.jasik.momsnaggingapi.domain.schedule;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.jasik.momsnaggingapi.domain.common.BaseTime;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
@@ -20,6 +22,7 @@ import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
 
 
 @Entity
@@ -180,10 +183,12 @@ public class Schedule extends BaseTime {
         @Schema(description = "스케줄 수행 일자")
         @NotNull
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+//        @JsonFormat(shape = Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate scheduleDate;
 
         @Schema(description = "스케줄 알람 시간")
-        @DateTimeFormat(pattern = "HH:mm:ss")
+        @DateTimeFormat(iso = ISO.TIME)
+//        @JsonFormat(shape = Shape.STRING, pattern = "HH:mm:ss", timezone = "Asia/Seoul")
         private LocalTime alarmTime;
 
         @Schema(description = "월요일 반복 여부", defaultValue = "false")
@@ -206,9 +211,6 @@ public class Schedule extends BaseTime {
 
         @Schema(description = "일요일 반복 여부", defaultValue = "false")
         private boolean sun;
-//
-//        @Schema(description = "스케줄 유형(할일/습관)", defaultValue = "TODO")
-//        private ScheduleType scheduleType;
     }
 
     @Schema(description = "단일 스케줄 조회 시 응답 클래스")
@@ -234,7 +236,7 @@ public class Schedule extends BaseTime {
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         private LocalDate scheduleDate;
         @Schema(description = "스케줄 알람 시간")
-        @DateTimeFormat(pattern = "HH:mm:ss")
+        @DateTimeFormat(iso = ISO.TIME)
         private LocalTime alarmTime;
         @Schema(description = "스케줄 수행 여부", defaultValue = "false")
         private boolean done;
