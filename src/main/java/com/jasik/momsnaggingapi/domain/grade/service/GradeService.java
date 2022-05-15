@@ -1,5 +1,6 @@
 package com.jasik.momsnaggingapi.domain.grade.service;
 
+import com.jasik.momsnaggingapi.domain.common.AsyncService;
 import com.jasik.momsnaggingapi.domain.grade.Grade;
 import com.jasik.momsnaggingapi.domain.grade.Grade.GradesOfMonthResponse;
 import com.jasik.momsnaggingapi.domain.grade.Grade.Performance;
@@ -16,12 +17,15 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -30,6 +34,7 @@ public class GradeService {
     private final GradeRepository gradeRepository;
     private final ScheduleRepository scheduleRepository;
     private final ModelMapper modelMapper;
+    private final AsyncService asyncService;
 
     public List<String> getDaysOfWeek(LocalDate localDate) {
         List<String> arrYMD = new ArrayList<>();
@@ -67,7 +72,6 @@ public class GradeService {
         return arrYMD;
     }
 
-    @Async
     public void createNRoutines(Long userId, LocalDate startDate, LocalDate endDate) {
         List<Schedule> nRoutineSchedules = scheduleRepository.findAllByUserIdAndGoalCountGreaterThanAndScheduleDateGreaterThanEqualAndScheduleDateLessThanEqual(
             userId, 0, startDate, endDate);
@@ -144,9 +148,8 @@ public class GradeService {
             LocalDate startDate = LocalDate.parse(daysOfWeek.get(0), DateTimeFormatter.ISO_DATE);
             LocalDate endDate = LocalDate.parse(daysOfWeek.get(1), DateTimeFormatter.ISO_DATE);
 
-            // 해당 주차의 n회 습관 생성
-            // TODO: 비동기 실행
-            createNRoutines(userId, startDate, endDate);
+            // 해당 주차의 n회 습관 생성 -> 비동기
+            asyncService.run(()->createNRoutines(userId, startDate, endDate));
             // 주간 평가 생성
             grade = createGrade(userId, startDate, endDate, createdYear, createdWeek);
             if (grade.getGradeLevel() == 5) {
