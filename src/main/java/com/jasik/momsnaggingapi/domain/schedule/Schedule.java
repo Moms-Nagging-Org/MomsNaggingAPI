@@ -87,6 +87,50 @@ public class Schedule extends BaseTime {
     @Enumerated(EnumType.STRING)
     private ScheduleType scheduleType;
 
+    public void initOriginalId() {
+        this.originalId = this.id;
+    }
+
+    public void initScheduleDate(LocalDate nextDate) {
+        this.scheduleDate = nextDate;
+    }
+    public void initScheduleTypeAndUserId(Long userId){
+        if (this.goalCount > 0 | this.mon | this.tue | this.wed | this.thu | this.fri | this.sat | this.sun){
+            this.scheduleType = ScheduleType.ROUTINE;
+        }else{
+            this.scheduleType = ScheduleType.TODO;
+        }
+        this.userId = userId;
+    }
+    public void initGoalCount() {
+        this.goalCount = 0;
+    }
+    // TODO: getter 안먹히는 컬럼들 -> _ 와 연관이 있는 듯
+    public boolean getDone() {
+        return this.done;
+    }
+    public boolean plusDoneCount() {
+        this.doneCount += 1;
+        return this.doneCount >= this.goalCount;
+    }
+
+    public void initNextSchedule() {
+        this.id = null;
+        this.scheduleDate = this.scheduleDate.plusDays(1);
+        this.done = false;
+    }
+
+    // getRepeatDays() -> objectMapper.convertValue() 에서 컬럼으로 인식하고 변환해버림.. -.-
+    public boolean[] calculateRepeatDays() {
+        boolean[] dayArray = {mon, tue, wed, thu, fri, sat, sun};
+
+        return dayArray;
+    }
+
+    public enum ScheduleType {
+        TODO, ROUTINE
+    }
+
     @Builder
     public Schedule(Long userId, Long originalId, Long categoryId, int seqNumber, int goalCount,
         int doneCount, String scheduleName, String scheduleTime, LocalDate scheduleDate,
@@ -115,54 +159,12 @@ public class Schedule extends BaseTime {
         this.naggingId = naggingId;
     }
 
-    public void initOriginalId() {
-        this.originalId = this.id;
-    }
-
-    public void initScheduleDate(LocalDate nextDate) {
-        this.scheduleDate = nextDate;
-    }
-
-    public boolean plusDoneCount() {
-        this.doneCount += 1;
-        return this.doneCount >= this.goalCount;
-    }
-
-    public void initNextSchedule() {
-        this.id = null;
-        this.scheduleDate = this.scheduleDate.plusDays(1);
-        this.done = false;
-    }
-    // TODO: ModelMapper에서 DTO로 넘겨주고 싶음.
-//    public ScheduleType getType(){
-//        if (goalCount > 0 | mon | tue | wed | thu | fri | sat | sun){
-//            return ScheduleType.ROUTINE;
-//        }else{
-//            return ScheduleType.TODO;
-//        }
-//    }
-
-    // getRepeatDays() -> objectMapper.convertValue() 에서 컬럼으로 인식하고 변환해버림.. -.-
-    public boolean[] calculateRepeatDays() {
-        boolean[] dayArray = {mon, tue, wed, thu, fri, sat, sun};
-
-        return dayArray;
-    }
-
-    public enum ScheduleType {
-        TODO, ROUTINE
-    }
-
     @Schema(description = "스케줄 생성 시 요청 클래스")
     @Getter
     @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     public static class ScheduleRequest {
-
-        @Schema(description = "사용자 DB ID", defaultValue = "1")
-        @NotNull
-        private Long userId;
 
         @Schema(description = "스케줄 이름", defaultValue = "술 마시기")
         @NotNull
@@ -203,9 +205,9 @@ public class Schedule extends BaseTime {
 
         @Schema(description = "일요일 반복 여부", defaultValue = "false")
         private boolean sun;
-
-        @Schema(description = "스케줄 유형(할일/습관)", defaultValue = "TODO")
-        private ScheduleType scheduleType;
+//
+//        @Schema(description = "스케줄 유형(할일/습관)", defaultValue = "TODO")
+//        private ScheduleType scheduleType;
     }
 
     @Schema(description = "단일 스케줄 조회 시 응답 클래스")
