@@ -21,13 +21,14 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.springframework.format.annotation.DateTimeFormat;
 
+
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 public class Schedule extends BaseTime {
 
-    
+
     @Id
     @GenericGenerator(name = "SequenceGenerator", strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator", parameters = {
         @Parameter(name = "sequence_name", value = "hibernate_sequence"),
@@ -143,6 +144,11 @@ public class Schedule extends BaseTime {
         boolean[] dayArray = {mon, tue, wed, thu, fri, sat, sun};
 
         return dayArray;
+    }
+
+
+    public boolean getDone() {
+        return done;
     }
 
     public enum ScheduleType {
@@ -265,7 +271,7 @@ public class Schedule extends BaseTime {
         @Schema(description = "스케줄 수행 시간", defaultValue = "아무때나")
         private String scheduleTime;
         @Schema(description = "수행 완료 여부", defaultValue = "false", allowableValues = {"true",
-                "false"})
+            "false"})
         private boolean isDone;
         @Schema(description = "스케줄 유형(할일/습관)", defaultValue = "todo")
         private ScheduleType scheduleType;
