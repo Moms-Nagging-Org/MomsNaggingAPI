@@ -18,6 +18,8 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
     List<Schedule> findAllByScheduleDateAndUserIdOrderByScheduleTimeAsc(LocalDate scheduleDate, Long userId);
 
+    List<Schedule> findAllByUserIdAndGoalCountGreaterThanAndScheduleDateGreaterThanEqualAndScheduleDateLessThanEqual(
+        Long userId, int goalCount, LocalDate startDate, LocalDate endDate);
     // 벌크 연산 시 clearAutomatically(JPA 1차 캐시) 옵션 필요
     @Transactional
     @Modifying(clearAutomatically = true)
