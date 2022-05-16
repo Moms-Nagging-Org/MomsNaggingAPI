@@ -1,6 +1,8 @@
 package com.jasik.momsnaggingapi.domain.schedule;
 
 import com.jasik.momsnaggingapi.infra.common.BaseTime;
+import com.jasik.momsnaggingapi.infra.common.ErrorCode;
+import com.jasik.momsnaggingapi.infra.common.exception.NotValidRoutineException;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -11,7 +13,9 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,6 +25,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
+import org.springframework.lang.Nullable;
 
 
 @Entity
@@ -129,6 +134,12 @@ public class Schedule extends BaseTime {
         return dayArray;
     }
 
+    public void verifyRoutine() {
+        if ((this.mon | this.tue | this.wed | this.thu | this.fri | this.sat | this.sun) && (this.goalCount > 0)){
+            throw new NotValidRoutineException("Repeat option of routine is not valid", ErrorCode.ROUTINE_NOT_VALID);
+        }
+    }
+
     public enum ScheduleType {
         TODO, ROUTINE
     }
@@ -169,8 +180,12 @@ public class Schedule extends BaseTime {
     public static class ScheduleRequest {
 
         @Schema(description = "스케줄 이름", defaultValue = "술 마시기")
-        @NotNull
+        @NotBlank
         private String scheduleName;
+
+        @Schema(description = "잔소리 Id, 없는 경우 null")
+        @Nullable
+        private Long naggingId;
 
         @Schema(description = "n회 습관일 경우 목표 횟수", defaultValue = "0")
         private int goalCount;
@@ -179,12 +194,12 @@ public class Schedule extends BaseTime {
         private String scheduleTime;
 
         @Schema(description = "스케줄 수행 일자")
-        @NotNull
+        @NotBlank
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
 //        @JsonFormat(shape = Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate scheduleDate;
 
-        @Schema(description = "스케줄 알람 시간")
+        @Schema(description = "스케줄 알람 시간", defaultValue = "12:00:00")
         @DateTimeFormat(iso = ISO.TIME)
 //        @JsonFormat(shape = Shape.STRING, pattern = "HH:mm:ss", timezone = "Asia/Seoul")
         private LocalTime alarmTime;
@@ -220,8 +235,8 @@ public class Schedule extends BaseTime {
 
         @Schema(description = "스케줄 ID", defaultValue = "2")
         private Long id;
-        @Schema(description = "사용자 DB ID", defaultValue = "1")
-        private Long userId;
+        @Schema(description = "잔소리 Id", defaultValue = "1")
+        private Long naggingId;
         @Schema(description = "n회 습관의 수행 목표 수", defaultValue = "0")
         private int goalCount;
         @Schema(description = "n회 습관의 수행 완료 수", defaultValue = "0")
@@ -233,7 +248,7 @@ public class Schedule extends BaseTime {
         @Schema(description = "스케줄 수행 일자", defaultValue = "2022-05-08")
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         private LocalDate scheduleDate;
-        @Schema(description = "스케줄 알람 시간")
+        @Schema(description = "스케줄 알람 시간", defaultValue = "12:00:00")
         @DateTimeFormat(iso = ISO.TIME)
         private LocalTime alarmTime;
         @Schema(description = "스케줄 수행 여부", defaultValue = "false")
@@ -265,6 +280,8 @@ public class Schedule extends BaseTime {
 
         @Schema(description = "스케줄 ID", defaultValue = "2")
         private Long id;
+        @Schema(description = "잔소리 Id", defaultValue = "1")
+        private Long naggingId;
         @Schema(description = "스케줄 정렬 순서", defaultValue = "0")
         private int seqNumber;
         @Schema(description = "스케줄 이름", defaultValue = "술 마시기")

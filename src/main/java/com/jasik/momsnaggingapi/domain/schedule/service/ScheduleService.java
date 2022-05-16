@@ -17,7 +17,6 @@ import java.time.LocalDate;
 import java.time.temporal.WeekFields;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.stream.Collectors;
 import javax.json.JsonPatch;
@@ -43,28 +42,31 @@ public class ScheduleService extends RejectedExecutionException {
 
     @Transactional
     public Schedule.ScheduleResponse postSchedule(Schedule.ScheduleRequest dto) {
+
         // TODO: nagging ID 연동
         Long userId = 1L;
         // TODO: 하루 최대 생성갯수 조건 추가
+        if (dto.getNaggingId() != null && dto.getNaggingId() == 0) {
+            dto.setNaggingId(null);
+        }
         Schedule originSchedule = scheduleRepository.save(modelMapper.map(dto, Schedule.class));
         // TODO : 생성 -> 업데이트 로직 개선사항 찾기 -> select last_insert_id()
         originSchedule.initOriginalId();
         originSchedule.initScheduleTypeAndUserId(userId);
+        originSchedule.verifyRoutine();
         // 습관 스케줄 저장 로직(n회 습관은 제외)
         if (originSchedule.getScheduleType() == Schedule.ScheduleType.ROUTINE
             && originSchedule.getGoalCount() == 0) {
             try {
                 Schedule finalOriginSchedule = originSchedule;
-                asyncService.run(() -> {
-                    createRoutine(finalOriginSchedule);
-                });
+                asyncService.run(() -> createRoutine(finalOriginSchedule));
             } catch (RejectedExecutionException e) {
                 throw new ThreadFullException("Async Thread was fulled", ErrorCode.THREAD_FULL);
             }
         }
         originSchedule = scheduleRepository.save(originSchedule);
-
-        return modelMapper.map(schedule, Schedule.ScheduleResponse.class);
+        log.error("finish");
+        return modelMapper.map(originSchedule, Schedule.ScheduleResponse.class);
     }
 
     public void createRoutine(Schedule originSchedule) {
@@ -112,8 +114,8 @@ public class ScheduleService extends RejectedExecutionException {
 
         Long userId = 1L;
 
-        List<Schedule> schedules = scheduleRepository.findAllByScheduleDateAndUserIdOrderByScheduleTimeAsc(scheduleDate,
-            userId);
+        List<Schedule> schedules = scheduleRepository.findAllByScheduleDateAndUserIdOrderByScheduleTimeAsc(
+            scheduleDate, userId);
 
         return schedules.stream().map(Schedule -> modelMapper.map(Schedule,
                 com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleListResponse.class))
@@ -124,9 +126,10 @@ public class ScheduleService extends RejectedExecutionException {
     public Schedule.ScheduleResponse getSchedule(Long scheduleId) {
         Long userId = 1L;
 
-        return scheduleRepository.findByIdAndUserId(userId, scheduleId)
-            .map(value -> modelMapper.map(value, Schedule.ScheduleResponse.class))
-            .orElseThrow(NoSuchElementException::new);
+        return scheduleRepository.findByIdAndUserId(scheduleId, userId)
+            .map(value -> modelMapper.map(value, Schedule.ScheduleResponse.class)).orElseThrow(
+                () -> new ScheduleNotFoundException("schedule was not found",
+                    ErrorCode.SCHEDULE_NOT_FOUND));
     }
 
     @Transactional
@@ -134,8 +137,9 @@ public class ScheduleService extends RejectedExecutionException {
 
         Long userId = 1L;
 
-        Schedule targetSchedule = scheduleRepository.findByIdAndUserId(userId, scheduleId)
-            .orElseThrow(NoSuchElementException::new);
+        Schedule targetSchedule = scheduleRepository.findByIdAndUserId(scheduleId, userId)
+            .orElseThrow(() -> new ScheduleNotFoundException("schedule was not found",
+                ErrorCode.SCHEDULE_NOT_FOUND));
         // 타겟 스케줄 변경사항 적용
         Schedule modifiedSchedule = scheduleRepository.save(
             mergeSchedule(targetSchedule, jsonPatch));
@@ -148,8 +152,10 @@ public class ScheduleService extends RejectedExecutionException {
         if (columnList.contains("/done") && modifiedSchedule.getDone() && (
             modifiedSchedule.getScheduleType() == ScheduleType.ROUTINE) && (
             modifiedSchedule.getGoalCount() > 0)) {
-            Schedule originSchedule = scheduleRepository.findByIdAndUserId(userId,
-                modifiedSchedule.getOriginalId()).orElseThrow(NoSuchElementException::new);
+            Schedule originSchedule = scheduleRepository.findByIdAndUserId(
+                modifiedSchedule.getOriginalId(), userId).orElseThrow(
+                () -> new ScheduleNotFoundException("schedule was not found",
+                    ErrorCode.SCHEDULE_NOT_FOUND));
             // 목표 미완 and 내일 주차 == 원본 주차 =-> 다음날 한개 더 생성
             if (!originSchedule.plusDoneCount()
                 && modifiedSchedule.getScheduleDate().plusDays(1).get(WeekFields.ISO.weekOfYear())
@@ -167,9 +173,7 @@ public class ScheduleService extends RejectedExecutionException {
             modifiedSchedule.initOriginalId();
             scheduleRepository.save(modifiedSchedule);
             try {
-                asyncService.run(() -> {
-                    createRoutine(modifiedSchedule);
-                });
+                asyncService.run(() -> createRoutine(modifiedSchedule));
             } catch (RejectedExecutionException e) {
                 throw new ThreadFullException("Async Thread was fulled", ErrorCode.THREAD_FULL);
             }
@@ -204,12 +208,14 @@ public class ScheduleService extends RejectedExecutionException {
     public void deleteSchedule(Long scheduleId) {
 
         Long userId = 1L;
-        Schedule schedule = scheduleRepository.findByIdAndUserId(userId, scheduleId)
-            .orElseThrow(() -> new ScheduleNotFoundException("schedule was not found", ErrorCode.SCHEDULE_NOT_FOUND));
+        Schedule schedule = scheduleRepository.findByIdAndUserId(scheduleId, userId).orElseThrow(
+            () -> new ScheduleNotFoundException("schedule was not found",
+                ErrorCode.SCHEDULE_NOT_FOUND));
         // n회 습관인 경우 원본의 goalCount를 0으로 해야 다음 주차에 생성 안됨
         if (schedule.getGoalCount() > 0) {
-            Schedule originSchedule = scheduleRepository.findByIdAndUserId(userId, schedule.getOriginalId())
-                .orElseThrow(NoSuchElementException::new);
+            Schedule originSchedule = scheduleRepository.findByIdAndUserId(schedule.getOriginalId(),
+                userId).orElseThrow(() -> new ScheduleNotFoundException("schedule was not found",
+                ErrorCode.SCHEDULE_NOT_FOUND));
             originSchedule.initGoalCount();
             scheduleRepository.save(originSchedule);
         }

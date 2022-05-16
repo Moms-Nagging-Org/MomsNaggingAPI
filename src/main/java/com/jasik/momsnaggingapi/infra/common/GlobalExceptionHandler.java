@@ -1,5 +1,7 @@
 package com.jasik.momsnaggingapi.infra.common;
 
+import com.jasik.momsnaggingapi.infra.common.exception.NotValidRoutineException;
+import com.jasik.momsnaggingapi.infra.common.exception.ScheduleNotFoundException;
 import com.jasik.momsnaggingapi.infra.common.exception.ThreadFullException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -25,9 +27,15 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.valueOf(ex.getErrorCode().getStatus()));
     }
 
-    @ExceptionHandler(ThreadFullException.class)
-    public ResponseEntity<ErrorResponse> handleScheduleNotFoundException(ThreadFullException ex) {
+    @ExceptionHandler(ScheduleNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleScheduleNotFoundException(ScheduleNotFoundException ex) {
         log.error("handleScheduleNotFoundException", ex);
+        ErrorResponse response = new ErrorResponse(ex.getErrorCode());
+        return new ResponseEntity<>(response, HttpStatus.valueOf(ex.getErrorCode().getStatus()));
+    }
+    @ExceptionHandler(NotValidRoutineException.class)
+    public ResponseEntity<ErrorResponse> handleNotValidRoutineException(NotValidRoutineException ex) {
+        log.error("handleNotValidRoutineException", ex);
         ErrorResponse response = new ErrorResponse(ex.getErrorCode());
         return new ResponseEntity<>(response, HttpStatus.valueOf(ex.getErrorCode().getStatus()));
     }

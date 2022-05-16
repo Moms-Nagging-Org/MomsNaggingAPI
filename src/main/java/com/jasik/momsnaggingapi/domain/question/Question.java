@@ -1,16 +1,19 @@
 package com.jasik.momsnaggingapi.domain.question;
 
-import com.jasik.momsnaggingapi.domain.common.BaseTime;
+import com.jasik.momsnaggingapi.infra.common.BaseTime;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import javax.persistence.*;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
@@ -65,9 +68,11 @@ public class Question extends BaseTime {
     public static class QuestionRequest {
 
         @Schema(description = "문의 제목", defaultValue = "문의있습니다")
+        @NotBlank
         private String title;
 
         @Schema(description = "문의 내용", defaultValue = "있었는데 없습니다.")
+        @NotBlank
         private String context;
     }
 

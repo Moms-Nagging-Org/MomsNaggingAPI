@@ -1,21 +1,23 @@
 package com.jasik.momsnaggingapi.domain.grade.service;
 
-import com.jasik.momsnaggingapi.infra.common.AsyncService;
 import com.jasik.momsnaggingapi.domain.grade.Grade;
 import com.jasik.momsnaggingapi.domain.grade.Grade.GradesOfMonthResponse;
 import com.jasik.momsnaggingapi.domain.grade.Grade.Performance;
 import com.jasik.momsnaggingapi.domain.grade.repository.GradeRepository;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
 import com.jasik.momsnaggingapi.domain.schedule.repository.ScheduleRepository;
+import com.jasik.momsnaggingapi.infra.common.AsyncService;
+import com.jasik.momsnaggingapi.infra.common.ErrorCode;
+import com.jasik.momsnaggingapi.infra.common.Utils;
+import com.jasik.momsnaggingapi.infra.common.exception.ThreadFullException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.WeekFields;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Optional;
+import java.util.concurrent.RejectedExecutionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -35,41 +37,8 @@ public class GradeService {
     private final ModelMapper modelMapper;
     private final AsyncService asyncService;
 
-    public List<String> getDaysOfWeek(LocalDate localDate) {
-        List<String> arrYMD = new ArrayList<>();
-        Date date = java.sql.Date.valueOf(localDate);
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
+    private final Utils utils;
 
-        int inYear = cal.get(Calendar.YEAR);
-        int inMonth = cal.get(Calendar.MONTH);
-        int inDay = cal.get(Calendar.DAY_OF_MONTH);
-
-        int yoil = cal.get(Calendar.DAY_OF_WEEK); //요일나오게하기(숫자로)
-        if (yoil != 1) {   //해당요일이 일요일이 아닌경우
-            yoil = yoil - 2;
-        } else {           //해당요일이 일요일인경우
-            yoil = 7;
-        }
-        inDay = inDay - yoil;
-
-        for (int i = 0; i < 7; i += 6) {
-            cal.set(inYear, inMonth, inDay + i);  //
-            String y = Integer.toString(cal.get(Calendar.YEAR));
-            String m = Integer.toString(cal.get(Calendar.MONTH) + 1);
-            String d = Integer.toString(cal.get(Calendar.DAY_OF_MONTH));
-            if (m.length() == 1) {
-                m = "0" + m;
-            }
-            if (d.length() == 1) {
-                d = "0" + d;
-            }
-
-            arrYMD.add(y + "-" + m + "-" + d);
-        }
-
-        return arrYMD;
-    }
 
     public void createNRoutines(Long userId, LocalDate startDate, LocalDate endDate) {
         List<Schedule> nRoutineSchedules = scheduleRepository.findAllByUserIdAndGoalCountGreaterThanAndScheduleDateGreaterThanEqualAndScheduleDateLessThanEqual(
@@ -143,12 +112,14 @@ public class GradeService {
         if (optionalGrade.isPresent()) {
             grade = optionalGrade.get();
         } else {
-            List<String> daysOfWeek = getDaysOfWeek(weekAgoDate);
+            List<String> daysOfWeek = utils.getDaysOfWeek(weekAgoDate);
             LocalDate startDate = LocalDate.parse(daysOfWeek.get(0), DateTimeFormatter.ISO_DATE);
             LocalDate endDate = LocalDate.parse(daysOfWeek.get(1), DateTimeFormatter.ISO_DATE);
-
-            // 해당 주차의 n회 습관 생성 -> 비동기
-            asyncService.run(()->createNRoutines(userId, startDate, endDate));
+            try {
+                asyncService.run(()->createNRoutines(userId, startDate, endDate));
+            } catch (RejectedExecutionException e) {
+                throw new ThreadFullException("Async Thread was fulled", ErrorCode.THREAD_FULL);
+            }
             // 주간 평가 생성
             grade = createGrade(userId, startDate, endDate, createdYear, createdWeek);
             if (grade.getGradeLevel() == 5) {
