@@ -1,6 +1,6 @@
 package com.jasik.momsnaggingapi.domain.grade.service;
 
-import com.jasik.momsnaggingapi.domain.common.AsyncService;
+import com.jasik.momsnaggingapi.infra.common.AsyncService;
 import com.jasik.momsnaggingapi.domain.grade.Grade;
 import com.jasik.momsnaggingapi.domain.grade.Grade.GradesOfMonthResponse;
 import com.jasik.momsnaggingapi.domain.grade.Grade.Performance;

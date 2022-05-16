@@ -1,6 +1,6 @@
 package com.jasik.momsnaggingapi.domain.diary;
 
-import com.jasik.momsnaggingapi.domain.common.BaseTime;
+import com.jasik.momsnaggingapi.infra.common.BaseTime;
 import com.jasik.momsnaggingapi.domain.diary.Diary.DailyResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;

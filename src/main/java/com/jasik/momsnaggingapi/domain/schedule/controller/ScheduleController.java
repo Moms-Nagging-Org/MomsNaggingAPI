@@ -72,7 +72,7 @@ public class ScheduleController {
 
         return ResponseEntity.ok().body(result);
     }
-
+    // TODO: Request DTO로 만들기
     @PatchMapping(value = "/{scheduleId}", consumes = "application/json-patch+json")
     @Operation(summary = "할일/습관 수정", description = "할일 또는 습관 정보를 수정합니다. \n\nRFC6902 형식을 따릅니다.\n\nhttps://datatracker.ietf.org/doc/html/rfc6902 \n\n "
             + "[\n\n"
