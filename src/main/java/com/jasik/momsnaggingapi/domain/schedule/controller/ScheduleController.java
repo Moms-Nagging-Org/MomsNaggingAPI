@@ -121,16 +121,16 @@ public class ScheduleController {
         return ResponseEntity.ok().body(result);
     }
 
-    @PostMapping("/categories")
-    @Operation(summary = "습관 추천 종류 생성", description = "습관 추천 종류를 생성합니다.")
-    public ResponseEntity<Category.CategoryResponse> postCategory(
-            final @Valid @RequestBody Category.CategoryRequest categoryRequest
-    ) {
-        Category.CategoryResponse result = scheduleService.postCategory(categoryRequest);
-        URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/v1/categories/").toUriString());
-
-        return ResponseEntity.created(uri).body(result);
-    }
+//    @PostMapping("/categories")
+//    @Operation(summary = "습관 추천 종류 생성", description = "습관 추천 종류를 생성합니다.")
+//    public ResponseEntity<Category.CategoryResponse> postCategory(
+//            final @Valid @RequestBody Category.CategoryRequest categoryRequest
+//    ) {
+//        Category.CategoryResponse result = scheduleService.postCategory(categoryRequest);
+//        URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/v1/categories/").toUriString());
+//
+//        return ResponseEntity.created(uri).body(result);
+//    }
 
     @GetMapping("/categories")
     @Operation(summary = "추천 습관 종류 조회", description = "추천 습관의 종류를 조회합니다.")
