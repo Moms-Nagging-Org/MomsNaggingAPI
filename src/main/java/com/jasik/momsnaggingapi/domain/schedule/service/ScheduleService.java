@@ -55,7 +55,7 @@ public class ScheduleService {
             asyncService.run(()->createRoutine(originSchedule));
         }
 
-        return modelMapper.map(originSchedule, Schedule.ScheduleResponse.class);
+        return modelMapper.map(schedule, Schedule.ScheduleResponse.class);
     }
 
     public void createRoutine(Schedule originSchedule) {
