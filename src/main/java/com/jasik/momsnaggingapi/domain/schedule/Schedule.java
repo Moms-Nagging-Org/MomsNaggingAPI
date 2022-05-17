@@ -288,9 +288,12 @@ public class Schedule extends BaseTime {
         private String scheduleName;
         @Schema(description = "스케줄 수행 시간", defaultValue = "아무때나")
         private String scheduleTime;
-        @Schema(description = "수행 완료 여부", defaultValue = "false", allowableValues = {"true",
-            "false"})
-        private boolean isDone;
+        @Schema(description = "수행 완료 여부\n\n"
+            + "true : 수행 완료\n\n"
+            + "false : 미수행\n\n"
+            + "null : 미룸", defaultValue = "false", allowableValues = {"true",
+            "false", "null"})
+        private boolean done;
         @Schema(description = "스케줄 유형(할일/습관)", defaultValue = "todo")
         private ScheduleType scheduleType;
 

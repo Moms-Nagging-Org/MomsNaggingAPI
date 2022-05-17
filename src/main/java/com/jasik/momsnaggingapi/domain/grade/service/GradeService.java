@@ -98,7 +98,7 @@ public class GradeService {
     @Transactional
     public Grade.GradeResponse getGradeOfLastWeek() {
 
-        // TODO: '수' 등급의 변수 환경변수로 관리
+        // TODO: '수' 등급의 상수 환경변수로 관리
         // 프론트 로직 : 로그인 시 마지막 평가 주차 조회(16주차) -> 프론트에서 오늘의 주차 계산(18주차) -> 오늘 주차(18주차) - 1 != 마지막 평가 주차(16) -> 주간 평가 요청
         Long userId = 1L;
         LocalDate weekAgoDate = LocalDate.now().minusDays(7);

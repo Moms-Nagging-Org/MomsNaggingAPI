@@ -178,6 +178,7 @@ public class ScheduleService extends RejectedExecutionException {
                 throw new ThreadFullException("Async Thread was fulled", ErrorCode.THREAD_FULL);
             }
         }
+        // TODO: n회 습관 수정사항을 원본에도 적용으로 변경 필요
         // n회 반복 옵션이 수정된 경우 -> 원본이 같은 n회 습관들 모두 업데이트
         else if (columnList.contains("goalCount")) {
             scheduleRepository.updateNRoutineWithUserIdAndOriginalId(

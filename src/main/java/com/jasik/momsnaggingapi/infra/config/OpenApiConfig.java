@@ -19,7 +19,7 @@ public class OpenApiConfig {
 
     @Bean
     public OpenAPI openAPI() {
-        SpringDocUtils.getConfig().replaceWithClass(LocalTime.class, String.class);
+//        SpringDocUtils.getConfig().replaceWithClass(LocalTime.class, String.class);
         Info info = new Info().title("MomsNagging API").version("v1")
                 .description("Spring Boot를 이용한 MomsNagging API입니다.")
                 .termsOfService("http://swagger.io/terms/")

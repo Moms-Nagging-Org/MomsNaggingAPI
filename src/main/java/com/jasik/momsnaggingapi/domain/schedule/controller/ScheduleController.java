@@ -59,7 +59,8 @@ public class ScheduleController {
         + "홈\n\n"
         + "홈 → 성적표 → 달력 → 특정 일 선택\n\n"
         + "<설명>\n\n"
-        + "해당 일자의 모든 스케줄을 조회합니다.")
+        + "해당 일자의 모든 스케줄을 조회합니다.\n\n"
+        + "TODO 스케줄의 done 컬럼 값이 null 인 경우 '미룸' 상태입니다.")
     public ResponseEntity<List<Schedule.ScheduleListResponse>> getSchedules(
         @Schema(description = "일자", example = "2022-04-16", required = true)
         @Parameter(name = "retrieveDate", description = "조회 일자", in = ParameterIn.QUERY) @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate retrieveDate
