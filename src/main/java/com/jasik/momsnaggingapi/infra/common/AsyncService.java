@@ -1,4 +1,4 @@
-package com.jasik.momsnaggingapi.domain.common;
+package com.jasik.momsnaggingapi.infra.common;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;

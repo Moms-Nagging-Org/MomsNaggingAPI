@@ -1,6 +1,6 @@
 package com.jasik.momsnaggingapi.domain.grade;
 
-import com.jasik.momsnaggingapi.domain.common.BaseTime;
+import com.jasik.momsnaggingapi.infra.common.BaseTime;
 import com.jasik.momsnaggingapi.domain.grade.Grade.Performance;
 import com.jasik.momsnaggingapi.domain.grade.Grade.StatisticsResponse;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleListResponse;

@@ -1,4 +1,4 @@
-package com.jasik.momsnaggingapi.domain.common;
+package com.jasik.momsnaggingapi.infra.common;
 
 import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;
