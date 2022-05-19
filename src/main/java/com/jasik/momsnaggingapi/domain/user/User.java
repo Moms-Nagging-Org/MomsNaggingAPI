@@ -4,10 +4,12 @@ import com.jasik.momsnaggingapi.domain.common.BaseTime;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
 
 @Entity
 @Getter
@@ -53,6 +55,10 @@ public class User extends BaseTime {
         this.providerCode = providerCode;
         this.personalId = personalId;
         this.device = device;
+    }
+
+    public User(String subject, String s, Collection<? extends GrantedAuthority> authorities) {
+        super();
     }
 
     @Schema(description = "사용자 조회 시 응답 클래스")

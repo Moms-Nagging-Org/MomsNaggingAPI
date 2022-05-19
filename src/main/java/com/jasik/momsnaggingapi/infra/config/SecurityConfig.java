@@ -1,0 +1,51 @@
+package com.jasik.momsnaggingapi.infra.config;
+
+import com.jasik.momsnaggingapi.domain.auth.jwt.AuthToken;
+import com.jasik.momsnaggingapi.domain.auth.jwt.JwtAuthFilter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+@RequiredArgsConstructor
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+    private AuthToken authToken;
+
+    public SecurityConfig(AuthToken authToken) {
+        this.authToken = authToken;
+    }
+
+    @Override
+    public void configure(WebSecurity web) throws Exception {
+        web.ignoring().antMatchers("/", "/v3/api-docs", "/configuration/**", "/swagger-ui/**", "/webjars/**");
+    }
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        JwtAuthFilter jwtAuthFilter = new JwtAuthFilter(authToken);
+
+        http
+                .authorizeRequests()
+                .antMatchers(HttpMethod.OPTIONS).permitAll()
+                .antMatchers("/api/v1/auth/**").permitAll() // 로그인/회원가입 쪽은 인증 없이
+                .anyRequest().authenticated().and() // 인증된 요청만 처리
+                .headers()
+                .frameOptions()
+                .sameOrigin().and()
+                .cors().and()
+                .csrf().disable()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+    }
+}

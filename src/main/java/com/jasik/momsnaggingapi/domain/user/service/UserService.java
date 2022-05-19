@@ -2,6 +2,7 @@ package com.jasik.momsnaggingapi.domain.user.service;
 
 import com.jasik.momsnaggingapi.domain.auth.exception.LoginFailureException;
 import com.jasik.momsnaggingapi.domain.auth.jwt.AuthToken;
+import com.jasik.momsnaggingapi.domain.auth.jwt.AuthTokenProvider;
 import com.jasik.momsnaggingapi.domain.user.User;
 import com.jasik.momsnaggingapi.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final AuthTokenProvider authTokenProvider;
 
     /**
      *  유저의 존재 유무를 파악하여 로그인 / 회원가입
@@ -44,14 +46,19 @@ public class UserService {
                         .personalId(request.getPersonalId())
                         .nickName(request.getNickname())
                         .build());
-        return new User.AuthResponse(AuthToken.createToken(request.getProvider(), user.getEmail(), user.getPersonalId()));
+        AuthToken authToken = authTokenProvider.createToken(request.getProvider(), user.getEmail(), user.getPersonalId());
+        return new User.AuthResponse(authToken.getToken());
     }
 
     public User.AuthResponse loginUser(User.AuthRequest request) {
         // TODO: provider 도 확인
         User user = userRepository.findByProviderCode(request.getCode()).orElseThrow(LoginFailureException::new);;
 
-        return new User.AuthResponse(AuthToken.createToken(request.getProvider(), user.getEmail(), user.getPersonalId()));
+        AuthToken authToken = authTokenProvider.createToken(request.getProvider(), user.getEmail(), user.getPersonalId());
+        return new User.AuthResponse(authToken.getToken());
+    }
 
+    public Optional<User> findUserById(String id) {
+        return userRepository.findByPersonalId(id);
     }
 }
