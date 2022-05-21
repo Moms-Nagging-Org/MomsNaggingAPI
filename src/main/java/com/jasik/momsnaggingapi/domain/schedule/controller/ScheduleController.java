@@ -38,7 +38,12 @@ public class ScheduleController {
 
 
     @PostMapping("")
-    @Operation(summary = "할일/습관 생성", description = "할일 또는 습관을 생성합니다.")
+    @Operation(summary = "할일/습관 생성", description = ""
+        + "<페이지>\n\n"
+        + "홈 → 추가하기 → 습관 추가 → 완료\n\n"
+        + "홈 → 할일 미룸 → 다시 알림 팝업 → 네(내일 날짜로 신규 생성)\n\n"
+        + "<설명>\n\n"
+        + "할일 또는 습관을 생성합니다.")
     public ResponseEntity<Schedule.ScheduleResponse> postSchedules(
             final @Valid @RequestBody Schedule.ScheduleRequest scheduleRequest
     ) {
@@ -49,12 +54,16 @@ public class ScheduleController {
     }
 
     @GetMapping("")
-    @Operation(summary = "할일/습관 목록 조회", description = "해당 일자의 모든 스케줄을 조회합니다.")
+    @Operation(summary = "할일/습관 목록 조회", description = ""
+        + "<페이지>\n\n"
+        + "홈\n\n"
+        + "홈 → 성적표 → 달력 → 특정 일 선택\n\n"
+        + "<설명>\n\n"
+        + "해당 일자의 모든 스케줄을 조회합니다.\n\n"
+        + "TODO 스케줄의 done 컬럼 값이 null 인 경우 '미룸' 상태입니다.")
     public ResponseEntity<List<Schedule.ScheduleListResponse>> getSchedules(
-        @Schema(description = "사용자 DB ID", example = "1", required = true)
-        @Parameter(name = "userId", description = "조회할 사용자 DB ID", in = ParameterIn.QUERY) @RequestParam Long userId,
         @Schema(description = "일자", example = "2022-04-16", required = true)
-        @Parameter(name = "scheduleDate", description = "조회 일자", in = ParameterIn.QUERY) @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate retrieveDate
+        @Parameter(name = "retrieveDate", description = "조회 일자", in = ParameterIn.QUERY) @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate retrieveDate
     ) {
         List<Schedule.ScheduleListResponse> result = scheduleService.getSchedules(retrieveDate);
 
@@ -62,7 +71,13 @@ public class ScheduleController {
     }
 
     @GetMapping("/{scheduleId}")
-    @Operation(summary = "할일/습관 조회", description = "할일 또는 습관 정보를 조회합니다.")
+    @Operation(summary = "할일/습관 상세 조회", description = ""
+        + "<페이지>\n\n"
+        + "홈 → 추가하기 → 습관 추가 → 추천 습관 카테고리 선택 → 습관 선택\n\n"
+        + "홈 → 할일 미룸 → 다시 알림 팝업 →  아니오\n\n"
+        + "홈 → 할일/습관 선택\n\n"
+        + "<설명>\n\n"
+        + "할일 또는 습관 정보를 조회합니다.")
     public ResponseEntity<Schedule.ScheduleResponse> getSchedule(
             @Schema(description = "조회할 스케줄 ID", example = "2", required = true)
             @Parameter(name = "scheduleId", description = "조회할 스케줄 ID", in = ParameterIn.PATH)
@@ -72,10 +87,17 @@ public class ScheduleController {
 
         return ResponseEntity.ok().body(result);
     }
-
+    // TODO: Request DTO로 만들기
     @PatchMapping(value = "/{scheduleId}", consumes = "application/json-patch+json")
-    @Operation(summary = "할일/습관 수정", description = "할일 또는 습관 정보를 수정합니다. \n\nRFC6902 형식을 따릅니다.\n\nhttps://datatracker.ietf.org/doc/html/rfc6902 \n\n "
-            + "[\n\n"
+    @Operation(summary = "할일/습관 수정", description = ""
+        + "<페이지>\n\n"
+        + "홈 → 완료(done = true)\n\n"
+        + "홈 → 할일 미룸(done = null)\n\n"
+        + "홈 → 할일/습관 선택 → 완료\n\n"
+        + "<설명>\n\n"
+        + "할일 또는 습관 정보를 수정합니다. \n\n"
+        + "RFC6902 형식을 따릅니다.(https://datatracker.ietf.org/doc/html/rfc6902)\n\n "
+        + "[\n\n"
             + "    {\n\n"
             + "        \"op\": \"replace\",\n\n"
             + "        \"path\": \"/name\",\n\n"
@@ -85,7 +107,8 @@ public class ScheduleController {
             + "        \"op\": \"replace\",\n\n"
             + "        \"path\": \"/email\",\n\n"
             + "        \"value\": \"kildong@test.com\"\n\n"
-            + "    }\n\n]"
+            + "    }\n\n"
+        + "]\n\n"
     )
     public ResponseEntity<Schedule.ScheduleResponse> patchSchedule(
             @Schema(example = "2", required = true)
@@ -99,7 +122,12 @@ public class ScheduleController {
     }
 
     @DeleteMapping("/{scheduleId}")
-    @Operation(summary = "할일/습관 삭제", description = "할일 또는 습관 정보를 삭제합니다. 해당 스케줄의 이후 날짜에 대해 모두 적용됩니다.")
+    @Operation(summary = "할일/습관 삭제", description = ""
+        + "<페이지>\n\n"
+        + "홈 → 삭제\n\n"
+        + "<설명>\n\n"
+        + "할일 또는 습관 정보를 삭제합니다. \n\n"
+        + "해당 스케줄 및 이후 날짜의 스케줄이 삭제됩니다.")
     @ApiResponse(responseCode = "204", description = "삭제 성공")
     public ResponseEntity<?> deleteSchedule(
             @Schema(description = "삭제할 스케줄 ID", example = "2", required = true)
@@ -112,7 +140,11 @@ public class ScheduleController {
     }
 
     @PostMapping("/array")
-    @Operation(summary = "할일/습관 정렬", description = "할일 또는 습관을 정렬합니다.")
+    @Operation(summary = "할일/습관 정렬", description = ""
+        + "<페이지>\n\n"
+        + "홈 → 정렬 → 저장\n\n"
+        + "<설명>\n\n"
+        + "할일 또는 습관을 정렬합니다.")
     public ResponseEntity<List<Schedule.ScheduleListResponse>> postSchedulesArray(
             @Schema(description = "정렬 순서에 맞게 스케줄의 ID가 저장된 배열", example = "[3, 4, 1, 2, 5]", required = true) final @RequestBody List<Long> scheduleArrayRequest
     ) {
@@ -133,7 +165,11 @@ public class ScheduleController {
 //    }
 
     @GetMapping("/categories")
-    @Operation(summary = "추천 습관 종류 조회", description = "추천 습관의 종류를 조회합니다.")
+    @Operation(summary = "추천 습관 종류 조회", description = ""
+        + "<페이지>\n\n"
+        + "홈 → 추가하기 → 습관 추가\n\n"
+        + "<설명>\n\n"
+        + "추천 습관의 종류를 조회합니다.")
     public ResponseEntity<List<Category.CategoryResponse>> getScheduleCategories(
     ) {
         List<Category.CategoryResponse> result = scheduleService.getCategories();
@@ -142,7 +178,11 @@ public class ScheduleController {
     }
 
     @GetMapping("/categories/{categoryId}")
-    @Operation(summary = "추천 습관 리스트 조회", description = "추천 습관을 조회합니다.")
+    @Operation(summary = "추천 습관 리스트 조회", description = ""
+        + "<페이지>\n\n"
+        + "홈 → 추가하기 → 습관 추가 → 추천 습관 카테고리 선택\n\n"
+        + "<설명>\n\n"
+        + "추천 습관을 조회합니다.")
     public ResponseEntity<List<Schedule.CategoryListResponse>> getScheduleCategories(
             @Schema(description = "조회할 습관 종류 ID", example = "2", required = true)
             @Parameter(name = "categoryId", description = "조회할 습관 종류 ID", in = ParameterIn.PATH)
