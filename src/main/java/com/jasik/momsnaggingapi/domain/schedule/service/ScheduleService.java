@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.time.temporal.WeekFields;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.stream.Collectors;
 import javax.json.JsonPatch;
@@ -40,6 +41,12 @@ public class ScheduleService extends RejectedExecutionException {
     private final ObjectMapper objectMapper;
     private final AsyncService asyncService;
 
+    private int getNextSeqNumber(Long userId, LocalDate scheduleDate) {
+        Optional<Schedule> optionalLastSchedule = scheduleRepository.findFirstByUserIdAndScheduleDateOrderBySeqNumberDesc(
+            userId, scheduleDate);
+        return optionalLastSchedule.map(schedule -> schedule.getSeqNumber() + 1).orElse(0);
+    }
+
     @Transactional
     public Schedule.ScheduleResponse postSchedule(Schedule.ScheduleRequest dto) {
 
@@ -49,11 +56,16 @@ public class ScheduleService extends RejectedExecutionException {
         if (dto.getNaggingId() != null && dto.getNaggingId() == 0) {
             dto.setNaggingId(null);
         }
-        Schedule originSchedule = scheduleRepository.save(modelMapper.map(dto, Schedule.class));
+        Schedule newSchedule = modelMapper.map(dto, Schedule.class);
+        // TODO: TODO/ROUTINE에 따른 SeqNumber 설정
+        newSchedule.initSeqNumber(getNextSeqNumber(userId, dto.getScheduleDate()));
+        Schedule originSchedule = scheduleRepository.save(newSchedule);
         // TODO : 생성 -> 업데이트 로직 개선사항 찾기 -> select last_insert_id()
+        // seqNumber 마지막 번호로 추가
         originSchedule.initOriginalId();
         originSchedule.initScheduleTypeAndUserId(userId);
         originSchedule.verifyRoutine();
+        originSchedule = scheduleRepository.save(originSchedule);
         // 습관 스케줄 저장 로직(n회 습관은 제외)
         if (originSchedule.getScheduleType() == Schedule.ScheduleType.ROUTINE
             && originSchedule.getGoalCount() == 0) {
@@ -64,8 +76,6 @@ public class ScheduleService extends RejectedExecutionException {
                 throw new ThreadFullException("Async Thread was fulled", ErrorCode.THREAD_FULL);
             }
         }
-        originSchedule = scheduleRepository.save(originSchedule);
-        log.error("finish");
         return modelMapper.map(originSchedule, Schedule.ScheduleResponse.class);
     }
 
@@ -102,6 +112,8 @@ public class ScheduleService extends RejectedExecutionException {
                 Schedule nextSchedule = Schedule.builder().build();
                 BeanUtils.copyProperties(originSchedule, nextSchedule, "id", "scheduleDate");
                 nextSchedule.initScheduleDate(nextScheduleDate);
+                nextSchedule.initSeqNumber(
+                    getNextSeqNumber(nextSchedule.getUserId(), nextScheduleDate));
                 nextSchedules.add(nextSchedule);
             }
             weekCount += 1;
@@ -114,7 +126,7 @@ public class ScheduleService extends RejectedExecutionException {
 
         Long userId = 1L;
 
-        List<Schedule> schedules = scheduleRepository.findAllByScheduleDateAndUserIdOrderByScheduleTimeAsc(
+        List<Schedule> schedules = scheduleRepository.findAllByScheduleDateAndUserIdOrderBySeqNumberAsc(
             scheduleDate, userId);
 
         return schedules.stream().map(Schedule -> modelMapper.map(Schedule,
@@ -161,6 +173,8 @@ public class ScheduleService extends RejectedExecutionException {
                 && modifiedSchedule.getScheduleDate().plusDays(1).get(WeekFields.ISO.weekOfYear())
                 == originSchedule.getScheduleDate().get(WeekFields.ISO.weekOfYear())) {
                 modifiedSchedule.initNextSchedule();
+                modifiedSchedule.initSeqNumber(
+                    getNextSeqNumber(modifiedSchedule.getUserId(), modifiedSchedule.getScheduleDate()));
                 scheduleRepository.save(modifiedSchedule);
             }
         }

@@ -1,6 +1,5 @@
 package com.jasik.momsnaggingapi.domain.schedule.repository;
 
-import com.jasik.momsnaggingapi.domain.grade.Grade;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -16,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
-    List<Schedule> findAllByScheduleDateAndUserIdOrderByScheduleTimeAsc(LocalDate scheduleDate, Long userId);
+    List<Schedule> findAllByScheduleDateAndUserIdOrderBySeqNumberAsc(LocalDate scheduleDate, Long userId);
 
     List<Schedule> findAllByUserIdAndGoalCountGreaterThanAndScheduleDateGreaterThanEqualAndScheduleDateLessThanEqual(
         Long userId, int goalCount, LocalDate startDate, LocalDate endDate);
@@ -51,4 +50,6 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     List<Schedule> findAllByScheduleDateGreaterThanEqualAndScheduleDateLessThanEqualAndUserIdAndDone(LocalDate startDate, LocalDate endDate, Long userId, Boolean isDone);
 
     List<Schedule> findAllByScheduleDateGreaterThanEqualAndScheduleDateLessThanEqualAndUserIdOrderByScheduleDateAscScheduleTimeAsc(LocalDate startDate, LocalDate endDate, Long userId);
-    }
+
+    Optional<Schedule> findFirstByUserIdAndScheduleDateOrderBySeqNumberDesc(Long userId, LocalDate scheduleDate);
+}

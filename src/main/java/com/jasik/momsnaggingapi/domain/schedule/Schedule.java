@@ -127,6 +127,10 @@ public class Schedule extends BaseTime {
         this.done = false;
     }
 
+    public void initSeqNumber(int seqNumber) {
+        this.seqNumber = seqNumber;
+    }
+
     // getRepeatDays() -> objectMapper.convertValue() 에서 컬럼으로 인식하고 변환해버림.. -.-
     public boolean[] calculateRepeatDays() {
         boolean[] dayArray = {mon, tue, wed, thu, fri, sat, sun};
