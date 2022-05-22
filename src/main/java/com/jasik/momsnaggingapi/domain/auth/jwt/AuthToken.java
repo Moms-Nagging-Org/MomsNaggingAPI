@@ -25,8 +25,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class AuthToken {
-    private final Logger logger = LoggerFactory.getLogger(AuthToken.class);
-    private static final String AUTHORITIES_KEY = "auth";
     @Getter
     private final String token;
 //    @Value("${jwt.secret}")
@@ -67,44 +65,6 @@ public class AuthToken {
                 .signWith(key, SignatureAlgorithm.HS512)
                 .setIssuedAt(now)
                 .compact();
-    }
-
-    // 토큰 인증 후 유저 정보 반환
-    public Authentication getAuthentication(String token) {
-        Claims claims = Jwts
-                .parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-
-        Collection<? extends GrantedAuthority> authorities =
-                Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
-
-        User principal = new User(claims.getSubject(), "", authorities);
-
-        return new UsernamePasswordAuthenticationToken(principal, token, authorities);
-    }
-
-    // 토큰 인증
-    public boolean validateToken(String token) {
-        try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-            return true;
-        } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            log.info("잘못된 JWT 서명입니다.");
-        } catch (UnsupportedJwtException e) {
-            log.info("지원하지 않는 JWT 토큰입니다.");
-        } catch (IllegalArgumentException e) {
-            log.info("잘못된 JWT 토큰입니다.");
-        }
-        return false;
-    }
-
-    public String getUserFromToken(String token) {
-        return Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody().getSubject();
     }
 
 }

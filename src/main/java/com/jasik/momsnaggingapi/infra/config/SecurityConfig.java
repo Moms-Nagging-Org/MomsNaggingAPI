@@ -1,6 +1,7 @@
 package com.jasik.momsnaggingapi.infra.config;
 
 import com.jasik.momsnaggingapi.domain.auth.jwt.AuthToken;
+import com.jasik.momsnaggingapi.domain.auth.jwt.AuthTokenProvider;
 import com.jasik.momsnaggingapi.domain.auth.jwt.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
@@ -17,11 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private AuthToken authToken;
-
-    public SecurityConfig(AuthToken authToken) {
-        this.authToken = authToken;
-    }
+    private final AuthTokenProvider authTokenProvider;
 
     @Override
     public void configure(WebSecurity web) throws Exception {
@@ -30,7 +27,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        JwtAuthFilter jwtAuthFilter = new JwtAuthFilter(authToken);
+        JwtAuthFilter jwtAuthFilter = new JwtAuthFilter(authTokenProvider);
 
         http
                 .authorizeRequests()
