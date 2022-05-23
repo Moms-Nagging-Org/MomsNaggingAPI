@@ -1,20 +1,22 @@
 package com.jasik.momsnaggingapi.domain.auth.service;
 
+import com.jasik.momsnaggingapi.domain.auth.exception.LoginFailureException;
+import com.jasik.momsnaggingapi.domain.auth.jwt.AuthToken;
 import com.jasik.momsnaggingapi.domain.auth.jwt.AuthTokenProvider;
 import com.jasik.momsnaggingapi.domain.user.User;
-import com.jasik.momsnaggingapi.domain.user.service.UserService;
+import com.jasik.momsnaggingapi.domain.user.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class Authservice {
-//    private final UserService userService;
+    private final UserRepository userRepository;
     private final AuthTokenProvider authTokenProvider;
 
     public String getPersonalId(String token) {
@@ -26,25 +28,43 @@ public class Authservice {
         return claims.getSubject();
     }
 
-//    public Long getUserId(String token) {
-//        Claims claims = authTokenProvider.getTokenClaim(token);
-//        if (claims == null) {
-//            return null;
-//        }
-//
-//        try {
-//            return userService.findUserIdByPersonalId(claims.getSubject());
-//        } catch (NullPointerException e) {
-//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다.");
-//        }
-//    }
-//
-//    public User getUser(String token) {
-//        Claims claims = authTokenProvider.getTokenClaim(token);
-//        if (claims == null) {
-//            return null;
-//        }
-//
-//        return userService.findUserByPersonalId(claims.getSubject()).orElseThrow(null);
-//    }
+    /**
+     *  유저의 존재 유무를 파악하여 로그인 / 회원가입
+     * @param providerCode
+     * @return
+     */
+    public Optional<User> existUser(String providerCode) {
+        return userRepository.findByProviderCode(providerCode);
+    }
+
+    /**
+     *  유저의 id가 중복된 값을 가지는지 확인
+     *  @param personalId
+     */
+    public Boolean validateDuplicatedId(String personalId) {
+        return userRepository.findByPersonalId(personalId).isPresent();
+    }
+
+    @Transactional
+    public User.AuthResponse registerUser(User.CreateRequest request) {
+        User user = userRepository.save(
+                User.builder()
+                        .email(request.getEmail())
+                        .provider(request.getProvider())
+                        .providerCode(request.getCode())
+                        .device(request.getDevice())
+                        .personalId(request.getPersonalId())
+                        .nickName(request.getNickname())
+                        .build());
+        AuthToken authToken = authTokenProvider.createToken(request.getProvider(), user.getEmail(), user.getPersonalId());
+        return new User.AuthResponse(authToken.getToken());
+    }
+
+    public User.AuthResponse loginUser(User.AuthRequest request) {
+        // TODO: provider 도 확인
+        User user = userRepository.findByProviderCode(request.getCode()).orElseThrow(LoginFailureException::new);;
+
+        AuthToken authToken = authTokenProvider.createToken(request.getProvider(), user.getEmail(), user.getPersonalId());
+        return new User.AuthResponse(authToken.getToken());
+    }
 }

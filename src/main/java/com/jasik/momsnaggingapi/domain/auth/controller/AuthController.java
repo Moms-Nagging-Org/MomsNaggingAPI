@@ -1,7 +1,7 @@
 package com.jasik.momsnaggingapi.domain.auth.controller;
 
+import com.jasik.momsnaggingapi.domain.auth.service.Authservice;
 import com.jasik.momsnaggingapi.domain.user.User;
-import com.jasik.momsnaggingapi.domain.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,7 +17,7 @@ import java.util.Optional;
 @Tag(name = "AuthAPI ~.~", description = "로그인/회원가입 API")
 public class AuthController {
 
-    private final UserService userService;
+    private final Authservice authservice;
 
     @PostMapping("/{provider}")
     @Operation(summary = "회원가입", description = "유저 정보를 회원가입 합니다. 회원가입 성공 시 토큰 전송합니다.")
@@ -29,7 +29,7 @@ public class AuthController {
             @Parameter(description = "아이디") @RequestParam String id,
             @Parameter(description = "호칭") @RequestParam String nickname) {
 
-        Optional<User> existUser = userService.existUser(code);
+        Optional<User> existUser = authservice.existUser(code);
 
         if(existUser.isPresent()) {
             User.AuthResponse res = new User.AuthResponse();
@@ -44,7 +44,7 @@ public class AuthController {
             req.setPersonalId(id);
             req.setNickname(nickname);
 
-            return ResponseEntity.ok().body(userService.registerUser(req));
+            return ResponseEntity.ok().body(authservice.registerUser(req));
         }
 
     }
@@ -55,14 +55,14 @@ public class AuthController {
             @Parameter(description = "소셜로그인 플랫폼") @PathVariable String provider,
             @Parameter(description = "플랫폼 코드") @RequestParam String code) {
 
-        Optional<User> existUser = userService.existUser(code);
+        Optional<User> existUser = authservice.existUser(code);
 
         if(existUser.isPresent()) {
             User.AuthRequest req = new User.AuthRequest();
             req.setCode(code);
             req.setProvider(provider);
 
-            return ResponseEntity.ok().body(userService.loginUser(req));
+            return ResponseEntity.ok().body(authservice.loginUser(req));
         } else {
             User.AuthResponse res = new User.AuthResponse();
             res.setToken(null);
@@ -75,7 +75,7 @@ public class AuthController {
     public ResponseEntity<User.ValidateResponse> validateId(
             @Parameter(description = "아이디") @PathVariable String id) {
         User.ValidateResponse res = new User.ValidateResponse();
-        res.setIsExist(userService.validateDuplicatedId(id));
+        res.setIsExist(authservice.validateDuplicatedId(id));
 
         return ResponseEntity.ok().body(res);
     }
