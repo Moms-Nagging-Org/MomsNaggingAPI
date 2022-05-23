@@ -5,7 +5,7 @@ import javax.servlet.http.HttpServletRequest;
 public class JwtHeaderUtil {
     private final static String AUTHORIZATION_HEADER = "Authorization";
 
-    public static String getAccessToken(HttpServletRequest request) {
+    public static String getToken(HttpServletRequest request) {
         String headerValue = request.getHeader(AUTHORIZATION_HEADER);
 
         if (headerValue == null) {

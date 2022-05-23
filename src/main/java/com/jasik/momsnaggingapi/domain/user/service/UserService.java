@@ -21,7 +21,13 @@ public class UserService {
     private final ModelMapper modelMapper;
 
     public User.UserResponse findUser(String token) {
-        return modelMapper.map(userRepository.findByPersonalId(authservice.getPersonalId(token)), User.UserResponse.class);
+        User user = userRepository.findById(authservice.getId(token)).orElseThrow(null);
+        log.info(user.getNickName());
+        return modelMapper.map(userRepository.findById(authservice.getId(token)), User.UserResponse.class);
+    }
+
+    public User.UserResponse editUser(String token) {
+        return modelMapper.map(userRepository.findById(authservice.getId(token)), User.UserResponse.class);
     }
 
     public Optional<User> findUserByPersonalId(String id) {

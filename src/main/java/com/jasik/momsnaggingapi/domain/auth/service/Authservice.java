@@ -19,13 +19,13 @@ public class Authservice {
     private final UserRepository userRepository;
     private final AuthTokenProvider authTokenProvider;
 
-    public String getPersonalId(String token) {
+    public Long getId(String token) {
         Claims claims = authTokenProvider.getTokenClaim(token);
         if (claims == null) {
             return null;
         }
 
-        return claims.getSubject();
+        return Long.parseLong(claims.getSubject());
     }
 
     /**
@@ -56,7 +56,7 @@ public class Authservice {
                         .personalId(request.getPersonalId())
                         .nickName(request.getNickname())
                         .build());
-        AuthToken authToken = authTokenProvider.createToken(request.getProvider(), user.getEmail(), user.getPersonalId());
+        AuthToken authToken = authTokenProvider.createToken(user.getId(), request.getProvider(), user.getEmail(), user.getPersonalId());
         return new User.AuthResponse(authToken.getToken());
     }
 
@@ -64,7 +64,7 @@ public class Authservice {
         // TODO: provider 도 확인
         User user = userRepository.findByProviderCode(request.getCode()).orElseThrow(LoginFailureException::new);;
 
-        AuthToken authToken = authTokenProvider.createToken(request.getProvider(), user.getEmail(), user.getPersonalId());
+        AuthToken authToken = authTokenProvider.createToken(user.getId(), request.getProvider(), user.getEmail(), user.getPersonalId());
         return new User.AuthResponse(authToken.getToken());
     }
 }

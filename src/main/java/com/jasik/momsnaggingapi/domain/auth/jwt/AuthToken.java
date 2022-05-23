@@ -15,13 +15,13 @@ public class AuthToken {
     private final String token;
     private final Key key;
 
-    public AuthToken(Key key, String provider, String email, String personalId) {
+    public AuthToken(Key key, Long id, String provider, String email, String personalId) {
         this.key = key;
-        this.token = createToken(key, provider, email, personalId);
+        this.token = createToken(key, id, provider, email, personalId);
     }
 
     // 토큰 생성
-    public String createToken(Key key, String provider, String email, String personalId) {
+    public String createToken(Key key, Long id, String provider, String email, String personalId) {
         // header
         Map<String, Object> header = new HashMap<>();
         header.put("typ", "JWT");
@@ -29,6 +29,7 @@ public class AuthToken {
 
         // subject
         Map<String, Object> claims = new HashMap<>();
+        claims.put("id", personalId);
         claims.put("provider", provider);
         claims.put("email", email);
 
@@ -37,7 +38,7 @@ public class AuthToken {
         return Jwts.builder()
                 .setHeader(header)
                 .setClaims(claims)
-                .setSubject(personalId)
+                .setSubject(String.valueOf(id))
                 .signWith(key, SignatureAlgorithm.HS512)
                 .setIssuedAt(now)
                 .compact();

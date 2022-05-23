@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 
 @Entity
-@Getter
+@Getter @Setter
 @NoArgsConstructor
 public class User extends BaseTime {
 

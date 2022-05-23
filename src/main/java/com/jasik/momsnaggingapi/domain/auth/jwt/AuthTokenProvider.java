@@ -32,8 +32,8 @@ public class AuthTokenProvider {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
-    public AuthToken createToken(String provider, String email, String personalId) {
-        return new AuthToken(key, provider, email, personalId);
+    public AuthToken createToken(Long id, String provider, String email, String personalId) {
+        return new AuthToken(key, id, provider, email, personalId);
     }
 
     // 토큰 인증 후 유저 정보 반환
