@@ -29,13 +29,14 @@ public class AuthToken {
     private final String token;
 //    @Value("${jwt.secret}")
     private final Key key;
+    private static final String AUTHORITIES_KEY = "id";
 //
 //    @Value("${jwt.secret}")
 //    private String secretKey;
 //
     public AuthToken(Key key, String provider, String email, String personalId) {
         this.key = key;
-        this.token = createToken(provider, email, personalId);
+        this.token = createToken(key, provider, email, personalId);
     }
 
 //    public void setKey(
@@ -44,16 +45,16 @@ public class AuthToken {
 //    }
 
     // 토큰 생성
-    public String createToken(String provider, String email, String personalId) {
+    public String createToken(Key key, String provider, String email, String personalId) {
 //        Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
         // header
         Map<String, Object> header = new HashMap<>();
         header.put("typ", "JWT");
         header.put("alg", "HS512");
 
-        // claim
+        // subject
         Map<String, Object> claims = new HashMap<>();
-        claims.put("email", email);
+//        claims.put("email", email);
         claims.put("provider", provider);
         claims.put("id", personalId);
 
@@ -62,6 +63,7 @@ public class AuthToken {
         return Jwts.builder()
                 .setHeader(header)
                 .setClaims(claims)
+                .setSubject(email)
                 .signWith(key, SignatureAlgorithm.HS512)
                 .setIssuedAt(now)
                 .compact();

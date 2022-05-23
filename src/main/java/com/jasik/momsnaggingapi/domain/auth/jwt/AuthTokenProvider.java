@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @Component
 public class AuthTokenProvider {
     private final Key key;
-    private static final String AUTHORITIES_KEY = "auth";
+    private static final String AUTHORITIES_KEY = "id";
 
     public AuthTokenProvider(@Value("${jwt.secret}") String secretKey) {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
@@ -50,7 +50,7 @@ public class AuthTokenProvider {
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
 
-        User principal = new User(claims.getSubject(), "", authorities);
+        User principal = new User(claims.getSubject(), "", authorities); // 자꾸 null
 
         return new UsernamePasswordAuthenticationToken(principal, token, authorities);
     }
