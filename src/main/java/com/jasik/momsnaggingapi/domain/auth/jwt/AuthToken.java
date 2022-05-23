@@ -27,26 +27,15 @@ import java.util.stream.Collectors;
 public class AuthToken {
     @Getter
     private final String token;
-//    @Value("${jwt.secret}")
     private final Key key;
-    private static final String AUTHORITIES_KEY = "id";
-//
-//    @Value("${jwt.secret}")
-//    private String secretKey;
-//
+
     public AuthToken(Key key, String provider, String email, String personalId) {
         this.key = key;
         this.token = createToken(key, provider, email, personalId);
     }
 
-//    public void setKey(
-//            @Value("${jwt.secret}") String secretKey) {
-//        this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
-//    }
-
     // 토큰 생성
     public String createToken(Key key, String provider, String email, String personalId) {
-//        Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
         // header
         Map<String, Object> header = new HashMap<>();
         header.put("typ", "JWT");
@@ -54,7 +43,6 @@ public class AuthToken {
 
         // subject
         Map<String, Object> claims = new HashMap<>();
-//        claims.put("email", email);
         claims.put("provider", provider);
         claims.put("id", personalId);
 
