@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @Component
 public class AuthTokenProvider {
     private final Key key;
-    private static final String AUTHORITIES_KEY = "id";
+    private static final String AUTHORITIES_KEY = "email";
 
     public AuthTokenProvider(@Value("${jwt.secret}") String secretKey) {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
