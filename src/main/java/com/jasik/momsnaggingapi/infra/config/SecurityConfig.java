@@ -1,6 +1,5 @@
 package com.jasik.momsnaggingapi.infra.config;
 
-import com.jasik.momsnaggingapi.domain.auth.jwt.AuthToken;
 import com.jasik.momsnaggingapi.domain.auth.jwt.AuthTokenProvider;
 import com.jasik.momsnaggingapi.domain.auth.jwt.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/", "/v3/api-docs", "/configuration/**", "/swagger-ui/**", "/webjars/**");
+        web.ignoring().antMatchers("/api-docs", "/swagger-ui.html", "/swagger-ui/**", "/webjars/**", "/swagger-resources/**");
     }
 
     @Override
@@ -33,6 +32,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(HttpMethod.OPTIONS).permitAll()
                 .antMatchers("/api/v1/auth/**").permitAll() // 로그인/회원가입 쪽은 인증 없이
+                .antMatchers(
+                        "/",
+                        "/api-docs", "/swagger-resources/**", "/swagger-ui.html", "/swagger-ui/**", "/webjars/**", "/swagger/**",   // swagger
+                        "/favicon.ico"
+                ).permitAll()
                 .anyRequest().authenticated().and() // 인증된 요청만 처리
                 .headers()
                 .frameOptions()
