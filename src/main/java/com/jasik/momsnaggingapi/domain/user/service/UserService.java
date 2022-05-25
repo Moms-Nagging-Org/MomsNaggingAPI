@@ -5,6 +5,7 @@ import com.jasik.momsnaggingapi.domain.user.User;
 import com.jasik.momsnaggingapi.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -28,10 +29,17 @@ public class UserService {
         return modelMapper.map(user, User.UserResponse.class);
     }
 
-    public User.UserResponse editUser(String token) {
-        User user = userRepository.findById(authservice.getId(token))
+    public User.UserResponse editUser(String token, User.UpdateRequest user) {
+
+        User existUser = userRepository.findById(authservice.getId(token))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
-        return modelMapper.map(userRepository.findById(authservice.getId(token)), User.UserResponse.class);
+
+        if(StringUtils.isNotBlank(user.getNickName()))
+            existUser.setNickName(user.getNickName());
+        if(StringUtils.isNotBlank(user.getNaggingLevel()))
+            existUser.setNaggingLevel(user.getNaggingLevel());
+
+        return modelMapper.map(existUser, User.UserResponse.class);
     }
 
     public Optional<User> findUserById(Long id) {
