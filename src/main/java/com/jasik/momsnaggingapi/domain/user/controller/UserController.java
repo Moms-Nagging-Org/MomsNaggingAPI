@@ -34,20 +34,18 @@ public class UserController {
 
     @PutMapping("")
     @Operation(summary = "회원 정보 수정(수정중)", description = "body 로 수정할 정보를 보내 유저 정보를 수정합니다.")
-    public ResponseEntity<User.UserResponse> updateUser(HttpServletRequest request, @RequestParam String userId, @RequestBody User.UpdateRequest user) {
+    public ResponseEntity<User.UserResponse> updateUser(HttpServletRequest request, @RequestBody User.UpdateRequest user) {
         String token = JwtHeaderUtil.getToken(request);
 
-        User.UserResponse response = new User.UserResponse();
+        User.UserResponse response = userService.editUser(token, user);
         return ResponseEntity.ok().body(response);
     }
 
     @DeleteMapping("")
-    @Operation(summary = "회원 탈퇴(수정중)", description = "유저를 삭제합니다.")
-    public ResponseEntity<Map<String, String>> deleteUser(HttpServletRequest request) {
+    @Operation(summary = "회원 탈퇴", description = "유저를 삭제합니다.")
+    public ResponseEntity<User.Response> deleteUser(HttpServletRequest request) {
         String token = JwtHeaderUtil.getToken(request);
 
-        Map<String, String> response = new HashMap<>();
-        response.put("id", "1");
-        return ResponseEntity.ok().body(response);
+        return ResponseEntity.ok().body(userService.removeUser(token));
     }
 }
