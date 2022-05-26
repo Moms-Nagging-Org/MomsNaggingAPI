@@ -24,7 +24,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("")
-    @Operation(summary = "회원 정보 가져오기", description = "유저 id로 유저를 조회합니다.")
+    @Operation(summary = "회원 정보 가져오기", description = "유저를 조회합니다.")
     public ResponseEntity<User.UserResponse> getUser(HttpServletRequest request) {
         String token = JwtHeaderUtil.getToken(request);
 
@@ -33,7 +33,7 @@ public class UserController {
     }
 
     @PutMapping("")
-    @Operation(summary = "회원 정보 수정", description = "param 으로 유저 id를, body 로 수정할 정보를 보내 유저 정보를 수정합니다.")
+    @Operation(summary = "회원 정보 수정(수정중)", description = "body 로 수정할 정보를 보내 유저 정보를 수정합니다.")
     public ResponseEntity<User.UserResponse> updateUser(HttpServletRequest request, @RequestParam String userId, @RequestBody User.UpdateRequest user) {
         String token = JwtHeaderUtil.getToken(request);
 
@@ -42,12 +42,12 @@ public class UserController {
     }
 
     @DeleteMapping("")
-    @Operation(summary = "회원 탈퇴", description = "유저 id로 유저를 삭제합니다.")
-    public ResponseEntity<Map<String, String>> deleteUser(HttpServletRequest request, @RequestParam String userId) {
+    @Operation(summary = "회원 탈퇴(수정중)", description = "유저를 삭제합니다.")
+    public ResponseEntity<Map<String, String>> deleteUser(HttpServletRequest request) {
         String token = JwtHeaderUtil.getToken(request);
 
         Map<String, String> response = new HashMap<>();
-        response.put("id", userId);
+        response.put("id", "1");
         return ResponseEntity.ok().body(response);
     }
 }
