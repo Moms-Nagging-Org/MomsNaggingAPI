@@ -34,11 +34,10 @@ public class UserController {
 
     @PutMapping("")
     @Operation(summary = "회원 정보 수정(수정중)", description = "body 로 수정할 정보를 보내 유저 정보를 수정합니다.")
-    public ResponseEntity<User.UserResponse> updateUser(HttpServletRequest request, @RequestBody User.UpdateRequest user) {
+    public ResponseEntity<User.Response> updateUser(HttpServletRequest request, @RequestBody User.UpdateRequest user) {
         String token = JwtHeaderUtil.getToken(request);
 
-        User.UserResponse response = userService.editUser(token, user);
-        return ResponseEntity.ok().body(response);
+        return ResponseEntity.ok().body(userService.editUser(token, user));
     }
 
     @DeleteMapping("")
