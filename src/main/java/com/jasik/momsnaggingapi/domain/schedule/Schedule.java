@@ -282,8 +282,10 @@ public class Schedule extends BaseTime {
     @NoArgsConstructor
     public static class ScheduleListResponse {
 
-        @Schema(description = "스케줄 ID", defaultValue = "2")
+        @Schema(description = "스케줄 ID", defaultValue = "22")
         private Long id;
+        @Schema(description = "스케줄 원본 ID", defaultValue = "1")
+        private Long originalId;
         @Schema(description = "잔소리 Id", defaultValue = "1")
         private Long naggingId;
         @Schema(description = "스케줄 정렬 순서", defaultValue = "0")

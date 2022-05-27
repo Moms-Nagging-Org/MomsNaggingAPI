@@ -3,6 +3,7 @@ package com.jasik.momsnaggingapi.domain.schedule.repository;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -52,4 +53,9 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     List<Schedule> findAllByScheduleDateGreaterThanEqualAndScheduleDateLessThanEqualAndUserIdOrderByScheduleDateAscScheduleTimeAsc(LocalDate startDate, LocalDate endDate, Long userId);
 
     Optional<Schedule> findFirstByUserIdAndScheduleDateOrderBySeqNumberDesc(Long userId, LocalDate scheduleDate);
+
+    @Query("select a.originalId from Schedule a where a.userId = :userId and a.scheduleDate = :scheduleDate order by a.seqNumber asc")
+    ArrayList<Long> getOriginIdByUserIdAndScheduleDateOrderBySeqNumberAsc(Long userId, LocalDate scheduleDate);
+
+    ArrayList<Schedule> findAllByUserIdAndScheduleDateAfter(Long userId, LocalDate scheduleDate);
 }

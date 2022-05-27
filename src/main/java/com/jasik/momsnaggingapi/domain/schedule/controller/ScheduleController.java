@@ -139,19 +139,19 @@ public class ScheduleController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/array")
-    @Operation(summary = "할일/습관 정렬", description = ""
-        + "<페이지>\n\n"
-        + "홈 → 정렬 → 저장\n\n"
-        + "<설명>\n\n"
-        + "할일 또는 습관을 정렬합니다.")
-    public ResponseEntity<List<Schedule.ScheduleListResponse>> postSchedulesArray(
-            @Schema(description = "정렬 순서에 맞게 스케줄의 ID가 저장된 배열", example = "[3, 4, 1, 2, 5]", required = true) final @RequestBody List<Long> scheduleArrayRequest
-    ) {
-        List<Schedule.ScheduleListResponse> result = scheduleService.postSchedulesArray(scheduleArrayRequest);
-
-        return ResponseEntity.ok().body(result);
-    }
+//    @PostMapping("/array")
+//    @Operation(summary = "할일/습관 정렬", description = ""
+//        + "<페이지>\n\n"
+//        + "홈 → 정렬 → 저장\n\n"
+//        + "<설명>\n\n"
+//        + "할일 또는 습관을 정렬합니다.")
+//    public ResponseEntity<List<Schedule.ScheduleListResponse>> postSchedulesArray(
+//            @Schema(description = "정렬 순서에 맞게 스케줄의 ID가 저장된 배열", example = "[3, 4, 1, 2, 5]", required = true) final @RequestBody List<Long> scheduleArrayRequest
+//    ) {
+//        List<Schedule.ScheduleListResponse> result = scheduleService.postSchedulesArray(scheduleArrayRequest);
+//
+//        return ResponseEntity.ok().body(result);
+//    }
 
 //    @PostMapping("/categories")
 //    @Operation(summary = "습관 추천 종류 생성", description = "습관 추천 종류를 생성합니다.")

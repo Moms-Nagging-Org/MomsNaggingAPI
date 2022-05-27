@@ -17,12 +17,14 @@ import java.time.LocalDate;
 import java.time.temporal.WeekFields;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.stream.Collectors;
 import javax.json.JsonPatch;
 import javax.json.JsonStructure;
 import javax.json.JsonValue;
+import jdk.vm.ci.meta.Local;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -236,15 +238,86 @@ public class ScheduleService extends RejectedExecutionException {
         }
         scheduleRepository.deleteWithIdAfter(scheduleId, userId, schedule.getOriginalId());
     }
-
-    @Transactional
-    public List<ScheduleListResponse> postSchedulesArray(List<Long> scheduleArrayRequest) {
-
-        List<ScheduleListResponse> scheduleAllResponses = new ArrayList<>();
-        scheduleAllResponses.add(new ScheduleListResponse());
-
-        return scheduleAllResponses;
-    }
+//
+//    @Transactional
+//    public List<ScheduleListResponse> postSchedulesArray(ArrayList<Long> arrayRequest, LocalDate scheduleDate) {
+//        // originSchedules = 원본 스케줄 리스트(원본 id)
+//        // beforeSchedules = 수정된 스케줄의 수정 전 순서 리스트
+//        // afterSchedules = 수정된 스케줄의 수정 후 순서 리스트
+//
+//        // nextOriginSchedules = 다음 날의 원본 스케줄 리스트(원본 Id)
+//        // afterSeq = 다음 날의 수정 대상 스케줄의 수정 전 순서 리스트
+//        // changeScheduleIds = 다음 날의 수정 대상 스케줄의 수정 후 순서 리스트
+//        // nextChangedSchedules = 다음 날의 수정 완료된 순서 리스트
+//        Long userId = 1L;
+//        ArrayList<Long> beforeIds = new ArrayList<>();
+//        ArrayList<Long> afterIds = new ArrayList<>();
+//        ArrayList<Long> originSchedules = scheduleRepository.getOriginIdByUserIdAndScheduleDateOrderBySeqNumberAsc(
+//            userId,
+//            scheduleDate);
+//        for (int i = 0; i <= originSchedules.size(); i++) {
+//            // 원본 스케줄 리스트와 수정 후 리스트가 다르면 수정 전 리스트에 추가
+//            Long beforeId = originSchedules.get(i);
+//            Long afterId = arrayRequest.get(i);
+//            if (!Objects.equals(beforeId, afterId)) {
+//                beforeIds.add(beforeId);
+//                afterIds.add(afterId);
+//            }
+//        }
+//
+//        // 다음 날부터 쭉 비교, 마지막 스케줄 날짜까지
+//        ArrayList<Schedule> nextOriginSchedules = scheduleRepository.findAllByUserIdAndScheduleDateAfter(userId, scheduleDate);
+//        ArrayList<Schedule> dailySchedules = new ArrayList<>();
+//        LocalDate beforeDate = scheduleDate;
+//        LocalDate afterDate;
+//        for (Schedule scheduleOfAll : nextOriginSchedules) {
+//            afterDate = scheduleOfAll.getScheduleDate();
+//            if (afterDate.isAfter(beforeDate)) {
+//                // 하루 단위에 대한 로직
+//                int idx = 0;
+//                ArrayList<Integer> indexOfBefore = new ArrayList<>();
+//                ArrayList<Integer> indexOfAfter = new ArrayList<>();
+//                // 변경 전, 후 스케줄 순서 저장
+//                for (Schedule scheduleOfDay : dailySchedules) {
+//                    for (Long beforeId : beforeIds) {
+//                        if (Objects.equals(scheduleOfDay.getOriginalId(), beforeId)) {
+//                            indexOfBefore.add(idx);
+//                        }
+//                    }
+//                    for (Long afterId : afterIds) {
+//                        if (Objects.equals(scheduleOfDay.getOriginalId(), afterId)) {
+//                            indexOfAfter.add(idx);
+//                        }
+//                    }
+//                    idx++;
+//                }
+//                // 바뀔 스케줄
+//                idx = 0;
+//                for (Schedule scheduleOfDay : dailySchedules) {
+//                    if(idx )
+//                    for (int afterIdx : indexOfAfter) {
+//                    dailySchedules.get(afterIdx).set;
+//                    idx++;
+//                }
+//
+//                dailySchedules.clear();
+//                beforeDate = afterDate;
+//            }
+//            dailySchedules.add(scheduleOfAll);
+//        }
+//
+//            // 전체 조회 -> 전체 저장
+//            ArrayList<Integer> afterSeq = new ArrayList<>();
+//            ArrayList<Integer> changeScheduleIds = new ArrayList<>();
+//
+//            //
+//
+//            List<ScheduleListResponse> scheduleAllResponses = new ArrayList<>();
+//            scheduleAllResponses.add(new ScheduleListResponse());
+//
+//            return scheduleAllResponses;
+//        }
+//    }
 
 //    @Transactional
 //    public Category.CategoryResponse postCategory(Category.CategoryRequest dto) {
