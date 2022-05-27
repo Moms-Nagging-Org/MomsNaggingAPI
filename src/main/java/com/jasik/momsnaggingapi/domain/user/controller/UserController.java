@@ -33,7 +33,8 @@ public class UserController {
     }
 
     @PutMapping("")
-    @Operation(summary = "회원 정보 수정", description = "body 로 수정할 정보를 보내 유저 정보를 수정합니다.")
+    @Operation(summary = "회원 정보 수정", description = "body 로 수정할 정보를 보내 유저 정보를 수정합니다.\n\n"
+            + "**전부 전송해도 되고 바뀌는것만 전송해도 됩니다**")
     public ResponseEntity<User.Response> updateUser(HttpServletRequest request, @RequestBody User.UpdateRequest user) {
         String token = JwtHeaderUtil.getToken(request);
 
