@@ -2,6 +2,7 @@ package com.jasik.momsnaggingapi.domain.schedule.controller;
 
 import com.jasik.momsnaggingapi.domain.schedule.Category;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
+import com.jasik.momsnaggingapi.domain.schedule.Schedule.ArrayListRequest;
 import com.jasik.momsnaggingapi.domain.schedule.service.ScheduleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import javax.json.JsonPatch;
 import javax.validation.Valid;
@@ -130,28 +132,28 @@ public class ScheduleController {
         + "해당 스케줄 및 이후 날짜의 스케줄이 삭제됩니다.")
     @ApiResponse(responseCode = "204", description = "삭제 성공")
     public ResponseEntity<?> deleteSchedule(
-            @Schema(description = "삭제할 스케줄 ID", example = "2", required = true)
-            @Parameter(name = "scheduleId", description = "삭제할 스케줄 ID", in = ParameterIn.PATH)
-            @PathVariable Long scheduleId
+        @Schema(description = "삭제할 스케줄 ID", example = "2", required = true)
+        @Parameter(name = "scheduleId", description = "삭제할 스케줄 ID", in = ParameterIn.PATH)
+        @PathVariable Long scheduleId
     ) {
         scheduleService.deleteSchedule(scheduleId);
 
         return ResponseEntity.noContent().build();
     }
 
-//    @PostMapping("/array")
-//    @Operation(summary = "할일/습관 정렬", description = ""
-//        + "<페이지>\n\n"
-//        + "홈 → 정렬 → 저장\n\n"
-//        + "<설명>\n\n"
-//        + "할일 또는 습관을 정렬합니다.")
-//    public ResponseEntity<List<Schedule.ScheduleListResponse>> postSchedulesArray(
-//            @Schema(description = "정렬 순서에 맞게 스케줄의 ID가 저장된 배열", example = "[3, 4, 1, 2, 5]", required = true) final @RequestBody List<Long> scheduleArrayRequest
-//    ) {
-//        List<Schedule.ScheduleListResponse> result = scheduleService.postSchedulesArray(scheduleArrayRequest);
-//
-//        return ResponseEntity.ok().body(result);
-//    }
+    @PostMapping("/array")
+    @Operation(summary = "습관 정렬", description = ""
+        + "<페이지>\n\n"
+        + "홈 → 정렬 → 저장\n\n"
+        + "<설명>\n\n"
+        + "습관을 정렬합니다.")
+    public ResponseEntity<?> postSchedulesArray(
+        @Schema(description = "스위칭하는 스케줄 ID 세트가 저장된 배열", required = true) final @RequestBody ArrayList<ArrayListRequest> scheduleArrayRequest
+    ) {
+        scheduleService.postSchedulesArray(scheduleArrayRequest);
+
+        return ResponseEntity.noContent().build();
+    }
 
 //    @PostMapping("/categories")
 //    @Operation(summary = "습관 추천 종류 생성", description = "습관 추천 종류를 생성합니다.")

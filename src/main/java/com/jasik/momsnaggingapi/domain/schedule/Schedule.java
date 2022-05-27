@@ -14,8 +14,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Null;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -51,9 +49,6 @@ public class Schedule extends BaseTime {
     private Long categoryId;
 
     private Long naggingId;
-
-    @Column(columnDefinition = "int default 0")
-    private int seqNumber;
 
     @Column(columnDefinition = "int default 0")
     private int goalCount;
@@ -121,44 +116,15 @@ public class Schedule extends BaseTime {
         return this.doneCount >= this.goalCount;
     }
 
-    public void initNextSchedule() {
-        this.id = null;
-        this.scheduleDate = this.scheduleDate.plusDays(1);
-        this.done = false;
-    }
-
-    public void initSeqNumber(int seqNumber) {
-        this.seqNumber = seqNumber;
-    }
-
-    // getRepeatDays() -> objectMapper.convertValue() 에서 컬럼으로 인식하고 변환해버림.. -.-
-    public boolean[] calculateRepeatDays() {
-        boolean[] dayArray = {mon, tue, wed, thu, fri, sat, sun};
-
-        return dayArray;
-    }
-
-    public void verifyRoutine() {
-        if ((this.mon | this.tue | this.wed | this.thu | this.fri | this.sat | this.sun) && (this.goalCount > 0)){
-            throw new NotValidRoutineException("Repeat option of routine is not valid", ErrorCode.ROUTINE_NOT_VALID);
-        }
-    }
-
-    public enum ScheduleType {
-        TODO, ROUTINE
-    }
-
     @Builder
-    public Schedule(Long userId, Long originalId, Long categoryId, int seqNumber, int goalCount,
+    public Schedule(Long userId, Long originalId, Long categoryId, int goalCount,
         int doneCount, String scheduleName, String scheduleTime, LocalDate scheduleDate,
         LocalTime alarmTime, boolean done,
-//                    LocalDateTime routineEndDate,
         boolean mon, boolean tue, boolean wed, boolean thu, boolean fri, boolean sat, boolean sun,
         long naggingId) {
         this.userId = userId;
         this.originalId = originalId;
         this.categoryId = categoryId;
-        this.seqNumber = seqNumber;
         this.scheduleName = scheduleName;   // 수정가능 -> 이후 전부 변경 -> update all -> index 유지
         this.scheduleTime = scheduleTime;   // 수정가능 -> 이후 전부 변경 -> update all -> index 유지
         this.scheduleDate = scheduleDate;   // 수정가능 -> 타겟만 변경 -> update
@@ -174,6 +140,36 @@ public class Schedule extends BaseTime {
         this.sat = sat;   // 수정가능 -> 이후 전부 변경 -> delete -> create
         this.sun = sun;   // 수정가능 -> 이후 전부 변경 -> delete -> create
         this.naggingId = naggingId;
+    }
+
+    public void initNextSchedule() {
+        this.scheduleDate = this.scheduleDate.plusDays(1);
+        this.done = false;
+    }
+
+    // getRepeatDays() -> objectMapper.convertValue() 에서 컬럼으로 인식하고 변환해버림.. -.-
+    public boolean[] calculateRepeatDays() {
+        boolean[] dayArray = {mon, tue, wed, thu, fri, sat, sun};
+
+        return dayArray;
+    }
+
+    public void verifyRoutine() {
+        if ((this.mon | this.tue | this.wed | this.thu | this.fri | this.sat | this.sun) && (
+            this.goalCount > 0)) {
+            throw new NotValidRoutineException("Repeat option of routine is not valid",
+                ErrorCode.ROUTINE_NOT_VALID);
+        }
+    }
+
+    public enum ScheduleType {
+        TODO, ROUTINE
+    }
+
+    public void minusDoneCount() {
+        if (this.doneCount > 0) {
+            this.doneCount -= 1;
+        }
     }
 
     @Schema(description = "스케줄 생성 시 요청 클래스")
@@ -243,8 +239,8 @@ public class Schedule extends BaseTime {
         private Long naggingId;
         @Schema(description = "n회 습관의 수행 목표 수", defaultValue = "0")
         private int goalCount;
-        @Schema(description = "n회 습관의 수행 완료 수", defaultValue = "0")
-        private int doneCount;
+        //        @Schema(description = "n회 습관의 수행 완료 수", defaultValue = "0")
+//        private int doneCount;
         @Schema(description = "스케줄 이름", defaultValue = "술 마시기")
         private String scheduleName;
         @Schema(description = "스케줄 수행 시간", defaultValue = "아무때나")
@@ -284,12 +280,14 @@ public class Schedule extends BaseTime {
 
         @Schema(description = "스케줄 ID", defaultValue = "22")
         private Long id;
-        @Schema(description = "스케줄 원본 ID", defaultValue = "1")
-        private Long originalId;
-        @Schema(description = "잔소리 Id", defaultValue = "1")
-        private Long naggingId;
-        @Schema(description = "스케줄 정렬 순서", defaultValue = "0")
-        private int seqNumber;
+        //        @Schema(description = "스케줄 원본 ID", defaultValue = "1")
+//        private Long originalId;
+        @Schema(description = "n회 습관의 수행 목표 수", defaultValue = "0")
+        private int goalCount;
+        //        @Schema(description = "n회 습관의 수행 완료 수", defaultValue = "0")
+//        private int doneCount;
+//        @Schema(description = "잔소리 Id", defaultValue = "1")
+//        private Long naggingId;
         @Schema(description = "스케줄 이름", defaultValue = "술 마시기")
         private String scheduleName;
         @Schema(description = "스케줄 수행 시간", defaultValue = "아무때나")
@@ -316,5 +314,19 @@ public class Schedule extends BaseTime {
         private Long id;
         @Schema(description = "스케줄 이름", defaultValue = "술 마시기")
         private String scheduleName;
+    }
+
+    @Schema(description = "스케줄 순서 변경 시 요청 클래스")
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ArrayListRequest {
+
+        @Schema(description = "순서를 스위칭할 스케줄 ID")
+        private Long oneSchedule;
+
+        @Schema(description = "순서를 스위칭할 또 다른 스케줄 ID")
+        private Long theOtherSchedule;
     }
 }
