@@ -20,11 +20,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final AuthTokenProvider authTokenProvider;
 
     @Override
-    public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/api-docs", "/swagger-ui.html", "/swagger-ui/**", "/webjars/**", "/swagger-resources/**");
-    }
-
-    @Override
     protected void configure(HttpSecurity http) throws Exception {
         JwtAuthFilter jwtAuthFilter = new JwtAuthFilter(authTokenProvider);
 
@@ -34,7 +29,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/v1/auth/**").permitAll() // 로그인/회원가입 쪽은 인증 없이
                 .antMatchers(
                         "/",
-                        "/api-docs", "/swagger-resources/**", "/swagger-ui.html", "/swagger-ui/**", "/webjars/**", "/swagger/**",   // swagger
+                        "/api-docs/**", "/swagger-resources/**", "/swagger-ui.html", "/swagger-ui/**", "/webjars/**", "/swagger/**",   // swagger
                         "/favicon.ico"
                 ).permitAll()
                 .anyRequest().authenticated().and() // 인증된 요청만 처리
