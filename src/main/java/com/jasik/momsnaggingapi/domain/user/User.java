@@ -1,18 +1,20 @@
 package com.jasik.momsnaggingapi.domain.user;
 
 import com.jasik.momsnaggingapi.infra.common.BaseTime;
+import com.jasik.momsnaggingapi.infra.common.StringListConverter;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.DynamicUpdate;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.security.core.GrantedAuthority;
-
-import javax.persistence.*;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Collection;
+import java.util.List;
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter @Setter
@@ -48,9 +50,17 @@ public class User extends BaseTime {
     @Column(columnDefinition = "boolean default true")
     private Boolean allowOtherNotice = true;
 
+    @Convert(converter = StringListConverter.class)
+    @Column(columnDefinition = "json")
+    private List<String> routineOrder;
+
+    public void updateRoutineOrder(List<String> newOrder) {
+        this.routineOrder = newOrder;
+    }
+
     @Builder
     public User(int naggingLevel, String nickName, String email,
-                String provider, String providerCode, String personalId, String device) {
+        String provider, String providerCode, String personalId, String device) {
         this.naggingLevel = naggingLevel;
         this.nickName = nickName;
         this.email = email;
