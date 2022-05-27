@@ -4,6 +4,7 @@ import com.jasik.momsnaggingapi.infra.common.BaseTime;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.GrantedAuthority;
@@ -16,14 +17,13 @@ import java.util.Collection;
 @Entity
 @Getter @Setter
 @NoArgsConstructor
-@DynamicUpdate
 public class User extends BaseTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private int naggingLevel;
+    private int naggingLevel = 1;
     private String nickName;
     private String email;
     private String provider;
@@ -33,20 +33,20 @@ public class User extends BaseTime {
     private String profileImage;
 
     @Column(columnDefinition = "varchar(30) default 'MEMBER'")
-    private String role;
+    private String role = "MEMBER";
     @Column(columnDefinition = "TEXT")
-    private String statusMsg;
+    private String statusMsg = "";
 
     @Column(columnDefinition = "boolean default true")
-    private boolean allowGeneralNotice;
+    private Boolean allowGeneralNotice = true;
     @Column(columnDefinition = "boolean default true")
-    private boolean allowTodoNotice;
+    private Boolean allowTodoNotice = true;
     @Column(columnDefinition = "boolean default true")
-    private boolean allowRoutineNotice;
+    private Boolean allowRoutineNotice = true;
     @Column(columnDefinition = "boolean default true")
-    private boolean allowWeeklyNotice;
+    private Boolean allowWeeklyNotice = true;
     @Column(columnDefinition = "boolean default true")
-    private boolean allowOtherNotice;
+    private Boolean allowOtherNotice = true;
 
     @Builder
     public User(int naggingLevel, String nickName, String email,
@@ -58,34 +58,6 @@ public class User extends BaseTime {
         this.providerCode = providerCode;
         this.personalId = personalId;
         this.device = device;
-    }
-
-    public void updateNickName(String nickName) {
-        this.nickName = nickName;
-    }
-
-    public void updateNaggingLevel(int naggingLevel) {
-        this.naggingLevel = naggingLevel;
-    }
-
-    public void updateGeneralNotice(boolean allowGeneralNotice) {
-        this.allowGeneralNotice = allowGeneralNotice;
-    }
-
-    public void updateTodoNotice(boolean allowTodoNotice) {
-        this.allowTodoNotice = allowTodoNotice;
-    }
-
-    public void updateRoutineNotice(boolean allowRoutineNotice) {
-        this.allowRoutineNotice = allowRoutineNotice;
-    }
-
-    public void updateWeeklyNotice(boolean allowWeeklyNotice) {
-        this.allowWeeklyNotice = allowWeeklyNotice;
-    }
-
-    public void updateOtherNotice(boolean allowOtherNotice) {
-        this.allowOtherNotice = allowOtherNotice;
     }
 
     @Schema(description = "사용자 관련 기본 응답 클래스")
@@ -108,11 +80,11 @@ public class User extends BaseTime {
         private String personalId;
         private int naggingLevel;
         private String device;
-        private boolean allowGeneralNotice;
-        private boolean allowTodoNotice;
-        private boolean allowRoutineNotice;
-        private boolean allowWeeklyNotice;
-        private boolean allowOtherNotice;
+        private Boolean allowGeneralNotice;
+        private Boolean allowTodoNotice;
+        private Boolean allowRoutineNotice;
+        private Boolean allowWeeklyNotice;
+        private Boolean allowOtherNotice;
     }
 
     @Schema(description = "로그인 요청 클래스")
@@ -159,13 +131,12 @@ public class User extends BaseTime {
     @NoArgsConstructor
     public static class UpdateRequest {
         private String nickName;
-        @Column(nullable = true)
         private int naggingLevel;
-        private boolean allowGeneralNotice;
-        private boolean allowTodoNotice;
-        private boolean allowRoutineNotice;
-        private boolean allowWeeklyNotice;
-        private boolean allowOtherNotice;
+        private Boolean allowGeneralNotice;
+        private Boolean allowTodoNotice;
+        private Boolean allowRoutineNotice;
+        private Boolean allowWeeklyNotice;
+        private Boolean allowOtherNotice;
     }
 
     @Schema(description = "아이디 중복확인 응답 클래스")
