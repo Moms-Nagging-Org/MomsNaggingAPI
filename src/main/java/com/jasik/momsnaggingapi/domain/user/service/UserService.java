@@ -29,39 +29,42 @@ public class UserService {
         return modelMapper.map(user, User.UserResponse.class);
     }
 
-    public User.UserResponse editUser(String token, User.UpdateRequest user) {
-
+    @Transactional
+    public User.Response editUser(String token, User.UpdateRequest user) {
         User existUser = userRepository.findById(authservice.getId(token))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
 
-        if(StringUtils.isNotBlank(user.getNickName()))
+        if(StringUtils.isNotBlank(user.getNickName())) {
             existUser.setNickName(user.getNickName());
-        if(user.getNaggingLevel() != 0) {
+        } else if(user.getNaggingLevel() != 0) {
             existUser.setNaggingLevel(user.getNaggingLevel());
-        }
-        if(user.isAllowGeneralNotice()) { // TODO: 조건문 수정 필요!!
-            existUser.setAllowGeneralNotice(user.isAllowGeneralNotice());
-        }
-        if(user.isAllowRoutineNotice()) {
-            existUser.setAllowRoutineNotice(user.isAllowRoutineNotice());
-        }
-        if(user.isAllowTodoNotice()) {
-            existUser.setAllowTodoNotice(user.isAllowTodoNotice());
-        }
-        if(user.isAllowWeeklyNotice()) {
-            existUser.setAllowWeeklyNotice(user.isAllowWeeklyNotice());
-        }
-        if(user.isAllowOtherNotice()) {
-            existUser.setAllowOtherNotice(user.isAllowOtherNotice());
+        } else {
+            if (user.getAllowGeneralNotice() != null) {
+                existUser.setAllowGeneralNotice(user.getAllowGeneralNotice());
+            }
+            if (user.getAllowRoutineNotice() != null) {
+                existUser.setAllowRoutineNotice(user.getAllowRoutineNotice());
+            }
+            if (user.getAllowTodoNotice() != null) {
+                existUser.setAllowTodoNotice(user.getAllowTodoNotice());
+            }
+            if (user.getAllowWeeklyNotice() != null) {
+                existUser.setAllowWeeklyNotice(user.getAllowWeeklyNotice());
+            }
+            if (user.getAllowOtherNotice() != null) {
+                existUser.setAllowOtherNotice(user.getAllowOtherNotice());
+            }
         }
 
-        return modelMapper.map(existUser, User.UserResponse.class);
+        return modelMapper.map(userRepository.save(existUser), User.Response.class);
     }
 
+    @Transactional
     public User.Response removeUser(String token) {
         Long id = authservice.getId(token);
         userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
+
         userRepository.deleteById(id);
 
         User.Response res = new User.Response();
