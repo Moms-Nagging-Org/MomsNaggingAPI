@@ -15,8 +15,8 @@ public class AsyncConfig extends AsyncConfigurerSupport {
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(2);
-        executor.setMaxPoolSize(10);
-        executor.setQueueCapacity(500);
+//        executor.setMaxPoolSize(10);
+//        executor.setQueueCapacity(500);
         executor.setThreadNamePrefix("momsnagging-async-");
         executor.initialize();
         return executor;

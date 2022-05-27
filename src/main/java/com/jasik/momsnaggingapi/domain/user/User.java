@@ -1,8 +1,9 @@
 package com.jasik.momsnaggingapi.domain.user;
 
-import com.jasik.momsnaggingapi.domain.common.BaseTime;
+import com.jasik.momsnaggingapi.infra.common.BaseTime;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+
 import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.GrantedAuthority;

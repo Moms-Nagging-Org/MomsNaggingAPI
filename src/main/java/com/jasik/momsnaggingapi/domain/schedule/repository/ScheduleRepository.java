@@ -1,5 +1,6 @@
 package com.jasik.momsnaggingapi.domain.schedule.repository;
 
+import com.jasik.momsnaggingapi.domain.grade.Grade;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -15,8 +16,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
-    List<Schedule> findAllByScheduleDateAndUserId(LocalDate scheduleDate, Long userId);
+    List<Schedule> findAllByScheduleDateAndUserIdOrderByScheduleTimeAsc(LocalDate scheduleDate, Long userId);
 
+    List<Schedule> findAllByUserIdAndGoalCountGreaterThanAndScheduleDateGreaterThanEqualAndScheduleDateLessThanEqual(
+        Long userId, int goalCount, LocalDate startDate, LocalDate endDate);
     // 벌크 연산 시 clearAutomatically(JPA 1차 캐시) 옵션 필요
     @Transactional
     @Modifying(clearAutomatically = true)
@@ -31,8 +34,21 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
         @Param("scheduleTime") String scheduleTime, @Param("alarmTime") LocalTime alarmTime,
         @Param("scheduleId") Long scheduleId, @Param("userId") Long userId,
         @Param("originalId") Long originalId);
-
+    @Transactional
+    @Modifying(clearAutomatically = true)
+    @Query("update Schedule set goalCount = :goalCount, scheduleName = :scheduleName, scheduleTime = :scheduleTime, alarmTime = :alarmTime where userId = :userId and originalId = :originalId")
+    void updateNRoutineWithUserIdAndOriginalId(
+        @Param("goalCount") int goalCount,
+        @Param("scheduleName") String scheduleName,
+        @Param("scheduleTime") String scheduleTime,
+        @Param("alarmTime") LocalTime alarmTime,
+        @Param("userId") Long userId,
+        @Param("originalId") Long originalId);
     List<Schedule> findAllByCategoryId(Long categoryId);
 
     Optional<Schedule> findByIdAndUserId(Long id, Long userId);
-}
+
+    List<Schedule> findAllByScheduleDateGreaterThanEqualAndScheduleDateLessThanEqualAndUserIdAndDone(LocalDate startDate, LocalDate endDate, Long userId, Boolean isDone);
+
+    List<Schedule> findAllByScheduleDateGreaterThanEqualAndScheduleDateLessThanEqualAndUserIdOrderByScheduleDateAscScheduleTimeAsc(LocalDate startDate, LocalDate endDate, Long userId);
+    }

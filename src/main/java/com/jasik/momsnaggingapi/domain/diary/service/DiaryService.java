@@ -1,13 +1,11 @@
 package com.jasik.momsnaggingapi.domain.diary.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jasik.momsnaggingapi.domain.diary.Diary;
 import com.jasik.momsnaggingapi.domain.diary.Diary.DiaryResponse;
+import com.jasik.momsnaggingapi.domain.diary.Diary.DailyResponse;
 import com.jasik.momsnaggingapi.domain.diary.repository.DiaryRepository;
-import com.jasik.momsnaggingapi.domain.schedule.Schedule;
-import com.jasik.momsnaggingapi.domain.schedule.repository.CategoryRepository;
-import com.jasik.momsnaggingapi.domain.schedule.repository.ScheduleRepository;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -62,5 +60,13 @@ public class DiaryService {
 
         return responseDto;
     }
+    @Transactional(readOnly = true)
+    public List<DailyResponse> getDailyDiaryOfMonth(int retrieveYear, int retrieveMonth) {
 
+        Long userId = 1L;
+        LocalDate startDate = LocalDate.of(retrieveYear, retrieveMonth, 1);
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+        return diaryRepository.findDiaryOfPeriodByUserIdAndStartDateAndEndDate(userId,
+            startDate, endDate);
+    }
 }
