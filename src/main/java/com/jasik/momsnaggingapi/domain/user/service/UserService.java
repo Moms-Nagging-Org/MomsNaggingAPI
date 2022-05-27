@@ -36,24 +36,24 @@ public class UserService {
 
         if(StringUtils.isNotBlank(user.getNickName())) {
             existUser.setNickName(user.getNickName());
-        } else if(user.getNaggingLevel() != 0) {
+        }
+        if(user.getNaggingLevel() != 0) {
             existUser.setNaggingLevel(user.getNaggingLevel());
-        } else {
-            if (user.getAllowGeneralNotice() != null) {
-                existUser.setAllowGeneralNotice(user.getAllowGeneralNotice());
-            }
-            if (user.getAllowRoutineNotice() != null) {
-                existUser.setAllowRoutineNotice(user.getAllowRoutineNotice());
-            }
-            if (user.getAllowTodoNotice() != null) {
-                existUser.setAllowTodoNotice(user.getAllowTodoNotice());
-            }
-            if (user.getAllowWeeklyNotice() != null) {
-                existUser.setAllowWeeklyNotice(user.getAllowWeeklyNotice());
-            }
-            if (user.getAllowOtherNotice() != null) {
-                existUser.setAllowOtherNotice(user.getAllowOtherNotice());
-            }
+        }
+        if (user.getAllowGeneralNotice() != null) {
+            existUser.setAllowGeneralNotice(user.getAllowGeneralNotice());
+        }
+        if (user.getAllowRoutineNotice() != null) {
+            existUser.setAllowRoutineNotice(user.getAllowRoutineNotice());
+        }
+        if (user.getAllowTodoNotice() != null) {
+            existUser.setAllowTodoNotice(user.getAllowTodoNotice());
+        }
+        if (user.getAllowWeeklyNotice() != null) {
+            existUser.setAllowWeeklyNotice(user.getAllowWeeklyNotice());
+        }
+        if (user.getAllowOtherNotice() != null) {
+            existUser.setAllowOtherNotice(user.getAllowOtherNotice());
         }
 
         return modelMapper.map(userRepository.save(existUser), User.Response.class);
