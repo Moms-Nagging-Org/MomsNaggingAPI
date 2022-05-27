@@ -1,57 +1,81 @@
 package com.jasik.momsnaggingapi.domain.user.service;
 
-import com.jasik.momsnaggingapi.domain.auth.exception.LoginFailureException;
-import com.jasik.momsnaggingapi.domain.auth.jwt.AuthToken;
+import com.jasik.momsnaggingapi.domain.auth.service.Authservice;
 import com.jasik.momsnaggingapi.domain.user.User;
 import com.jasik.momsnaggingapi.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final Authservice authservice;
+    private final ModelMapper modelMapper;
 
-    /**
-     *  유저의 존재 유무를 파악하여 로그인 / 회원가입
-     * @param providerCode
-     * @return
-     */
-    public Optional<User> existUser(String providerCode) {
-        return userRepository.findByProviderCode(providerCode);
+    public User.UserResponse findUser(String token) {
+        User user = userRepository.findById(authservice.getId(token))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
+        return modelMapper.map(user, User.UserResponse.class);
     }
 
-    /**
-     *  유저의 id가 중복된 값을 가지는지 확인
-     *  @param personalId
-     */
-    public Boolean validateDuplicatedId(String personalId) {
-        return userRepository.findByPersonalId(personalId).isPresent();
+    public User.UserResponse editUser(String token, User.UpdateRequest user) {
+
+        User existUser = userRepository.findById(authservice.getId(token))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
+
+        if(StringUtils.isNotBlank(user.getNickName()))
+            existUser.setNickName(user.getNickName());
+        if(user.getNaggingLevel() != 0) {
+            existUser.setNaggingLevel(user.getNaggingLevel());
+        }
+        if(user.isAllowGeneralNotice()) { // TODO: 조건문 수정 필요!!
+            existUser.setAllowGeneralNotice(user.isAllowGeneralNotice());
+        }
+        if(user.isAllowRoutineNotice()) {
+            existUser.setAllowRoutineNotice(user.isAllowRoutineNotice());
+        }
+        if(user.isAllowTodoNotice()) {
+            existUser.setAllowTodoNotice(user.isAllowTodoNotice());
+        }
+        if(user.isAllowWeeklyNotice()) {
+            existUser.setAllowWeeklyNotice(user.isAllowWeeklyNotice());
+        }
+        if(user.isAllowOtherNotice()) {
+            existUser.setAllowOtherNotice(user.isAllowOtherNotice());
+        }
+
+        return modelMapper.map(existUser, User.UserResponse.class);
     }
 
-    @Transactional
-    public User.AuthResponse registerUser(User.CreateRequest request) {
-        User user = userRepository.save(
-                User.builder()
-                        .email(request.getEmail())
-                        .provider(request.getProvider())
-                        .providerCode(request.getCode())
-                        .device(request.getDevice())
-                        .personalId(request.getPersonalId())
-                        .nickName(request.getNickname())
-                        .build());
-        return new User.AuthResponse(AuthToken.createToken(request.getProvider(), user.getEmail(), user.getPersonalId()));
+    public User.Response removeUser(String token) {
+        Long id = authservice.getId(token);
+        userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
+        userRepository.deleteById(id);
+
+        User.Response res = new User.Response();
+        res.setId(id);
+
+        return res;
     }
 
-    public User.AuthResponse loginUser(User.AuthRequest request) {
-        // TODO: provider 도 확인
-        User user = userRepository.findByProviderCode(request.getCode()).orElseThrow(LoginFailureException::new);;
+    public Optional<User> findUserById(Long id) {
+        return userRepository.findById(id);
+    }
 
-        return new User.AuthResponse(AuthToken.createToken(request.getProvider(), user.getEmail(), user.getPersonalId()));
-
+    public Long findUserIdByPersonalId(String personalId) {
+        Optional<User> user = userRepository.findByPersonalId(personalId);
+        return user.map(User::getId).orElse(null);
     }
 }
