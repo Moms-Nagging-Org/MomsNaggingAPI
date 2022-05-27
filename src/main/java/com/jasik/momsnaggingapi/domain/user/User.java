@@ -4,11 +4,19 @@ import com.jasik.momsnaggingapi.infra.common.BaseTime;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import org.hibernate.annotations.DynamicUpdate;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.core.GrantedAuthority;
+
 import javax.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Collection;
 
 @Entity
-@Getter
+@Getter @Setter
 @NoArgsConstructor
+@DynamicUpdate
 public class User extends BaseTime {
 
     @Id
@@ -50,6 +58,14 @@ public class User extends BaseTime {
         this.providerCode = providerCode;
         this.personalId = personalId;
         this.device = device;
+    }
+
+    @Schema(description = "사용자 관련 기본 응답 클래스")
+    @Getter @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class Response {
+        private Long id;
     }
 
     @Schema(description = "사용자 조회 시 응답 클래스")
@@ -110,11 +126,12 @@ public class User extends BaseTime {
         private String nickname;
     }
 
-    @Getter
+    @Getter @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     public static class UpdateRequest {
         private String nickName;
+        @Column(nullable = true)
         private int naggingLevel;
         private boolean allowGeneralNotice;
         private boolean allowTodoNotice;
