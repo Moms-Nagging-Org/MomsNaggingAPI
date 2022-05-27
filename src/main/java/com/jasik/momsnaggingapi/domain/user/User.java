@@ -112,13 +112,13 @@ public class User extends BaseTime {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class CreateRequest {
-        @Schema(description = "소셜로그인 플랫폼")
+        @Schema(description = "소셜로그인 플랫폼(Kakao | Google)")
         private String provider;
         @Schema(description = "사용자 이메일")
         private String email;
         @Schema(description = "소셜 코드")
         private String code;
-        @Schema(description = "디바이스")
+        @Schema(description = "디바이스(IOS | AOS)")
         private String device;
         @Schema(description = "아이디")
         private String personalId;
