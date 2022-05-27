@@ -60,6 +60,34 @@ public class User extends BaseTime {
         this.device = device;
     }
 
+    public void updateNickName(String nickName) {
+        this.nickName = nickName;
+    }
+
+    public void updateNaggingLevel(int naggingLevel) {
+        this.naggingLevel = naggingLevel;
+    }
+
+    public void updateGeneralNotice(boolean allowGeneralNotice) {
+        this.allowGeneralNotice = allowGeneralNotice;
+    }
+
+    public void updateTodoNotice(boolean allowTodoNotice) {
+        this.allowTodoNotice = allowTodoNotice;
+    }
+
+    public void updateRoutineNotice(boolean allowRoutineNotice) {
+        this.allowRoutineNotice = allowRoutineNotice;
+    }
+
+    public void updateWeeklyNotice(boolean allowWeeklyNotice) {
+        this.allowWeeklyNotice = allowWeeklyNotice;
+    }
+
+    public void updateOtherNotice(boolean allowOtherNotice) {
+        this.allowOtherNotice = allowOtherNotice;
+    }
+
     @Schema(description = "사용자 관련 기본 응답 클래스")
     @Getter @Setter
     @AllArgsConstructor

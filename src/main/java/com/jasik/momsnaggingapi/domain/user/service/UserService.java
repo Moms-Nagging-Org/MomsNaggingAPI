@@ -29,8 +29,8 @@ public class UserService {
         return modelMapper.map(user, User.UserResponse.class);
     }
 
-    public User.UserResponse editUser(String token, User.UpdateRequest user) {
-
+    @Transactional
+    public User.Response editUser(String token, User.UpdateRequest user) {
         User existUser = userRepository.findById(authservice.getId(token))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
 
@@ -55,13 +55,15 @@ public class UserService {
             existUser.setAllowOtherNotice(user.isAllowOtherNotice());
         }
 
-        return modelMapper.map(existUser, User.UserResponse.class);
+        return modelMapper.map(userRepository.save(existUser), User.Response.class);
     }
 
+    @Transactional
     public User.Response removeUser(String token) {
         Long id = authservice.getId(token);
         userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
+
         userRepository.deleteById(id);
 
         User.Response res = new User.Response();
