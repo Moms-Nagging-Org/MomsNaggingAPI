@@ -37,6 +37,9 @@ public class UserService {
         if(StringUtils.isNotBlank(user.getNickName())) {
             existUser.setNickName(user.getNickName());
         }
+        if(StringUtils.isNotBlank(user.getStatusMsg())) {
+            existUser.setStatusMsg(user.getStatusMsg());
+        }
         if(user.getNaggingLevel() != 0) {
             existUser.setNaggingLevel(user.getNaggingLevel());
         }

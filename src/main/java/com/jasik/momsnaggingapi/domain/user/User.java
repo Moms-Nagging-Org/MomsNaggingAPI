@@ -65,7 +65,7 @@ public class User extends BaseTime {
     public User(Claims claims) {
         this.id = Long.valueOf(claims.getSubject());
         this.personalId = claims.get("id").toString();
-        this.email = claims.get("email").toString();
+//        this.email = claims.get("email").toString();
         this.provider = claims.get("provider").toString();
     }
 
@@ -94,6 +94,7 @@ public class User extends BaseTime {
         private Boolean allowRoutineNotice;
         private Boolean allowWeeklyNotice;
         private Boolean allowOtherNotice;
+        private String statusMsg;
     }
 
     @Schema(description = "로그인 요청 클래스")
@@ -146,6 +147,7 @@ public class User extends BaseTime {
         private Boolean allowRoutineNotice;
         private Boolean allowWeeklyNotice;
         private Boolean allowOtherNotice;
+        private String statusMsg;
     }
 
     @Schema(description = "아이디 중복확인 응답 클래스")
