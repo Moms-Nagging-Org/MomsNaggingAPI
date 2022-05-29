@@ -1,6 +1,7 @@
 package com.jasik.momsnaggingapi.domain.user;
 
 import com.jasik.momsnaggingapi.infra.common.BaseTime;
+import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -10,6 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.*;
+import javax.security.auth.Subject;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -58,6 +60,13 @@ public class User extends BaseTime {
         this.providerCode = providerCode;
         this.personalId = personalId;
         this.device = device;
+    }
+
+    public User(Claims claims) {
+        this.id = Long.valueOf(claims.getSubject());
+        this.personalId = claims.get("id").toString();
+        this.email = claims.get("email").toString();
+        this.provider = claims.get("provider").toString();
     }
 
     @Schema(description = "사용자 관련 기본 응답 클래스")
