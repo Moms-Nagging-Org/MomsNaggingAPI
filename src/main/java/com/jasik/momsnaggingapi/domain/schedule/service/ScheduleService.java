@@ -71,21 +71,7 @@ public class ScheduleService extends RejectedExecutionException {
         // 습관 스케줄 저장 로직(n회 습관은 제외)
         if (originSchedule.getScheduleType() == Schedule.ScheduleType.ROUTINE) {
 
-//            User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            User user = userRepository.findById(userId)
-                .orElseThrow(
-                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
-            List<String> orderList;
-            Optional<List<String>> optionalList = Optional.ofNullable(user.getRoutineOrder());
-            if (optionalList.isPresent()) {
-                orderList = optionalList.get();
-                orderList.add(String.valueOf(originSchedule.getId()));
-            } else {
-                orderList = Collections.singletonList(
-                    String.valueOf(originSchedule.getId()));
-            }
-            user.updateRoutineOrder(orderList);
-            userRepository.save(user);
+            addRoutineOrder(userId, originSchedule.getId());
             if (originSchedule.getGoalCount() == 0) {
                 try {
                     Schedule finalOriginSchedule = originSchedule;
@@ -98,7 +84,25 @@ public class ScheduleService extends RejectedExecutionException {
         return modelMapper.map(originSchedule, Schedule.ScheduleResponse.class);
     }
 
-    public void createRoutine(Schedule originSchedule) {
+    private void addRoutineOrder(Long userId, Long scheduleId) {
+        //            User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userRepository.findById(userId)
+            .orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
+        List<String> orderList;
+        Optional<List<String>> optionalList = Optional.ofNullable(user.getRoutineOrder());
+        if (optionalList.isPresent()) {
+            orderList = optionalList.get();
+            orderList.add(String.valueOf(scheduleId));
+        } else {
+            orderList = Collections.singletonList(
+                String.valueOf(scheduleId));
+        }
+        user.updateRoutineOrder(orderList);
+        userRepository.save(user);
+    }
+
+    private void createRoutine(Schedule originSchedule) {
 
         LocalDate originScheduleDate = originSchedule.getScheduleDate();
         int dayOfWeekNumber = originScheduleDate.getDayOfWeek().getValue() - 1;
@@ -251,6 +255,7 @@ public class ScheduleService extends RejectedExecutionException {
                 modifiedSchedule.getUserId(), modifiedSchedule.getOriginalId());
             modifiedSchedule.initOriginalId();
             scheduleRepository.save(modifiedSchedule);
+            addRoutineOrder(userId, modifiedSchedule.getId());
             try {
                 asyncService.run(() -> createRoutine(modifiedSchedule));
             } catch (RejectedExecutionException e) {
@@ -312,9 +317,9 @@ public class ScheduleService extends RejectedExecutionException {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
         List<String> routineOrder = user.getRoutineOrder();
         for (ArrayListRequest changedMap : arrayRequest) {
-            int oneIndex = routineOrder.indexOf(String.valueOf(changedMap.getOneSchedule()));
+            int oneIndex = routineOrder.indexOf(String.valueOf(changedMap.getOneOriginalId()));
             int theOtherIndex = routineOrder.indexOf(
-                String.valueOf(changedMap.getTheOtherSchedule()));
+                String.valueOf(changedMap.getTheOtherOriginalId()));
             if ((oneIndex == -1) || (theOtherIndex == -1)) {
                 throw new ScheduleNotFoundException("schedule was not found",
                     ErrorCode.SCHEDULE_NOT_FOUND);

@@ -280,8 +280,8 @@ public class Schedule extends BaseTime {
 
         @Schema(description = "스케줄 ID", defaultValue = "22")
         private Long id;
-        //        @Schema(description = "스케줄 원본 ID", defaultValue = "1")
-//        private Long originalId;
+        @Schema(description = "스케줄 원본 ID", defaultValue = "1")
+        private Long originalId;
         @Schema(description = "n회 습관의 수행 목표 수", defaultValue = "0")
         private int goalCount;
         //        @Schema(description = "n회 습관의 수행 완료 수", defaultValue = "0")
@@ -323,10 +323,10 @@ public class Schedule extends BaseTime {
     @NoArgsConstructor
     public static class ArrayListRequest {
 
-        @Schema(description = "순서를 스위칭할 스케줄 ID")
-        private Long oneSchedule;
+        @Schema(description = "순서를 스위칭할 스케줄의 original ID")
+        private Long oneOriginalId;
 
-        @Schema(description = "순서를 스위칭할 또 다른 스케줄 ID")
-        private Long theOtherSchedule;
+        @Schema(description = "순서를 스위칭할 또 다른 스케줄의 original ID")
+        private Long theOtherOriginalId;
     }
 }
