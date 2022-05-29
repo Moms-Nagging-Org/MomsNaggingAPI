@@ -1,6 +1,6 @@
 package com.jasik.momsnaggingapi.domain.user.service;
 
-import com.jasik.momsnaggingapi.domain.auth.service.Authservice;
+import com.jasik.momsnaggingapi.domain.auth.service.AuthService;
 import com.jasik.momsnaggingapi.domain.user.User;
 import com.jasik.momsnaggingapi.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,22 +20,25 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-    private final Authservice authservice;
+    private final AuthService authservice;
     private final ModelMapper modelMapper;
 
-    public User.UserResponse findUser(String token) {
-        User user = userRepository.findById(authservice.getId(token))
+    public User.UserResponse findUser(Long id) {
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
         return modelMapper.map(user, User.UserResponse.class);
     }
 
     @Transactional
-    public User.Response editUser(String token, User.UpdateRequest user) {
-        User existUser = userRepository.findById(authservice.getId(token))
+    public User.Response editUser(Long id, User.UpdateRequest user) {
+        User existUser = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
 
         if(StringUtils.isNotBlank(user.getNickName())) {
             existUser.setNickName(user.getNickName());
+        }
+        if(StringUtils.isNotBlank(user.getStatusMsg())) {
+            existUser.setStatusMsg(user.getStatusMsg());
         }
         if(user.getNaggingLevel() != 0) {
             existUser.setNaggingLevel(user.getNaggingLevel());
@@ -60,8 +63,7 @@ public class UserService {
     }
 
     @Transactional
-    public User.Response removeUser(String token) {
-        Long id = authservice.getId(token);
+    public User.Response removeUser(Long id) {
         userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
 

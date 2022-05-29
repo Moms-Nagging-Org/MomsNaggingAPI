@@ -1,6 +1,21 @@
 package com.jasik.momsnaggingapi.domain.user;
 
 import com.jasik.momsnaggingapi.infra.common.BaseTime;
+
+import io.jsonwebtoken.Claims;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.*;
+
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.DynamicUpdate;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.core.GrantedAuthority;
+
+import javax.persistence.*;
+import javax.security.auth.Subject;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Collection;
 import com.jasik.momsnaggingapi.infra.common.StringListConverter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
@@ -15,6 +30,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 
 @Entity
 @Getter @Setter
@@ -70,6 +86,13 @@ public class User extends BaseTime {
         this.device = device;
     }
 
+    public User(Claims claims) {
+        this.id = Long.valueOf(claims.getSubject());
+        this.personalId = claims.get("id").toString();
+//        this.email = claims.get("email").toString();
+        this.provider = claims.get("provider").toString();
+    }
+
     @Schema(description = "사용자 관련 기본 응답 클래스")
     @Getter @Setter
     @AllArgsConstructor
@@ -95,6 +118,7 @@ public class User extends BaseTime {
         private Boolean allowRoutineNotice;
         private Boolean allowWeeklyNotice;
         private Boolean allowOtherNotice;
+        private String statusMsg;
     }
 
     @Schema(description = "로그인 요청 클래스")
@@ -147,6 +171,7 @@ public class User extends BaseTime {
         private Boolean allowRoutineNotice;
         private Boolean allowWeeklyNotice;
         private Boolean allowOtherNotice;
+        private String statusMsg;
     }
 
     @Schema(description = "아이디 중복확인 응답 클래스")
