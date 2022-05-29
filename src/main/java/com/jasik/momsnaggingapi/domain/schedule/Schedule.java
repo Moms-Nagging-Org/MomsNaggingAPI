@@ -61,7 +61,7 @@ public class Schedule extends BaseTime {
 
     private String scheduleTime;
 
-    @Column(nullable = false)
+//    @Column(nullable = false)
     private LocalDate scheduleDate;
 
     private LocalTime alarmTime;
