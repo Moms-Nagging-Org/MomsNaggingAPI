@@ -1,6 +1,6 @@
 package com.jasik.momsnaggingapi.domain.auth.controller;
 
-import com.jasik.momsnaggingapi.domain.auth.service.Authservice;
+import com.jasik.momsnaggingapi.domain.auth.service.AuthService;
 import com.jasik.momsnaggingapi.domain.user.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -17,7 +17,7 @@ import java.util.Optional;
 @Tag(name = "AuthAPI ~.~", description = "로그인/회원가입 API")
 public class AuthController {
 
-    private final Authservice authservice;
+    private final AuthService authservice;
 
     @PostMapping("/{provider}")
     @Operation(summary = "회원가입", description = "유저 정보를 회원가입 합니다. 회원가입 성공 시 토큰 전송합니다.")

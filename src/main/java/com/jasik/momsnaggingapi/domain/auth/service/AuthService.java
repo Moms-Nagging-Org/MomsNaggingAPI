@@ -7,6 +7,7 @@ import com.jasik.momsnaggingapi.domain.user.User;
 import com.jasik.momsnaggingapi.domain.user.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,7 +16,7 @@ import java.util.Optional;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class Authservice {
+public class AuthService {
     private final UserRepository userRepository;
     private final AuthTokenProvider authTokenProvider;
 
@@ -67,4 +68,15 @@ public class Authservice {
         AuthToken authToken = authTokenProvider.createToken(user.getId(), request.getProvider(), user.getEmail(), user.getPersonalId());
         return new User.AuthResponse(authToken.getToken());
     }
+
+    public User loadUserById(String id) {
+        return userRepository.findById(Long.valueOf(id)).orElseThrow(() -> new UsernameNotFoundException("존재하지 않는 유저 아이디입니다."));
+    }
+
+//    @Override
+//    public UserDetails loadUserByUsername(String id) throws UsernameNotFoundException {
+//        User user = userRepository.findById(Long.valueOf(id)).orElseThrow(() -> new UsernameNotFoundException("존재하지 않는 유저 아이디입니다."));
+//
+//        return new Auth();
+//    }
 }
