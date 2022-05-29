@@ -31,7 +31,7 @@ public class AuthToken {
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", personalId);
         claims.put("provider", provider);
-        claims.put("email", email);
+//        claims.put("email", email);
 
         Date now = new Date();
 

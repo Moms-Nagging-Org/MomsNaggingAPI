@@ -1,22 +1,31 @@
 package com.jasik.momsnaggingapi.domain.schedule.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jasik.momsnaggingapi.infra.common.AsyncService;
 import com.jasik.momsnaggingapi.domain.schedule.Category;
 import com.jasik.momsnaggingapi.domain.schedule.Category.CategoryResponse;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
+import com.jasik.momsnaggingapi.domain.schedule.Schedule.ArrayListRequest;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule.CategoryListResponse;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleListResponse;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleType;
 import com.jasik.momsnaggingapi.domain.schedule.repository.CategoryRepository;
 import com.jasik.momsnaggingapi.domain.schedule.repository.ScheduleRepository;
+import com.jasik.momsnaggingapi.domain.user.User;
+import com.jasik.momsnaggingapi.domain.user.repository.UserRepository;
+import com.jasik.momsnaggingapi.infra.common.AsyncService;
 import com.jasik.momsnaggingapi.infra.common.ErrorCode;
 import com.jasik.momsnaggingapi.infra.common.exception.ScheduleNotFoundException;
 import com.jasik.momsnaggingapi.infra.common.exception.ThreadFullException;
 import java.time.LocalDate;
 import java.time.temporal.WeekFields;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.stream.Collectors;
 import javax.json.JsonPatch;
@@ -26,8 +35,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Slf4j
 @Service
@@ -36,36 +47,54 @@ public class ScheduleService extends RejectedExecutionException {
 
     private final ScheduleRepository scheduleRepository;
     private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final ObjectMapper objectMapper;
     private final AsyncService asyncService;
 
     @Transactional
     public Schedule.ScheduleResponse postSchedule(Schedule.ScheduleRequest dto) {
-
         // TODO: nagging ID 연동
         Long userId = 1L;
+
         // TODO: 하루 최대 생성갯수 조건 추가
         if (dto.getNaggingId() != null && dto.getNaggingId() == 0) {
             dto.setNaggingId(null);
         }
-        Schedule originSchedule = scheduleRepository.save(modelMapper.map(dto, Schedule.class));
+        Schedule newSchedule = modelMapper.map(dto, Schedule.class);
+        Schedule originSchedule = scheduleRepository.save(newSchedule);
         // TODO : 생성 -> 업데이트 로직 개선사항 찾기 -> select last_insert_id()
         originSchedule.initOriginalId();
         originSchedule.initScheduleTypeAndUserId(userId);
         originSchedule.verifyRoutine();
+        originSchedule = scheduleRepository.save(originSchedule);
         // 습관 스케줄 저장 로직(n회 습관은 제외)
-        if (originSchedule.getScheduleType() == Schedule.ScheduleType.ROUTINE
-            && originSchedule.getGoalCount() == 0) {
-            try {
-                Schedule finalOriginSchedule = originSchedule;
-                asyncService.run(() -> createRoutine(finalOriginSchedule));
-            } catch (RejectedExecutionException e) {
-                throw new ThreadFullException("Async Thread was fulled", ErrorCode.THREAD_FULL);
+        if (originSchedule.getScheduleType() == Schedule.ScheduleType.ROUTINE) {
+
+//            User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            User user = userRepository.findById(userId)
+                .orElseThrow(
+                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
+            List<String> orderList;
+            Optional<List<String>> optionalList = Optional.ofNullable(user.getRoutineOrder());
+            if (optionalList.isPresent()) {
+                orderList = optionalList.get();
+                orderList.add(String.valueOf(originSchedule.getId()));
+            } else {
+                orderList = Collections.singletonList(
+                    String.valueOf(originSchedule.getId()));
+            }
+            user.updateRoutineOrder(orderList);
+            userRepository.save(user);
+            if (originSchedule.getGoalCount() == 0) {
+                try {
+                    Schedule finalOriginSchedule = originSchedule;
+                    asyncService.run(() -> createRoutine(finalOriginSchedule));
+                } catch (RejectedExecutionException e) {
+                    throw new ThreadFullException("Async Thread was fulled", ErrorCode.THREAD_FULL);
+                }
             }
         }
-        originSchedule = scheduleRepository.save(originSchedule);
-        log.error("finish");
         return modelMapper.map(originSchedule, Schedule.ScheduleResponse.class);
     }
 
@@ -114,10 +143,41 @@ public class ScheduleService extends RejectedExecutionException {
 
         Long userId = 1L;
 
-        List<Schedule> schedules = scheduleRepository.findAllByScheduleDateAndUserIdOrderByScheduleTimeAsc(
+        // TODO: routineOrder에 맞춰서 반환
+//            User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userRepository.findById(userId)
+            .orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
+        List<String> routineOrder = user.getRoutineOrder();
+
+        // 전체 id 순으로 정렬
+        List<Schedule> schedules = scheduleRepository.findAllByScheduleDateAndUserIdOrderByIdAsc(
             scheduleDate, userId);
 
-        return schedules.stream().map(Schedule -> modelMapper.map(Schedule,
+        // 습관만 정렬 수정
+        boolean isFirst = true;
+        int index = 0;
+        Map<Integer, Schedule> todoSchedules = new HashMap<>();
+        ArrayList<Schedule> routineSchedules = new ArrayList<>();
+        for (String scheduleId : routineOrder) {
+            for (Schedule schedule : schedules) {
+                if (Objects.equals(String.valueOf(schedule.getOriginalId()), scheduleId)) {
+                    routineSchedules.add(schedule);
+                }
+                // 할일 순서 기억
+                if (isFirst && (schedule.getScheduleType() == ScheduleType.TODO)) {
+                    todoSchedules.put(index, schedule);
+                }
+                index++;
+            }
+            isFirst = false;
+        }
+        // 할일은 원래 순서에 두기
+        for (Entry<Integer, Schedule> todoMap : todoSchedules.entrySet()) {
+            routineSchedules.add(todoMap.getKey(), todoMap.getValue());
+        }
+
+        return routineSchedules.stream().map(Schedule -> modelMapper.map(Schedule,
                 com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleListResponse.class))
             .collect(Collectors.toList());
     }
@@ -140,6 +200,7 @@ public class ScheduleService extends RejectedExecutionException {
         Schedule targetSchedule = scheduleRepository.findByIdAndUserId(scheduleId, userId)
             .orElseThrow(() -> new ScheduleNotFoundException("schedule was not found",
                 ErrorCode.SCHEDULE_NOT_FOUND));
+        boolean beforeDone = targetSchedule.getDone();
         // 타겟 스케줄 변경사항 적용
         Schedule modifiedSchedule = scheduleRepository.save(
             mergeSchedule(targetSchedule, jsonPatch));
@@ -149,20 +210,38 @@ public class ScheduleService extends RejectedExecutionException {
                 .replaceAll("/", ""));
         }
         // n회 반복 습관의 수행 완료 처리인 경우
-        if (columnList.contains("/done") && modifiedSchedule.getDone() && (
+        if (columnList.contains("done") && (
             modifiedSchedule.getScheduleType() == ScheduleType.ROUTINE) && (
             modifiedSchedule.getGoalCount() > 0)) {
             Schedule originSchedule = scheduleRepository.findByIdAndUserId(
                 modifiedSchedule.getOriginalId(), userId).orElseThrow(
                 () -> new ScheduleNotFoundException("schedule was not found",
                     ErrorCode.SCHEDULE_NOT_FOUND));
-            // 목표 미완 and 내일 주차 == 원본 주차 =-> 다음날 한개 더 생성
-            if (!originSchedule.plusDoneCount()
-                && modifiedSchedule.getScheduleDate().plusDays(1).get(WeekFields.ISO.weekOfYear())
-                == originSchedule.getScheduleDate().get(WeekFields.ISO.weekOfYear())) {
-                modifiedSchedule.initNextSchedule();
-                scheduleRepository.save(modifiedSchedule);
+            // true -> false
+            if (beforeDone && (!modifiedSchedule.getDone())) {
+                originSchedule.minusDoneCount();
             }
+            // false -> true
+            else if ((!beforeDone) && (modifiedSchedule.getDone())) {
+                // 목표 미완 and 내일 주차 == 원본 주차 =-> 다음날 한개 더 생성
+                if (!originSchedule.plusDoneCount()
+                    && (
+                    modifiedSchedule.getScheduleDate().plusDays(1).get(WeekFields.ISO.weekOfYear())
+                        == originSchedule.getScheduleDate().get(WeekFields.ISO.weekOfYear()))
+                ) {
+                    Schedule nextSchedule = Schedule.builder().build();
+                    BeanUtils.copyProperties(modifiedSchedule, nextSchedule, "id", "doneCount");
+                    nextSchedule.initNextSchedule();
+                    Optional<Schedule> optionalSchedule = scheduleRepository.findByUserIdAndOriginalIdAndScheduleDate(
+                        userId,
+                        nextSchedule.getOriginalId(), nextSchedule.getScheduleDate());
+                    // 완료 -> 미완료 -> 완료 케이스에 대한 처리 추가 ==> 다음날에 같은 스케줄 있으면 미생성
+                    if (!optionalSchedule.isPresent()) {
+                        scheduleRepository.save(nextSchedule);
+                    }
+                }
+            }
+            scheduleRepository.save(originSchedule);
         }
         // 요일 반복 옵션 수정이 포함된 경우 삭제 후 재 생성
         if (columnList.contains("mon") || columnList.contains("tue") || columnList.contains("wed")
@@ -178,7 +257,6 @@ public class ScheduleService extends RejectedExecutionException {
                 throw new ThreadFullException("Async Thread was fulled", ErrorCode.THREAD_FULL);
             }
         }
-        // TODO: n회 습관 수정사항을 원본에도 적용으로 변경 필요
         // n회 반복 옵션이 수정된 경우 -> 원본이 같은 n회 습관들 모두 업데이트
         else if (columnList.contains("goalCount")) {
             scheduleRepository.updateNRoutineWithUserIdAndOriginalId(
@@ -224,12 +302,27 @@ public class ScheduleService extends RejectedExecutionException {
     }
 
     @Transactional
-    public List<ScheduleListResponse> postSchedulesArray(List<Long> scheduleArrayRequest) {
+    public void postSchedulesArray(ArrayList<ArrayListRequest> arrayRequest) {
 
-        List<ScheduleListResponse> scheduleAllResponses = new ArrayList<>();
-        scheduleAllResponses.add(new ScheduleListResponse());
+        Long userId = 1L;
 
-        return scheduleAllResponses;
+//            User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userRepository.findById(userId)
+            .orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
+        List<String> routineOrder = user.getRoutineOrder();
+        for (ArrayListRequest changedMap : arrayRequest) {
+            int oneIndex = routineOrder.indexOf(String.valueOf(changedMap.getOneSchedule()));
+            int theOtherIndex = routineOrder.indexOf(
+                String.valueOf(changedMap.getTheOtherSchedule()));
+            if ((oneIndex == -1) || (theOtherIndex == -1)) {
+                throw new ScheduleNotFoundException("schedule was not found",
+                    ErrorCode.SCHEDULE_NOT_FOUND);
+            }
+            Collections.swap(routineOrder, oneIndex, theOtherIndex);
+        }
+        user.updateRoutineOrder(routineOrder);
+        userRepository.save(user);
     }
 
 //    @Transactional

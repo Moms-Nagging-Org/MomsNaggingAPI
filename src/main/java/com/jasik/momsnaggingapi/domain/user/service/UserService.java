@@ -1,6 +1,6 @@
 package com.jasik.momsnaggingapi.domain.user.service;
 
-import com.jasik.momsnaggingapi.domain.auth.service.Authservice;
+import com.jasik.momsnaggingapi.domain.auth.service.AuthService;
 import com.jasik.momsnaggingapi.domain.user.User;
 import com.jasik.momsnaggingapi.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,48 +20,53 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-    private final Authservice authservice;
+    private final AuthService authservice;
     private final ModelMapper modelMapper;
 
-    public User.UserResponse findUser(String token) {
-        User user = userRepository.findById(authservice.getId(token))
+    public User.UserResponse findUser(Long id) {
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
         return modelMapper.map(user, User.UserResponse.class);
     }
 
-    public User.UserResponse editUser(String token, User.UpdateRequest user) {
-
-        User existUser = userRepository.findById(authservice.getId(token))
+    @Transactional
+    public User.Response editUser(Long id, User.UpdateRequest user) {
+        User existUser = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
 
-        if(StringUtils.isNotBlank(user.getNickName()))
+        if(StringUtils.isNotBlank(user.getNickName())) {
             existUser.setNickName(user.getNickName());
+        }
+        if(StringUtils.isNotBlank(user.getStatusMsg())) {
+            existUser.setStatusMsg(user.getStatusMsg());
+        }
         if(user.getNaggingLevel() != 0) {
             existUser.setNaggingLevel(user.getNaggingLevel());
         }
-        if(user.isAllowGeneralNotice()) { // TODO: 조건문 수정 필요!!
-            existUser.setAllowGeneralNotice(user.isAllowGeneralNotice());
+        if (user.getAllowGeneralNotice() != null) {
+            existUser.setAllowGeneralNotice(user.getAllowGeneralNotice());
         }
-        if(user.isAllowRoutineNotice()) {
-            existUser.setAllowRoutineNotice(user.isAllowRoutineNotice());
+        if (user.getAllowRoutineNotice() != null) {
+            existUser.setAllowRoutineNotice(user.getAllowRoutineNotice());
         }
-        if(user.isAllowTodoNotice()) {
-            existUser.setAllowTodoNotice(user.isAllowTodoNotice());
+        if (user.getAllowTodoNotice() != null) {
+            existUser.setAllowTodoNotice(user.getAllowTodoNotice());
         }
-        if(user.isAllowWeeklyNotice()) {
-            existUser.setAllowWeeklyNotice(user.isAllowWeeklyNotice());
+        if (user.getAllowWeeklyNotice() != null) {
+            existUser.setAllowWeeklyNotice(user.getAllowWeeklyNotice());
         }
-        if(user.isAllowOtherNotice()) {
-            existUser.setAllowOtherNotice(user.isAllowOtherNotice());
+        if (user.getAllowOtherNotice() != null) {
+            existUser.setAllowOtherNotice(user.getAllowOtherNotice());
         }
 
-        return modelMapper.map(existUser, User.UserResponse.class);
+        return modelMapper.map(userRepository.save(existUser), User.Response.class);
     }
 
-    public User.Response removeUser(String token) {
-        Long id = authservice.getId(token);
+    @Transactional
+    public User.Response removeUser(Long id) {
         userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
+
         userRepository.deleteById(id);
 
         User.Response res = new User.Response();
