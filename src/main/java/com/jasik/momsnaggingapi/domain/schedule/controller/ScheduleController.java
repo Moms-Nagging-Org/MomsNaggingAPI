@@ -146,7 +146,11 @@ public class ScheduleController {
         + "<페이지>\n\n"
         + "홈 → 정렬 → 저장\n\n"
         + "<설명>\n\n"
-        + "습관을 정렬합니다.")
+        + "습관을 정렬합니다.\n\n"
+        + "순서 스위칭 Object 리스트로 요청합니다.\n\n"
+        + "리스트는 스위칭 시간 순으로 구성합니다.\n\n"
+        + "스위칭 object는 스케줄의 originalId 컬럼으로 요청합니다.\n\n"
+        + "스케줄의 originalId는 GET - /api/v1/schedules 응답에 포함되어 있습니다.")
     public ResponseEntity<?> postSchedulesArray(
         @Schema(description = "스위칭하는 스케줄 ID 세트가 저장된 배열", required = true) final @RequestBody ArrayList<ArrayListRequest> scheduleArrayRequest
     ) {
