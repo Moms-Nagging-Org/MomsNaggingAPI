@@ -188,9 +188,8 @@ public class ScheduleService extends RejectedExecutionException {
 
     @Transactional(readOnly = true)
     public Schedule.ScheduleResponse getSchedule(Long scheduleId) {
-        Long userId = 1L;
 
-        return scheduleRepository.findByIdAndUserId(scheduleId, userId)
+        return scheduleRepository.findById(scheduleId)
             .map(value -> modelMapper.map(value, Schedule.ScheduleResponse.class)).orElseThrow(
                 () -> new ScheduleNotFoundException("schedule was not found",
                     ErrorCode.SCHEDULE_NOT_FOUND));
