@@ -49,6 +49,7 @@ public class User extends BaseTime {
     private String personalId;
     private String device;
     private String profileImage;
+    private String firebaseToken;
 
     @Column(columnDefinition = "varchar(30) default 'MEMBER'")
     private String role = "MEMBER";
@@ -76,7 +77,7 @@ public class User extends BaseTime {
 
     @Builder
     public User(int naggingLevel, String nickName, String email,
-        String provider, String providerCode, String personalId, String device) {
+        String provider, String providerCode, String personalId, String device, String firebaseToken) {
         this.naggingLevel = naggingLevel;
         this.nickName = nickName;
         this.email = email;
@@ -84,6 +85,7 @@ public class User extends BaseTime {
         this.providerCode = providerCode;
         this.personalId = personalId;
         this.device = device;
+        this.firebaseToken = firebaseToken;
     }
 
     public User(Claims claims) {
@@ -130,6 +132,10 @@ public class User extends BaseTime {
         private String provider;
         @Schema(description = "플랫폼 인증 코드")
         private String code;
+        @Schema(description = "디바이스(IOS | AOS)")
+        private String device;
+        @Schema(description = "파이어베이스 엑세스 토큰")
+        private String firebaseToken;
     }
 
     @Schema(description = "로그인/회원가입 응답 클래스")
@@ -158,6 +164,8 @@ public class User extends BaseTime {
         private String personalId;
         @Schema(description = "호칭")
         private String nickname;
+        @Schema(description = "파이어베이스 엑세스 토큰")
+        private String firebaseToken;
     }
 
     @Getter @Setter

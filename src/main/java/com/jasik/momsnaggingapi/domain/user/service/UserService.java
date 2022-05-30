@@ -45,17 +45,19 @@ public class UserService {
         }
         if (user.getAllowGeneralNotice() != null) {
             existUser.setAllowGeneralNotice(user.getAllowGeneralNotice());
-        }
-        if (user.getAllowRoutineNotice() != null) {
+            if (!user.getAllowGeneralNotice()) {
+                existUser.setAllowRoutineNotice(false);
+                existUser.setAllowTodoNotice(false);
+                existUser.setAllowWeeklyNotice(false);
+                existUser.setAllowOtherNotice(false);
+            }
+        } else if (user.getAllowRoutineNotice() != null) {
             existUser.setAllowRoutineNotice(user.getAllowRoutineNotice());
-        }
-        if (user.getAllowTodoNotice() != null) {
+        } else if (user.getAllowTodoNotice() != null) {
             existUser.setAllowTodoNotice(user.getAllowTodoNotice());
-        }
-        if (user.getAllowWeeklyNotice() != null) {
+        } else if (user.getAllowWeeklyNotice() != null) {
             existUser.setAllowWeeklyNotice(user.getAllowWeeklyNotice());
-        }
-        if (user.getAllowOtherNotice() != null) {
+        } else if (user.getAllowOtherNotice() != null) {
             existUser.setAllowOtherNotice(user.getAllowOtherNotice());
         }
 
