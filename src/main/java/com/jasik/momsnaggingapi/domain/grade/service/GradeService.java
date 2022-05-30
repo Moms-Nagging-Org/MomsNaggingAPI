@@ -96,11 +96,10 @@ public class GradeService {
     }
 
     @Transactional
-    public Grade.GradeResponse getGradeOfLastWeek() {
+    public Grade.GradeResponse getGradeOfLastWeek(Long userId) {
 
         // TODO: '수' 등급의 상수 환경변수로 관리
         // 프론트 로직 : 로그인 시 마지막 평가 주차 조회(16주차) -> 프론트에서 오늘의 주차 계산(18주차) -> 오늘 주차(18주차) - 1 != 마지막 평가 주차(16) -> 주간 평가 요청
-        Long userId = 1L;
         LocalDate weekAgoDate = LocalDate.now().minusDays(7);
         int createdYear = weekAgoDate.getYear();
         int createdWeek = weekAgoDate.get(WeekFields.ISO.weekOfYear());
@@ -133,17 +132,14 @@ public class GradeService {
     }
 
     @Transactional(readOnly = true)
-    public Grade.AwardResponse getAwards() {
-
-        Long userId = 1L;
+    public Grade.AwardResponse getAwards(Long userId) {
 
         return new Grade.AwardResponse(getAwardLevel(userId));
     }
 
     @Transactional(readOnly = true)
-    public List<Grade.Performance> getDailyGradesOfMonth(int retrieveYear, int retrieveMonth) {
+    public List<Grade.Performance> getDailyGradesOfMonth(Long userId, int retrieveYear, int retrieveMonth) {
 
-        Long userId = 1L;
         LocalDate startDate = LocalDate.of(retrieveYear, retrieveMonth, 1);
         LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
 
@@ -152,8 +148,7 @@ public class GradeService {
     }
 
     @Transactional(readOnly = true)
-    public List<GradesOfMonthResponse> getWeeklyGradesOfMonth(int retrieveYear, int retrieveMonth) {
-        Long userId = 1L;
+    public List<GradesOfMonthResponse> getWeeklyGradesOfMonth(Long userId, int retrieveYear, int retrieveMonth) {
         LocalDate startDate = LocalDate.of(retrieveYear, retrieveMonth, 1);
         LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
         int startWeek = startDate.get(WeekFields.ISO.weekOfYear());
@@ -184,8 +179,7 @@ public class GradeService {
     }
 
     @Transactional(readOnly = true)
-    public Grade.StatisticsResponse getStatistics() {
-        Long userId = 1L;
+    public Grade.StatisticsResponse getStatistics(Long userId) {
 
         return gradeRepository.findStatisticsByUserId(userId);
     }

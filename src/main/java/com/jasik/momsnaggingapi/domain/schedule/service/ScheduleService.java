@@ -53,13 +53,12 @@ public class ScheduleService extends RejectedExecutionException {
     private final AsyncService asyncService;
 
     @Transactional
-    public Schedule.ScheduleResponse postSchedule(Schedule.ScheduleRequest dto) {
+    public Schedule.ScheduleResponse postSchedule(Long userId, Schedule.ScheduleRequest dto) {
         // TODO: nagging ID 연동
-        Long userId = 1L;
-
         // TODO: 하루 최대 생성갯수 조건 추가
-        if (dto.getNaggingId() != null && dto.getNaggingId() == 0) {
-            dto.setNaggingId(null);
+        // 커스텀 할일/습관일 경우 nagging 지정
+        if (dto.getNaggingId() == null || dto.getNaggingId() == 0) {
+            dto.setNaggingId(1L);
         }
         Schedule newSchedule = modelMapper.map(dto, Schedule.class);
         Schedule originSchedule = scheduleRepository.save(newSchedule);
@@ -143,9 +142,7 @@ public class ScheduleService extends RejectedExecutionException {
     }
 
     @Transactional(readOnly = true)
-    public List<ScheduleListResponse> getSchedules(LocalDate scheduleDate) {
-
-        Long userId = 1L;
+    public List<ScheduleListResponse> getSchedules(Long userId, LocalDate scheduleDate) {
 
         // TODO: routineOrder에 맞춰서 반환
 //            User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -196,9 +193,7 @@ public class ScheduleService extends RejectedExecutionException {
     }
 
     @Transactional
-    public Schedule.ScheduleResponse patchSchedule(Long scheduleId, JsonPatch jsonPatch) {
-
-        Long userId = 1L;
+    public Schedule.ScheduleResponse patchSchedule(Long userId, Long scheduleId, JsonPatch jsonPatch) {
 
         Schedule targetSchedule = scheduleRepository.findByIdAndUserId(scheduleId, userId)
             .orElseThrow(() -> new ScheduleNotFoundException("schedule was not found",
@@ -288,9 +283,8 @@ public class ScheduleService extends RejectedExecutionException {
     }
 
     @Transactional
-    public void deleteSchedule(Long scheduleId) {
+    public void deleteSchedule(Long userId, Long scheduleId) {
 
-        Long userId = 1L;
         Schedule schedule = scheduleRepository.findByIdAndUserId(scheduleId, userId).orElseThrow(
             () -> new ScheduleNotFoundException("schedule was not found",
                 ErrorCode.SCHEDULE_NOT_FOUND));
@@ -306,9 +300,7 @@ public class ScheduleService extends RejectedExecutionException {
     }
 
     @Transactional
-    public void postSchedulesArray(ArrayList<ArrayListRequest> arrayRequest) {
-
-        Long userId = 1L;
+    public void postSchedulesArray(Long userId, ArrayList<ArrayListRequest> arrayRequest) {
 
 //            User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userRepository.findById(userId)
