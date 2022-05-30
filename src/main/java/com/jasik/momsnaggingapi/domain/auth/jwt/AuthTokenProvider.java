@@ -1,6 +1,5 @@
 package com.jasik.momsnaggingapi.domain.auth.jwt;
 
-import com.jasik.momsnaggingapi.domain.auth.service.AuthService;
 import com.jasik.momsnaggingapi.domain.user.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

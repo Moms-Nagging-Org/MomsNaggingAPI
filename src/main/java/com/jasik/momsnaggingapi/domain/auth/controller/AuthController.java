@@ -27,7 +27,8 @@ public class AuthController {
             @Parameter(description = "디바이스") @RequestParam String device,
             @Parameter(description = "유저 이메일") @RequestParam String email,
             @Parameter(description = "아이디") @RequestParam String id,
-            @Parameter(description = "호칭") @RequestParam String nickname) {
+            @Parameter(description = "호칭") @RequestParam String nickname,
+            @Parameter(description = "파이어베이스 토큰") @RequestParam String firebaseToken) {
 
         Optional<User> existUser = authservice.existUser(code);
 
@@ -43,6 +44,7 @@ public class AuthController {
             req.setDevice(device);
             req.setPersonalId(id);
             req.setNickname(nickname);
+            req.setFirebaseToken(firebaseToken);
 
             return ResponseEntity.ok().body(authservice.registerUser(req));
         }
@@ -53,7 +55,9 @@ public class AuthController {
     @Operation(summary = "로그인", description = "유저 정보를 전송해 로그인 합니다. 유저가 있다면 토큰을, 없다면 null 값을 전송합니다.")
     public ResponseEntity<User.AuthResponse> authenticateUser(
             @Parameter(description = "소셜로그인 플랫폼") @PathVariable String provider,
-            @Parameter(description = "플랫폼 코드") @RequestParam String code) {
+            @Parameter(description = "플랫폼 코드") @RequestParam String code,
+            @Parameter(description = "디바이스") @RequestParam String device,
+            @Parameter(description = "파이어베이스 토큰") @RequestParam String firebaseToken) {
 
         Optional<User> existUser = authservice.existUser(code);
 
@@ -61,6 +65,8 @@ public class AuthController {
             User.AuthRequest req = new User.AuthRequest();
             req.setCode(code);
             req.setProvider(provider);
+            req.setDevice(device);
+            req.setFirebaseToken(firebaseToken);
 
             return ResponseEntity.ok().body(authservice.loginUser(req));
         } else {
