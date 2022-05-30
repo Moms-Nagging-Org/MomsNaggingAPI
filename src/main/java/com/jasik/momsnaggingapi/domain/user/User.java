@@ -41,6 +41,7 @@ public class User extends BaseTime {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(columnDefinition = "int default 1")
     private int naggingLevel = 1;
     private String nickName;
     private String email;
