@@ -56,6 +56,7 @@ public class AuthService {
                         .device(request.getDevice())
                         .personalId(request.getPersonalId())
                         .nickName(request.getNickname())
+                        .firebaseToken(request.getFirebaseToken())
                         .build());
         AuthToken authToken = authTokenProvider.createToken(user.getId(), request.getProvider(), user.getEmail(), user.getPersonalId());
         return new User.AuthResponse(authToken.getToken());
@@ -63,7 +64,12 @@ public class AuthService {
 
     public User.AuthResponse loginUser(User.AuthRequest request) {
         // TODO: provider 도 확인
-        User user = userRepository.findByProviderCode(request.getCode()).orElseThrow(LoginFailureException::new);;
+        User user = userRepository.findByProviderCodeAndProvider(request.getCode(), request.getProvider()).orElseThrow(LoginFailureException::new);;
+
+        user.setFirebaseToken(request.getFirebaseToken());
+        user.setDevice(request.getDevice());
+
+        userRepository.save(user);
 
         AuthToken authToken = authTokenProvider.createToken(user.getId(), request.getProvider(), user.getEmail(), user.getPersonalId());
         return new User.AuthResponse(authToken.getToken());
