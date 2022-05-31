@@ -5,11 +5,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.common.net.HttpHeaders;
 import com.jasik.momsnaggingapi.domain.push.FCM;
+import com.jasik.momsnaggingapi.domain.schedule.Schedule;
+import com.jasik.momsnaggingapi.domain.schedule.Schedule.SchedulePush;
+import com.jasik.momsnaggingapi.domain.schedule.repository.ScheduleRepository;
+import com.jasik.momsnaggingapi.infra.common.AsyncService;
+import com.jasik.momsnaggingapi.infra.common.ErrorCode;
+import com.jasik.momsnaggingapi.infra.common.exception.ThreadFullException;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.concurrent.RejectedExecutionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -22,6 +34,8 @@ public class FCMService {
     @Value("${fcm.project-id}")
     private String PROJECT_ID;
     private final ObjectMapper objectMapper;
+    private final ScheduleRepository scheduleRepository;
+    private final AsyncService asyncService;
 
     // FCM message 전송 함수
     public void sendMessageTo(String targetToken, String title, String body) throws IOException {
@@ -67,5 +81,31 @@ public class FCMService {
 
         googleCredentials.refreshIfExpired();
         return googleCredentials.getAccessToken().getTokenValue();
+    }
+
+    @Scheduled(initialDelay = 1000, fixedRate = 60000)
+    @Async
+    public void fixedRateJob(){
+        LocalTime nowTime = LocalTime.now();
+        // 5분 단위로 수행
+        if (nowTime.getMinute() % 5 == 0) {
+            log.info("Push Scheduler Start");
+            LocalDate pushDate = LocalDate.now();
+            LocalTime pushTime = LocalTime.of(nowTime.getHour(), nowTime.getMinute(), 0);
+            for (SchedulePush push : scheduleRepository.findSchedulePushByScheduleDateAndAlarmTime(
+                pushDate, pushTime)) {
+                try {
+                    asyncService.run(() -> {
+                        try {
+                            sendMessageTo(push.getTargetToken(), push.getTitle(), push.getBody());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                } catch (RejectedExecutionException e) {
+                    log.error("FCM Scheduler Thread was fulled");
+                }
+            }
+        }
     }
 }

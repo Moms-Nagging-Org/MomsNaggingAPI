@@ -1,8 +1,10 @@
 package com.jasik.momsnaggingapi.domain.schedule.repository;
 
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
+import com.jasik.momsnaggingapi.domain.schedule.Schedule.SchedulePush;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,6 +21,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
     List<Schedule> findAllByUserIdAndGoalCountGreaterThanAndScheduleDateGreaterThanEqualAndScheduleDateLessThanEqual(
         Long userId, int goalCount, LocalDate startDate, LocalDate endDate);
+
     // 벌크 연산 시 clearAutomatically(JPA 1차 캐시) 옵션 필요
     @Transactional
     @Modifying(clearAutomatically = true)
@@ -51,4 +54,11 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
     Optional<Schedule> findByUserIdAndOriginalIdAndScheduleDate(Long userId, Long originalId,
         LocalDate scheduleDate);
+
+    @Transactional(readOnly = true)
+    @Query(name = "findSchedulePush", nativeQuery = true)
+    ArrayList<SchedulePush> findSchedulePushByScheduleDateAndAlarmTime(
+        @Param("scheduleDate") LocalDate scheduleDate,
+        @Param("alarmTime") LocalTime alarmTime
+    );
 }
