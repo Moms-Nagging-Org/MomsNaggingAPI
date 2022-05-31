@@ -22,9 +22,8 @@ public class DiaryService {
     private final ModelMapper modelMapper;
 
     @Transactional(readOnly = true)
-    public Diary.DiaryResponse getDiary(LocalDate retrieveDate) {
+    public Diary.DiaryResponse getDiary(Long userId, LocalDate retrieveDate) {
 
-        Long userId = 1L;
         boolean isToday = LocalDate.now().isEqual(retrieveDate);
 
         Optional<Diary> diary = diaryRepository.findByUserIdAndDiaryDate(userId, retrieveDate);
@@ -39,9 +38,8 @@ public class DiaryService {
     }
 
     @Transactional()
-    public Diary.DiaryResponse putDiary(Diary.DiaryRequest requestDto) {
+    public Diary.DiaryResponse putDiary(Long userId, Diary.DiaryRequest requestDto) {
 
-        Long userId = 1L;
         boolean isToday = LocalDate.now().isEqual(requestDto.getDiaryDate());
 
         Optional<Diary> optionalDiary = diaryRepository.findByUserIdAndDiaryDate(userId, requestDto.getDiaryDate());
@@ -61,9 +59,8 @@ public class DiaryService {
         return responseDto;
     }
     @Transactional(readOnly = true)
-    public List<DailyResponse> getDailyDiaryOfMonth(int retrieveYear, int retrieveMonth) {
+    public List<DailyResponse> getDailyDiaryOfMonth(Long userId, int retrieveYear, int retrieveMonth) {
 
-        Long userId = 1L;
         LocalDate startDate = LocalDate.of(retrieveYear, retrieveMonth, 1);
         LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
         return diaryRepository.findDiaryOfPeriodByUserIdAndStartDateAndEndDate(userId,

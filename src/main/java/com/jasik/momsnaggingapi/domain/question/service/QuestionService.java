@@ -24,9 +24,7 @@ public class QuestionService {
     private final ModelMapper modelMapper;
 
     @Transactional
-    public Question.QuestionResponse postQuestion(Question.QuestionRequest dto) {
-
-        Long userId = 1L;
+    public Question.QuestionResponse postQuestion(Long userId, Question.QuestionRequest dto) {
 
         Question question = modelMapper.map(dto, Question.class);
         question.initUserId(userId);
