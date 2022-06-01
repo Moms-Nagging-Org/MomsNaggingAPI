@@ -1,5 +1,6 @@
 package com.jasik.momsnaggingapi.domain.schedule;
 
+import com.jasik.momsnaggingapi.domain.schedule.Schedule.SchedulePush;
 import com.jasik.momsnaggingapi.infra.common.BaseTime;
 import com.jasik.momsnaggingapi.infra.common.ErrorCode;
 import com.jasik.momsnaggingapi.infra.common.exception.NotValidRoutineException;
@@ -7,12 +8,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import javax.persistence.Column;
+import javax.persistence.ColumnResult;
+import javax.persistence.ConstructorResult;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.SqlResultSetMapping;
 import javax.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,6 +24,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.NamedNativeQuery;
 import org.hibernate.annotations.Parameter;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
@@ -27,6 +32,19 @@ import org.springframework.lang.Nullable;
 
 
 @Entity
+@NamedNativeQuery(
+    name = "findSchedulePush",
+    query = "select a.schedule_name as title, "
+        + "       b.firebase_token as targetToken, "
+        + "       case b.nagging_level when 1 then c.level1 when 2 then c.level2 when 3 then c.level3 else c.level1 end as body "
+        + "from schedule a inner join user b on a.user_id = b.id inner join nagging c on a.nagging_id = c.id\n"
+        + "where a.schedule_date = :scheduleDate "
+        + "and a.alarm_time = :alarmTime",
+    resultSetMapping = "SchedulePush")
+@SqlResultSetMapping(name = "SchedulePush", classes = @ConstructorResult(targetClass = SchedulePush.class, columns = {
+    @ColumnResult(name = "title", type = String.class),
+    @ColumnResult(name = "targetToken", type = String.class),
+    @ColumnResult(name = "body", type = String.class)}))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -328,5 +346,16 @@ public class Schedule extends BaseTime {
 
         @Schema(description = "순서를 스위칭할 또 다른 스케줄의 original ID")
         private Long theOtherOriginalId;
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class SchedulePush {
+
+        private String title;
+        private String targetToken;
+        private String body;
     }
 }
