@@ -41,8 +41,7 @@ public class User extends BaseTime {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(columnDefinition = "int default 1")
-    private int naggingLevel = 1;
+    private Integer naggingLevel;
     private String nickName;
     private String email;
     private String provider;
@@ -54,19 +53,17 @@ public class User extends BaseTime {
 
     @Column(columnDefinition = "varchar(30) default 'MEMBER'")
     private String role = "MEMBER";
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT default '오늘 하루도 파이팅 🔥")
     private String statusMsg = "";
 
     @Column(columnDefinition = "boolean default true")
-    private Boolean allowGeneralNotice = true;
+    private Boolean allowTodoNotice;
     @Column(columnDefinition = "boolean default true")
-    private Boolean allowTodoNotice = true;
+    private Boolean allowRoutineNotice;
     @Column(columnDefinition = "boolean default true")
-    private Boolean allowRoutineNotice = true;
+    private Boolean allowWeeklyNotice;
     @Column(columnDefinition = "boolean default true")
-    private Boolean allowWeeklyNotice = true;
-    @Column(columnDefinition = "boolean default true")
-    private Boolean allowOtherNotice = true;
+    private Boolean allowOtherNotice;
 
     @Convert(converter = StringListConverter.class)
     @Column(columnDefinition = "json")
@@ -77,9 +74,8 @@ public class User extends BaseTime {
     }
 
     @Builder
-    public User(int naggingLevel, String nickName, String email,
+    public User(String nickName, String email,
         String provider, String providerCode, String personalId, String device, String firebaseToken) {
-        this.naggingLevel = naggingLevel;
         this.nickName = nickName;
         this.email = email;
         this.provider = provider;
@@ -87,6 +83,12 @@ public class User extends BaseTime {
         this.personalId = personalId;
         this.device = device;
         this.firebaseToken = firebaseToken;
+        this.naggingLevel = 0;
+        this.allowTodoNotice = true;
+        this.allowRoutineNotice = true;
+        this.allowWeeklyNotice = true;
+        this.allowOtherNotice = true;
+        this.statusMsg = "오늘 하루도 파이팅 🔥";
     }
 
     public User(Claims claims) {
@@ -114,9 +116,8 @@ public class User extends BaseTime {
         private String provider;
         private String nickName;
         private String personalId;
-        private int naggingLevel;
+        private Integer naggingLevel;
         private String device;
-        private Boolean allowGeneralNotice;
         private Boolean allowTodoNotice;
         private Boolean allowRoutineNotice;
         private Boolean allowWeeklyNotice;
@@ -174,8 +175,7 @@ public class User extends BaseTime {
     @NoArgsConstructor
     public static class UpdateRequest {
         private String nickName;
-        private int naggingLevel;
-        private Boolean allowGeneralNotice;
+        private Integer naggingLevel;
         private Boolean allowTodoNotice;
         private Boolean allowRoutineNotice;
         private Boolean allowWeeklyNotice;

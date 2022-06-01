@@ -20,7 +20,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-    private final AuthService authservice;
     private final ModelMapper modelMapper;
 
     public User.UserResponse findUser(Long id) {
@@ -37,27 +36,26 @@ public class UserService {
         if(StringUtils.isNotBlank(user.getNickName())) {
             existUser.setNickName(user.getNickName());
         }
-        if(StringUtils.isNotBlank(user.getStatusMsg())) {
-            existUser.setStatusMsg(user.getStatusMsg());
+        if(user.getStatusMsg() != null) {
+            if(StringUtils.isBlank(user.getStatusMsg())) {
+                existUser.setStatusMsg("오늘 하루도 파이팅 🔥");
+            } else {
+                existUser.setStatusMsg(user.getStatusMsg());
+            }
         }
-        if(user.getNaggingLevel() != 0) {
+        if(user.getNaggingLevel() != null) {
             existUser.setNaggingLevel(user.getNaggingLevel());
         }
-        if (user.getAllowGeneralNotice() != null) {
-            existUser.setAllowGeneralNotice(user.getAllowGeneralNotice());
-            if (!user.getAllowGeneralNotice()) {
-                existUser.setAllowRoutineNotice(false);
-                existUser.setAllowTodoNotice(false);
-                existUser.setAllowWeeklyNotice(false);
-                existUser.setAllowOtherNotice(false);
-            }
-        } else if (user.getAllowRoutineNotice() != null) {
+        if (user.getAllowRoutineNotice() != null) {
             existUser.setAllowRoutineNotice(user.getAllowRoutineNotice());
-        } else if (user.getAllowTodoNotice() != null) {
+        }
+        if (user.getAllowTodoNotice() != null) {
             existUser.setAllowTodoNotice(user.getAllowTodoNotice());
-        } else if (user.getAllowWeeklyNotice() != null) {
+        }
+        if (user.getAllowWeeklyNotice() != null) {
             existUser.setAllowWeeklyNotice(user.getAllowWeeklyNotice());
-        } else if (user.getAllowOtherNotice() != null) {
+        }
+        if (user.getAllowOtherNotice() != null) {
             existUser.setAllowOtherNotice(user.getAllowOtherNotice());
         }
 
