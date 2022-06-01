@@ -1,31 +1,47 @@
 package com.jasik.momsnaggingapi.domain.auth.jwt;
 
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.security.Key;
+import java.util.*;
 
+@Slf4j
+@RequiredArgsConstructor
 public class AuthToken {
-    public static String createToken(String provider, String email, String personalId) {
+    @Getter
+    private final String token;
+    private final Key key;
+
+    public AuthToken(Key key, Long id, String provider, String email, String personalId) {
+        this.key = key;
+        this.token = createToken(key, id, provider, email, personalId);
+    }
+
+    // 토큰 생성
+    public String createToken(Key key, Long id, String provider, String email, String personalId) {
         // header
         Map<String, Object> header = new HashMap<>();
         header.put("typ", "JWT");
-        header.put("alg", "HS256");
+        header.put("alg", "HS512");
 
-        // claim
+        // subject
         Map<String, Object> claims = new HashMap<>();
-        claims.put("email", email);
-        claims.put("provider", provider);
         claims.put("id", personalId);
+        claims.put("provider", provider);
+//        claims.put("email", email);
 
-//        Claims claims = Jwts.claims().setSubject(email);
         Date now = new Date();
 
         return Jwts.builder()
                 .setHeader(header)
                 .setClaims(claims)
+                .setSubject(String.valueOf(id))
+                .signWith(key, SignatureAlgorithm.HS512)
                 .setIssuedAt(now)
                 .compact();
     }
+
 }

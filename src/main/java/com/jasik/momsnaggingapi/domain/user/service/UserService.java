@@ -1,57 +1,86 @@
 package com.jasik.momsnaggingapi.domain.user.service;
 
-import com.jasik.momsnaggingapi.domain.auth.exception.LoginFailureException;
-import com.jasik.momsnaggingapi.domain.auth.jwt.AuthToken;
+import com.jasik.momsnaggingapi.domain.auth.service.AuthService;
 import com.jasik.momsnaggingapi.domain.user.User;
 import com.jasik.momsnaggingapi.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final ModelMapper modelMapper;
 
-    /**
-     *  유저의 존재 유무를 파악하여 로그인 / 회원가입
-     * @param providerCode
-     * @return
-     */
-    public Optional<User> existUser(String providerCode) {
-        return userRepository.findByProviderCode(providerCode);
-    }
-
-    /**
-     *  유저의 id가 중복된 값을 가지는지 확인
-     *  @param personalId
-     */
-    public Boolean validateDuplicatedId(String personalId) {
-        return userRepository.findByPersonalId(personalId).isPresent();
+    public User.UserResponse findUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
+        return modelMapper.map(user, User.UserResponse.class);
     }
 
     @Transactional
-    public User.AuthResponse registerUser(User.CreateRequest request) {
-        User user = userRepository.save(
-                User.builder()
-                        .email(request.getEmail())
-                        .provider(request.getProvider())
-                        .providerCode(request.getCode())
-                        .device(request.getDevice())
-                        .personalId(request.getPersonalId())
-                        .nickName(request.getNickname())
-                        .build());
-        return new User.AuthResponse(AuthToken.createToken(request.getProvider(), user.getEmail(), user.getPersonalId()));
+    public User.Response editUser(Long id, User.UpdateRequest user) {
+        User existUser = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
+
+        if(StringUtils.isNotBlank(user.getNickName())) {
+            existUser.setNickName(user.getNickName());
+        }
+        if(user.getStatusMsg() != null) {
+            if(StringUtils.isBlank(user.getStatusMsg())) {
+                existUser.setStatusMsg("오늘 하루도 파이팅 🔥");
+            } else {
+                existUser.setStatusMsg(user.getStatusMsg());
+            }
+        }
+        if(user.getNaggingLevel() != null) {
+            existUser.setNaggingLevel(user.getNaggingLevel());
+        }
+        if (user.getAllowRoutineNotice() != null) {
+            existUser.setAllowRoutineNotice(user.getAllowRoutineNotice());
+        }
+        if (user.getAllowTodoNotice() != null) {
+            existUser.setAllowTodoNotice(user.getAllowTodoNotice());
+        }
+        if (user.getAllowWeeklyNotice() != null) {
+            existUser.setAllowWeeklyNotice(user.getAllowWeeklyNotice());
+        }
+        if (user.getAllowOtherNotice() != null) {
+            existUser.setAllowOtherNotice(user.getAllowOtherNotice());
+        }
+
+        return modelMapper.map(userRepository.save(existUser), User.Response.class);
     }
 
-    public User.AuthResponse loginUser(User.AuthRequest request) {
-        // TODO: provider 도 확인
-        User user = userRepository.findByProviderCode(request.getCode()).orElseThrow(LoginFailureException::new);;
+    @Transactional
+    public User.Response removeUser(Long id) {
+        userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
 
-        return new User.AuthResponse(AuthToken.createToken(request.getProvider(), user.getEmail(), user.getPersonalId()));
+        userRepository.deleteById(id);
 
+        User.Response res = new User.Response();
+        res.setId(id);
+
+        return res;
+    }
+
+    public Optional<User> findUserById(Long id) {
+        return userRepository.findById(id);
+    }
+
+    public Long findUserIdByPersonalId(String personalId) {
+        Optional<User> user = userRepository.findByPersonalId(personalId);
+        return user.map(User::getId).orElse(null);
     }
 }
