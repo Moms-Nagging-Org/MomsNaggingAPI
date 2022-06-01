@@ -66,8 +66,7 @@ public class ScheduleController {
         + "홈\n\n"
         + "홈 → 성적표 → 달력 → 특정 일 선택\n\n"
         + "<설명>\n\n"
-        + "해당 일자의 모든 스케줄을 조회합니다.\n\n"
-        + "TODO 스케줄의 done 컬럼 값이 null 인 경우 '미룸' 상태입니다.")
+        + "해당 일자의 모든 스케줄을 조회합니다.")
     public ResponseEntity<List<Schedule.ScheduleListResponse>> getSchedules(
         @AuthenticationPrincipal User user,
         @Schema(description = "일자", example = "2022-04-16", required = true)
@@ -100,12 +99,12 @@ public class ScheduleController {
     @PatchMapping(value = "/{scheduleId}", consumes = "application/json-patch+json")
     @Operation(summary = "할일/습관 수정", description = ""
         + "<페이지>\n\n"
-        + "홈 → 완료(done = true)\n\n"
-        + "홈 → 할일 미룸(done = null)\n\n"
+        + "홈 → 완료(status = 1)\n\n"
+        + "홈 → 할일 미룸/건너뜀(status = 2)\n\n"
         + "홈 → 할일/습관 선택 → 완료\n\n"
         + "<설명>\n\n"
         + "할일 또는 습관 정보를 수정합니다. \n\n"
-        + "RFC6902 형식을 따릅니다.(https://datatracker.ietf.org/doc/html/rfc6902)\n\n "
+        + "RFC6902 형식을 따릅니다.(http://jsonpatch.com/)\n\n "
         + "[\n\n"
         + "    {\n\n"
         + "        \"op\": \"replace\",\n\n"
