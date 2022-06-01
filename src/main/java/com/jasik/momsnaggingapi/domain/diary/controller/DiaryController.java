@@ -1,6 +1,7 @@
 package com.jasik.momsnaggingapi.domain.diary.controller;
 
 import com.jasik.momsnaggingapi.domain.diary.Diary;
+import com.jasik.momsnaggingapi.domain.diary.Diary.DailyDiary;
 import com.jasik.momsnaggingapi.domain.diary.Diary.DailyResponse;
 import com.jasik.momsnaggingapi.domain.diary.Diary.DiaryResponse;
 import com.jasik.momsnaggingapi.domain.diary.service.DiaryService;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
@@ -80,7 +82,7 @@ public class DiaryController {
         + "홈 → 일기장 → 특정 월 선택\n\n\n"
         + "<설명>\n\n"
         + "해당 월의 일별 일기장 작성 여부를 조회합니다.")
-    public ResponseEntity<List<DailyResponse>> getDailyDiaryOfMonth(
+    public ResponseEntity<ArrayList<DailyResponse>> getDailyDiaryOfMonth(
         @AuthenticationPrincipal User user,
         @Schema(example = "2022", required = true) @Parameter(name = "retrieveYear", description = "조회할 년도", in = ParameterIn.QUERY) @RequestParam @Min(2022) @Max(2122) int retrieveYear,
         @Schema(example = "05", required = true) @Parameter(name = "retrieveMonth", description = "조회할 월", in = ParameterIn.QUERY) @RequestParam @Min(1) @Max(12) int retrieveMonth) {
