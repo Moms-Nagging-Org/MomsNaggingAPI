@@ -1,7 +1,7 @@
 package com.jasik.momsnaggingapi.domain.diary.repository;
 
 import com.jasik.momsnaggingapi.domain.diary.Diary;
-import com.jasik.momsnaggingapi.domain.diary.Diary.DailyResponse;
+import com.jasik.momsnaggingapi.domain.diary.Diary.DailyDiary;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -14,8 +14,8 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
     Optional<Diary> findByUserIdAndDiaryDate(Long userId, LocalDate retrieveDate);
 
     @Transactional(readOnly = true)
-    @Query(name = "findDailyResponse", nativeQuery = true)
-    List<DailyResponse> findDiaryOfPeriodByUserIdAndStartDateAndEndDate(
+    @Query(name = "findDailyDiary", nativeQuery = true)
+    List<DailyDiary> findDiaryOfPeriodByUserIdAndStartDateAndEndDate(
         @Param("userId") Long userId, @Param("startDate") LocalDate startDate,
         @Param("endDate") LocalDate endDate);
 }

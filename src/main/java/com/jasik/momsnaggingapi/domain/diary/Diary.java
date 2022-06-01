@@ -1,7 +1,7 @@
 package com.jasik.momsnaggingapi.domain.diary;
 
 import com.jasik.momsnaggingapi.infra.common.BaseTime;
-import com.jasik.momsnaggingapi.domain.diary.Diary.DailyResponse;
+import com.jasik.momsnaggingapi.domain.diary.Diary.DailyDiary;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
 import javax.validation.constraints.NotBlank;
@@ -13,11 +13,12 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.NamedNativeQuery;
 import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
-@NamedNativeQuery(name = "findDailyResponse", query =
+@NamedNativeQuery(name = "findDailyDiary", query =
     "select IF(a.title is null and a.context is null, false, true) as diaryExists, b.diaryDate\n"
         + "from\n" + "    (select *\n" + "     from diary\n" + "     where user_id = :userId\n"
         + "       and diary_date >= :startDate\n" + "       and diary_date <= :endDate\n"
@@ -28,8 +29,8 @@ import org.springframework.format.annotation.DateTimeFormat;
         + "                 , information_schema.tables b\n"
         + "                 , (SELECT @num \\:= 0) c\n" + "             ) T\n"
         + "        WHERE seq <=  DATEDIFF(:endDate, :startDate) + 1\n"
-        + "    ) b on a.diary_date = b.diaryDate;", resultSetMapping = "DailyResponse")
-@SqlResultSetMapping(name = "DailyResponse", classes = @ConstructorResult(targetClass = DailyResponse.class, columns = {
+        + "    ) b on a.diary_date = b.diaryDate;", resultSetMapping = "DailyDiary")
+@SqlResultSetMapping(name = "DailyDiary", classes = @ConstructorResult(targetClass = DailyDiary.class, columns = {
     @ColumnResult(name = "diaryExists", type = Boolean.class),
     @ColumnResult(name = "diaryDate", type = LocalDate.class)}))
 @Getter
@@ -106,19 +107,34 @@ public class Diary extends BaseTime {
             "false"})
         private boolean today;
     }
+    @Getter
+    @Setter
+    @SuperBuilder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class DailyDiary {
+        @Schema(description = "일기장 작성 여부")
+        private boolean diaryExists;
+        @Schema(description = "일기장 날짜")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        private LocalDate diaryDate;
+    }
 
     @Schema(description = "특정 월의 일기장 작성 여부 조회 시 응답 클래스")
     @Getter
     @Setter
+    @SuperBuilder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class DailyResponse {
+    public static class DailyResponse extends DailyDiary {
+        @Schema(description = "공휴일 여부")
+        private boolean isHoliday;
 
-        @Schema(description = "일기장 작성 여부")
-        private boolean diaryExists;
-
-        @Schema(description = "일기장 날짜")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        private LocalDate diaryDate;
+//        @SuperBuilder
+//        public DailyResponse(boolean diaryExists, LocalDate diaryDate, boolean isHoliday) {
+//            this.diaryExists = diaryExists;
+//            this.diaryDate = diaryDate;
+//            this.isHoliday = isHoliday;
+//        }
     }
 }
