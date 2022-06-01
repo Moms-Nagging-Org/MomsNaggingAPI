@@ -29,7 +29,7 @@ dependencies {
     //JSR-374 API-Implements(구현체) 의존성 추가
     implementation 'org.glassfish:javax.json:1.1.4' // 기본
     //implementation 'org.apache.johnzon:johnzon-core:1.2.14' //서드파티 (의존성 추가시 서비스로더에 의해 우선 선택됨, 없으면 기본 glassfish를 선택)
-
+    implementation 'com.ibm.icu:icu4j:4.0.1'
     // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
 
