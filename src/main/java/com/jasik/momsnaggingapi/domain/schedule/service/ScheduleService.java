@@ -160,22 +160,24 @@ public class ScheduleService extends RejectedExecutionException {
         int index = 0;
         Map<Integer, Schedule> todoSchedules = new HashMap<>();
         ArrayList<Schedule> routineSchedules = new ArrayList<>();
-        for (String scheduleId : routineOrder) {
-            for (Schedule schedule : schedules) {
-                if (Objects.equals(String.valueOf(schedule.getOriginalId()), scheduleId)) {
-                    routineSchedules.add(schedule);
+        if (routineOrder != null) {
+            for (String scheduleId : routineOrder) {
+                for (Schedule schedule : schedules) {
+                    if (Objects.equals(String.valueOf(schedule.getOriginalId()), scheduleId)) {
+                        routineSchedules.add(schedule);
+                    }
+                    // 할일 순서 기억
+                    if (isFirst && (schedule.getScheduleType() == ScheduleType.TODO)) {
+                        todoSchedules.put(index, schedule);
+                    }
+                    index++;
                 }
-                // 할일 순서 기억
-                if (isFirst && (schedule.getScheduleType() == ScheduleType.TODO)) {
-                    todoSchedules.put(index, schedule);
-                }
-                index++;
+                isFirst = false;
             }
-            isFirst = false;
-        }
-        // 할일은 원래 순서에 두기
-        for (Entry<Integer, Schedule> todoMap : todoSchedules.entrySet()) {
-            routineSchedules.add(todoMap.getKey(), todoMap.getValue());
+            // 할일은 원래 순서에 두기
+            for (Entry<Integer, Schedule> todoMap : todoSchedules.entrySet()) {
+                routineSchedules.add(todoMap.getKey(), todoMap.getValue());
+            }
         }
 
         return routineSchedules.stream().map(Schedule -> modelMapper.map(Schedule,
@@ -192,13 +194,26 @@ public class ScheduleService extends RejectedExecutionException {
                     ErrorCode.SCHEDULE_NOT_FOUND));
     }
 
+    private void createNextNRoutine(Long userId, Schedule schedule) {
+
+        Schedule nextSchedule = Schedule.builder().build();
+        BeanUtils.copyProperties(schedule, nextSchedule, "id", "doneCount");
+        nextSchedule.initNextSchedule();
+        Optional<Schedule> optionalSchedule = scheduleRepository.findByUserIdAndOriginalIdAndScheduleDate(
+            userId,
+            nextSchedule.getOriginalId(), nextSchedule.getScheduleDate());
+        if (!optionalSchedule.isPresent()) {
+            scheduleRepository.save(nextSchedule);
+        }
+    }
+
     @Transactional
     public Schedule.ScheduleResponse patchSchedule(Long userId, Long scheduleId, JsonPatch jsonPatch) {
 
         Schedule targetSchedule = scheduleRepository.findByIdAndUserId(scheduleId, userId)
             .orElseThrow(() -> new ScheduleNotFoundException("schedule was not found",
                 ErrorCode.SCHEDULE_NOT_FOUND));
-        boolean beforeDone = targetSchedule.getDone();
+        int beforeStatus = targetSchedule.getStatus();
         // 타겟 스케줄 변경사항 적용
         Schedule modifiedSchedule = scheduleRepository.save(
             mergeSchedule(targetSchedule, jsonPatch));
@@ -208,35 +223,35 @@ public class ScheduleService extends RejectedExecutionException {
                 .replaceAll("/", ""));
         }
         // n회 반복 습관의 수행 완료 처리인 경우
-        if (columnList.contains("done") && (
+        if (columnList.contains("status") && (
             modifiedSchedule.getScheduleType() == ScheduleType.ROUTINE) && (
             modifiedSchedule.getGoalCount() > 0)) {
             Schedule originSchedule = scheduleRepository.findByIdAndUserId(
                 modifiedSchedule.getOriginalId(), userId).orElseThrow(
                 () -> new ScheduleNotFoundException("schedule was not found",
                     ErrorCode.SCHEDULE_NOT_FOUND));
-            // true -> false
-            if (beforeDone && (!modifiedSchedule.getDone())) {
+            // 완료 -> 미완료, 미룸/건너뜀
+            if (beforeStatus == 1 && (modifiedSchedule.getStatus() == 0) || (modifiedSchedule.getStatus() == 2) ) {
                 originSchedule.minusDoneCount();
             }
-            // false -> true
-            else if ((!beforeDone) && (modifiedSchedule.getDone())) {
+            // 미완료 -> 미룸/건너뜀
+            else if (beforeStatus == 0 && modifiedSchedule.getStatus() == 2) {
+                // 다음날 생성
+                if (modifiedSchedule.getScheduleDate().plusDays(1).get(WeekFields.ISO.weekOfYear())
+                    == originSchedule.getScheduleDate().get(WeekFields.ISO.weekOfYear())) {
+                    createNextNRoutine(userId, modifiedSchedule);
+                }
+            }
+            // 미룸/건너뜀, 미완료 -> 완료
+            else if (((beforeStatus == 0 || beforeStatus == 2)) && (modifiedSchedule.getStatus()
+                == 1)) {
                 // 목표 미완 and 내일 주차 == 원본 주차 =-> 다음날 한개 더 생성
                 if (!originSchedule.plusDoneCount()
                     && (
                     modifiedSchedule.getScheduleDate().plusDays(1).get(WeekFields.ISO.weekOfYear())
                         == originSchedule.getScheduleDate().get(WeekFields.ISO.weekOfYear()))
                 ) {
-                    Schedule nextSchedule = Schedule.builder().build();
-                    BeanUtils.copyProperties(modifiedSchedule, nextSchedule, "id", "doneCount");
-                    nextSchedule.initNextSchedule();
-                    Optional<Schedule> optionalSchedule = scheduleRepository.findByUserIdAndOriginalIdAndScheduleDate(
-                        userId,
-                        nextSchedule.getOriginalId(), nextSchedule.getScheduleDate());
-                    // 완료 -> 미완료 -> 완료 케이스에 대한 처리 추가 ==> 다음날에 같은 스케줄 있으면 미생성
-                    if (!optionalSchedule.isPresent()) {
-                        scheduleRepository.save(nextSchedule);
-                    }
+                    createNextNRoutine(userId, modifiedSchedule);
                 }
             }
             scheduleRepository.save(originSchedule);

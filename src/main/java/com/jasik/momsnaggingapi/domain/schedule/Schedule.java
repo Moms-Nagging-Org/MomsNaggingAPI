@@ -85,8 +85,8 @@ public class Schedule extends BaseTime {
     private LocalTime alarmTime;
 //    private LocalDateTime routineEndDate;
 
-    @Column(columnDefinition = "boolean default false", name = "is_done")
-    private boolean done;
+    @Column(columnDefinition = "int default 0")
+    private int status;
     @Column(columnDefinition = "boolean default false", name = "is_mon")
     private boolean mon;
     @Column(columnDefinition = "boolean default false", name = "is_tue")
@@ -125,10 +125,6 @@ public class Schedule extends BaseTime {
     public void initGoalCount() {
         this.goalCount = 0;
     }
-    // TODO: getter 안먹히는 컬럼들 -> _ 와 연관이 있는 듯
-    public boolean getDone() {
-        return this.done;
-    }
     public boolean plusDoneCount() {
         this.doneCount += 1;
         return this.doneCount >= this.goalCount;
@@ -137,7 +133,7 @@ public class Schedule extends BaseTime {
     @Builder
     public Schedule(Long userId, Long originalId, Long categoryId, int goalCount,
         int doneCount, String scheduleName, String scheduleTime, LocalDate scheduleDate,
-        LocalTime alarmTime, boolean done,
+        LocalTime alarmTime, int status,
         boolean mon, boolean tue, boolean wed, boolean thu, boolean fri, boolean sat, boolean sun,
         long naggingId) {
         this.userId = userId;
@@ -147,7 +143,7 @@ public class Schedule extends BaseTime {
         this.scheduleTime = scheduleTime;   // 수정가능 -> 이후 전부 변경 -> update all -> index 유지
         this.scheduleDate = scheduleDate;   // 수정가능 -> 타겟만 변경 -> update
         this.alarmTime = alarmTime;   // 수정가능 -> 이후 전부 변경 -> update all -> index 유지
-        this.done = done;
+        this.status = status;
         this.goalCount = goalCount;   // 수정가능 ->-> 보류
         this.doneCount = doneCount;
         this.mon = mon;   // 수정가능 -> 이후 전부 변경 -> delete -> create
@@ -162,7 +158,7 @@ public class Schedule extends BaseTime {
 
     public void initNextSchedule() {
         this.scheduleDate = this.scheduleDate.plusDays(1);
-        this.done = false;
+        this.status = 0;
     }
 
     // getRepeatDays() -> objectMapper.convertValue() 에서 컬럼으로 인식하고 변환해버림.. -.-
@@ -269,8 +265,10 @@ public class Schedule extends BaseTime {
         @Schema(description = "스케줄 알람 시간", defaultValue = "12:00:00")
         @DateTimeFormat(iso = ISO.TIME)
         private LocalTime alarmTime;
-        @Schema(description = "스케줄 수행 여부", defaultValue = "false")
-        private boolean done;
+        @Schema(description = "스케줄 상태, 0: 미완, 1: 완료, 2: 미룸/건너뜀", defaultValue = "0")
+        private int status;
+//        @Schema(description = "스케줄 수행 여부", defaultValue = "false")
+//        private boolean done;
         @Schema(description = "월요일 반복 여부", defaultValue = "false")
         private boolean mon;
         @Schema(description = "화요일 반복 여부", defaultValue = "false")
@@ -310,12 +308,8 @@ public class Schedule extends BaseTime {
         private String scheduleName;
         @Schema(description = "스케줄 수행 시간", defaultValue = "아무때나")
         private String scheduleTime;
-        @Schema(description = "수행 완료 여부\n\n"
-            + "true : 수행 완료\n\n"
-            + "false : 미수행\n\n"
-            + "null : 미룸", defaultValue = "false", allowableValues = {"true",
-            "false", "null"})
-        private boolean done;
+        @Schema(description = "스케줄 상태, 0: 미완, 1: 완료, 2: 미룸/건너뜀", defaultValue = "0")
+        private int status;
         @Schema(description = "스케줄 유형(할일/습관)", defaultValue = "todo")
         private ScheduleType scheduleType;
 
