@@ -141,6 +141,31 @@ public class ScheduleService extends RejectedExecutionException {
         scheduleRepository.saveAll(nextSchedules);
     }
 
+    private ArrayList<Schedule> getNewScheduleArray(List<String> routineOrder, List<Schedule> schedules) {
+        boolean isFirst = true;
+        int index = 0;
+        Map<Integer, Schedule> todoSchedules = new HashMap<>();
+        ArrayList<Schedule> newScheduleArray = new ArrayList<>();
+        for (String scheduleId : routineOrder) {
+            for (Schedule schedule : schedules) {
+                if (Objects.equals(String.valueOf(schedule.getOriginalId()), scheduleId)) {
+                    newScheduleArray.add(schedule);
+                }
+                // 할일 순서 기억
+                if (isFirst && (schedule.getScheduleType() == ScheduleType.TODO)) {
+                    todoSchedules.put(index, schedule);
+                }
+                index++;
+            }
+            isFirst = false;
+        }
+        // 할일은 원래 순서에 두기
+        for (Entry<Integer, Schedule> todoMap : todoSchedules.entrySet()) {
+            newScheduleArray.add(todoMap.getKey(), todoMap.getValue());
+        }
+        return newScheduleArray;
+    }
+
     @Transactional(readOnly = true)
     public List<ScheduleListResponse> getSchedules(Long userId, LocalDate scheduleDate) {
 
@@ -155,34 +180,15 @@ public class ScheduleService extends RejectedExecutionException {
         List<Schedule> schedules = scheduleRepository.findAllByScheduleDateAndUserIdOrderByIdAsc(
             scheduleDate, userId);
 
-        // 습관만 정렬 수정
-        boolean isFirst = true;
-        int index = 0;
-        Map<Integer, Schedule> todoSchedules = new HashMap<>();
-        ArrayList<Schedule> routineSchedules = new ArrayList<>();
-        if (routineOrder != null) {
-            for (String scheduleId : routineOrder) {
-                for (Schedule schedule : schedules) {
-                    if (Objects.equals(String.valueOf(schedule.getOriginalId()), scheduleId)) {
-                        routineSchedules.add(schedule);
-                    }
-                    // 할일 순서 기억
-                    if (isFirst && (schedule.getScheduleType() == ScheduleType.TODO)) {
-                        todoSchedules.put(index, schedule);
-                    }
-                    index++;
-                }
-                isFirst = false;
-            }
-            // 할일은 원래 순서에 두기
-            for (Entry<Integer, Schedule> todoMap : todoSchedules.entrySet()) {
-                routineSchedules.add(todoMap.getKey(), todoMap.getValue());
-            }
+        if (routineOrder == null) {
+            return schedules.stream().map(Schedule -> modelMapper.map(Schedule,
+                    com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleListResponse.class))
+                .collect(Collectors.toList());
+        } else {
+            return getNewScheduleArray(routineOrder, schedules).stream().map(Schedule -> modelMapper.map(Schedule,
+                    com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleListResponse.class))
+                .collect(Collectors.toList());
         }
-
-        return routineSchedules.stream().map(Schedule -> modelMapper.map(Schedule,
-                com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleListResponse.class))
-            .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
