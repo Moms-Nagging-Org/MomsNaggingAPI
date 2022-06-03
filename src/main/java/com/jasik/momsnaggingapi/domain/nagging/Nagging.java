@@ -1,6 +1,6 @@
 package com.jasik.momsnaggingapi.domain.nagging;
 
-import com.jasik.momsnaggingapi.domain.common.BaseTime;
+import com.jasik.momsnaggingapi.infra.common.BaseTime;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,11 +15,11 @@ public class Nagging extends BaseTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "user_id")
-    private Long userId;
+//    @Column(name = "user_id")
+//    private Long userId;
 
-    @Column(columnDefinition = "TEXT")
-    private String custom;
+//    @Column(columnDefinition = "TEXT")
+//    private String custom;
     @Column(columnDefinition = "TEXT")
     private String level1;
     @Column(columnDefinition = "TEXT")
@@ -28,9 +28,11 @@ public class Nagging extends BaseTime {
     private String level3;
 
     @Builder
-    public Nagging(Long userId, String custom, String level1, String level2, String level3) {
-        this.userId = userId;
-        this.custom = custom;
+    public Nagging(
+//        Long userId, String custom,
+        String level1, String level2, String level3) {
+//        this.userId = userId;
+//        this.custom = custom;
         this.level1 = level1;
         this.level2 = level2;
         this.level3 = level3;

@@ -29,11 +29,24 @@ dependencies {
     //JSR-374 API-Implements(구현체) 의존성 추가
     implementation 'org.glassfish:javax.json:1.1.4' // 기본
     //implementation 'org.apache.johnzon:johnzon-core:1.2.14' //서드파티 (의존성 추가시 서비스로더에 의해 우선 선택됨, 없으면 기본 glassfish를 선택)
+    implementation 'com.ibm.icu:icu4j:4.0.1'
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
+
+    //
+    implementation 'org.springdoc:springdoc-openapi-security:1.5.4'
 
     // jwt
     implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
     implementation 'io.jsonwebtoken:jjwt-impl:0.11.2'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.11.2'
+
+    // Firebase SDK
+    implementation 'com.google.firebase:firebase-admin:6.8.1'
+
+    // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
+    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
+
     //Json 라이브러리로 Jackson 사용시 JSR-374 Serialize/Deserialize 를 처리하기 위한 의존성 추가
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr353'
     runtimeOnly 'org.springframework.boot:spring-boot-devtools:2.6.4'
@@ -47,7 +60,7 @@ dependencies {
 group = 'com.jasik'
 version = '0.0.1-SNAPSHOT'
 description = 'MomsNaggingAPI'
-java.sourceCompatibility = JavaVersion.VERSION_1_8
+java.sourceCompatibility = JavaVersion.VERSION_1_9
 
 publishing {
     publications {
@@ -64,3 +77,4 @@ tasks.withType(JavaCompile) {
 bootJar {
     mainClassName = 'com.jasik.momsnaggingapi.MomsNaggingApiApplication'
 }
+targetCompatibility = JavaVersion.VERSION_1_9

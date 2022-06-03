@@ -1,14 +1,19 @@
 package com.jasik.momsnaggingapi.domain.diary.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jasik.momsnaggingapi.domain.diary.Diary;
+import com.jasik.momsnaggingapi.domain.diary.Diary.DailyResponse;
 import com.jasik.momsnaggingapi.domain.diary.Diary.DiaryResponse;
+import com.jasik.momsnaggingapi.domain.diary.Diary.DailyDiary;
 import com.jasik.momsnaggingapi.domain.diary.repository.DiaryRepository;
-import com.jasik.momsnaggingapi.domain.schedule.Schedule;
-import com.jasik.momsnaggingapi.domain.schedule.repository.CategoryRepository;
-import com.jasik.momsnaggingapi.domain.schedule.repository.ScheduleRepository;
+import com.jasik.momsnaggingapi.domain.grade.Grade;
+import com.jasik.momsnaggingapi.infra.common.Utils;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -22,37 +27,36 @@ public class DiaryService {
 
     private final DiaryRepository diaryRepository;
     private final ModelMapper modelMapper;
+    private final Utils utils;
 
     @Transactional(readOnly = true)
-    public Diary.DiaryResponse getDiary(LocalDate retrieveDate) {
+    public Diary.DiaryResponse getDiary(Long userId, LocalDate retrieveDate) {
 
-        Long userId = 1L;
         boolean isToday = LocalDate.now().isEqual(retrieveDate);
 
         Optional<Diary> diary = diaryRepository.findByUserIdAndDiaryDate(userId, retrieveDate);
-        if (diary.isPresent()){
-            Diary.DiaryResponse responseDto = modelMapper.map(diary.get(), Diary.DiaryResponse.class);
+        if (diary.isPresent()) {
+            Diary.DiaryResponse responseDto = modelMapper.map(diary.get(),
+                Diary.DiaryResponse.class);
             responseDto.setToday(isToday);
             return responseDto;
-        }
-        else {
+        } else {
             return new DiaryResponse("", "", retrieveDate, isToday);
         }
     }
 
     @Transactional()
-    public Diary.DiaryResponse putDiary(Diary.DiaryRequest requestDto) {
+    public Diary.DiaryResponse putDiary(Long userId, Diary.DiaryRequest requestDto) {
 
-        Long userId = 1L;
         boolean isToday = LocalDate.now().isEqual(requestDto.getDiaryDate());
 
-        Optional<Diary> optionalDiary = diaryRepository.findByUserIdAndDiaryDate(userId, requestDto.getDiaryDate());
+        Optional<Diary> optionalDiary = diaryRepository.findByUserIdAndDiaryDate(userId,
+            requestDto.getDiaryDate());
         Diary diary;
-        if (optionalDiary.isPresent()){
+        if (optionalDiary.isPresent()) {
             diary = optionalDiary.get();
             diary.updateDiary(requestDto.getTitle(), requestDto.getContext());
-        }
-        else {
+        } else {
             diary = modelMapper.map(requestDto, Diary.class);
             diary.initUser(userId);
         }
@@ -63,4 +67,28 @@ public class DiaryService {
         return responseDto;
     }
 
+    @Transactional(readOnly = true)
+    public ArrayList<DailyResponse> getDailyDiaryOfMonth(Long userId, int retrieveYear, int retrieveMonth) {
+
+        Set<String> holidays = utils.holidayArray(String.valueOf(retrieveYear));
+        LocalDate startDate = LocalDate.of(retrieveYear, retrieveMonth, 1);
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+        List<DailyDiary> dailyDiaries = diaryRepository.findDiaryOfPeriodByUserIdAndStartDateAndEndDate(
+            userId,
+            startDate, endDate);
+        ArrayList<DailyResponse> dailyResponses = new ArrayList<>();
+        boolean isHoliday;
+        for (DailyDiary daily : dailyDiaries) {
+            LocalDate dailyDate = daily.getDiaryDate();
+            if (dailyDate.getDayOfWeek() == DayOfWeek.SUNDAY || holidays.contains(
+                dailyDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")))) {
+                isHoliday = true;
+            } else {
+                isHoliday = false;
+            }
+            dailyResponses.add(DailyResponse.builder().diaryExists(daily.isDiaryExists())
+                .diaryDate(daily.getDiaryDate()).isHoliday(isHoliday).build());
+        }
+        return dailyResponses;
+    }
 }
