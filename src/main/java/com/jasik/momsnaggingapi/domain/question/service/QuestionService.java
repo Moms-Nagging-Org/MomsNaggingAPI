@@ -10,6 +10,9 @@ import com.jasik.momsnaggingapi.domain.schedule.Schedule;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import com.jasik.momsnaggingapi.domain.user.User;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -33,4 +36,15 @@ public class QuestionService {
         return modelMapper.map(question, Question.QuestionResponse.class);
     }
 
+    @Transactional
+    public List<Question.QuestionResponse> findAllQuestions() {
+        List<Question> questions = questionRepository.findAllByIsQ(true);
+        return questions.stream().map(p -> modelMapper.map(p, Question.QuestionResponse.class)).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public List<Question.SignOutReasonResponse> findAllSignOutReasons() {
+        List<Question> reasons = questionRepository.findAllByIsQ(false);
+        return reasons.stream().map(p -> modelMapper.map(p, Question.SignOutReasonResponse.class)).collect(Collectors.toList());
+    }
 }

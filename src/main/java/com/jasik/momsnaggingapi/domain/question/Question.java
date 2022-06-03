@@ -38,8 +38,8 @@ public class Question extends BaseTime {
 //    @Column(columnDefinition = "TEXT")
 //    private String answer;
 
-//    @Column(columnDefinition = "boolean default false")
-//    private boolean isFreq;
+    @Column(columnDefinition = "boolean default true")
+    private boolean isQ;
 
     public void initUserId(Long userId) {
         this.userId = userId;
@@ -47,7 +47,7 @@ public class Question extends BaseTime {
 
     @Builder
     public Question(
-//        boolean isFreq,
+        boolean isQ,
 //        String answer,
         Long userId,
         String title,
@@ -57,7 +57,7 @@ public class Question extends BaseTime {
         this.title = title;
         this.context = context;
 //        this.answer = answer;
-//        this.isFreq = isFreq;
+        this.isQ = isQ;
     }
 
     @Schema(description = "문의 등록 시 요청 클래스")
@@ -99,5 +99,38 @@ public class Question extends BaseTime {
         @DateTimeFormat(iso = ISO.DATE_TIME)
         private LocalDateTime createdAt;
 
+    }
+
+    @Schema(description = "탈퇴사유 요청 클래스")
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class SignOutReasonRequest {
+        @Schema(description = "탈퇴사유")
+        private String title;
+
+        @Schema(description = "기타")
+        private String context;
+
+    }
+
+    @Schema(description = "탈퇴사유 조회 응답 클래스")
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class SignOutReasonResponse {
+        @Schema(description = "문의사항 id")
+        private Long id;
+
+        @Schema(description = "탈퇴사유")
+        private String title;
+
+        @Schema(description = "기타")
+        private String context;
+
+        @Schema(description = "탈퇴 일시")
+        private LocalDateTime createdAt;
     }
 }
