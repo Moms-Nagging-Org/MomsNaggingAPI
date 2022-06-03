@@ -2,11 +2,14 @@ package com.jasik.momsnaggingapi.domain.grade.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jasik.momsnaggingapi.domain.grade.Grade;
+import com.jasik.momsnaggingapi.domain.grade.Grade.GradeResponse;
 import com.jasik.momsnaggingapi.domain.grade.Grade.GradesOfMonthResponse;
 import com.jasik.momsnaggingapi.domain.grade.Grade.Performance;
 import com.jasik.momsnaggingapi.domain.grade.repository.GradeRepository;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
 import com.jasik.momsnaggingapi.domain.schedule.repository.ScheduleRepository;
+import com.jasik.momsnaggingapi.domain.user.User;
+import com.jasik.momsnaggingapi.domain.user.repository.UserRepository;
 import com.jasik.momsnaggingapi.infra.common.AsyncService;
 import com.jasik.momsnaggingapi.infra.common.ErrorCode;
 import com.jasik.momsnaggingapi.infra.common.Utils;
@@ -23,8 +26,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 
 @Slf4j
@@ -34,6 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class GradeService {
 
     private final GradeRepository gradeRepository;
+    private final UserRepository userRepository;
     private final ScheduleRepository scheduleRepository;
     private final ModelMapper modelMapper;
     private final ObjectMapper objectMapper;
@@ -111,8 +117,13 @@ public class GradeService {
     @Transactional
     public Grade.GradeResponse getGradeOfLastWeek(Long userId) {
 
-        // TODO: '수' 등급의 상수 환경변수로 관리
-        // 프론트 로직 : 로그인 시 마지막 평가 주차 조회(16주차) -> 프론트에서 오늘의 주차 계산(18주차) -> 오늘 주차(18주차) - 1 != 마지막 평가 주차(16) -> 주간 평가 요청
+        User user = userRepository.findById(userId)
+            .orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
+        LocalDate userCreatedAt = LocalDate.from(user.getCreatedAt());
+        if ((userCreatedAt.get(WeekFields.ISO.weekOfYear())) == (LocalDate.now().get(WeekFields.ISO.weekOfYear()))) {
+            return new GradeResponse();
+        }
         LocalDate weekAgoDate = LocalDate.now().minusDays(7);
         int createdYear = weekAgoDate.getYear();
         int createdWeek = weekAgoDate.get(WeekFields.ISO.weekOfYear());
