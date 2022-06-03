@@ -108,6 +108,7 @@ public class Question extends BaseTime {
     @NoArgsConstructor
     public static class SignOutReasonRequest {
         @Schema(description = "탈퇴사유")
+        @NotBlank
         private String title;
 
         @Schema(description = "기타")

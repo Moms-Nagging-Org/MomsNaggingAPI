@@ -1,5 +1,7 @@
 package com.jasik.momsnaggingapi.domain.user.service;
 
+import com.jasik.momsnaggingapi.domain.question.Question;
+import com.jasik.momsnaggingapi.domain.question.service.QuestionService;
 import com.jasik.momsnaggingapi.domain.user.User;
 import com.jasik.momsnaggingapi.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class UserService {
+    private final QuestionService questionService;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
 
@@ -69,10 +72,11 @@ public class UserService {
     }
 
     @Transactional
-    public User.Response removeUser(Long id) {
+    public User.Response removeUser(Long id, Question.SignOutReasonRequest request) {
         userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
 
+        questionService.createSignOutReason(id, request);
         userRepository.deleteById(id);
 
         User.Response res = new User.Response();

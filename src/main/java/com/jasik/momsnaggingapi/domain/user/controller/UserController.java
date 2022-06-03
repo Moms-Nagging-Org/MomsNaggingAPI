@@ -1,5 +1,6 @@
 package com.jasik.momsnaggingapi.domain.user.controller;
 
+import com.jasik.momsnaggingapi.domain.question.Question;
 import com.jasik.momsnaggingapi.domain.user.User;
 import com.jasik.momsnaggingapi.domain.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,8 +35,8 @@ public class UserController {
     }
 
     @DeleteMapping("")
-    @Operation(summary = "회원 탈퇴", description = "유저를 삭제합니다.")
-    public ResponseEntity<User.Response> deleteUser(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok().body(userService.removeUser(user.getId()));
+    @Operation(summary = "회원 탈퇴", description = "body 로 탈퇴사유를 전송하고, 해당 유저를 삭제합니다.")
+    public ResponseEntity<User.Response> deleteUser(@AuthenticationPrincipal User user, @RequestBody Question.SignOutReasonRequest req) {
+        return ResponseEntity.ok().body(userService.removeUser(user.getId(), req));
     }
 }
