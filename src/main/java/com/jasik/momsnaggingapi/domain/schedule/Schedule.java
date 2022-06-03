@@ -1,5 +1,6 @@
 package com.jasik.momsnaggingapi.domain.schedule;
 
+import com.jasik.momsnaggingapi.domain.nagging.Nagging;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule.SchedulePush;
 import com.jasik.momsnaggingapi.infra.common.BaseTime;
 import com.jasik.momsnaggingapi.infra.common.ErrorCode;
@@ -326,6 +327,25 @@ public class Schedule extends BaseTime {
         private Long id;
         @Schema(description = "스케줄 이름", defaultValue = "술 마시기")
         private String scheduleName;
+    }
+
+    @Schema(description = "관리자에서 추천 스케줄 리스트 조회 시 응답 클래스")
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class CategoryListAdminResponse {
+
+        @Schema(description = "스케줄 ID", defaultValue = "9003")
+        private Long id;
+        @Schema(description = "스케줄 이름", defaultValue = "침대 정리하기")
+        private String scheduleName;
+        @Schema(description = "다정한 엄마", defaultValue = "딸~")
+        private String level1;
+        @Schema(description = "냉정한 엄마", defaultValue = "딸.")
+        private String level2;
+        @Schema(description = "화가 많은 엄마", defaultValue = "딸!")
+        private String level3;
     }
 
     @Schema(description = "스케줄 순서 변경 시 요청 클래스")

@@ -1,5 +1,6 @@
 package com.jasik.momsnaggingapi.domain.schedule.repository;
 
+import com.jasik.momsnaggingapi.domain.schedule.Interface.ScheduleNaggingInterface;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule.SchedulePush;
 import java.time.LocalDate;
@@ -61,4 +62,10 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
         @Param("scheduleDate") LocalDate scheduleDate,
         @Param("alarmTime") LocalTime alarmTime
     );
+
+    @Transactional
+    @Query("select s as schedule, n as nagging from Schedule s left outer join Nagging n " +
+            "on s.naggingId = n.id where s.categoryId = :categoryId")
+    List<ScheduleNaggingInterface> findDetailsAllByCategoryId(@Param("categoryId") Long categoryId);
+
 }
