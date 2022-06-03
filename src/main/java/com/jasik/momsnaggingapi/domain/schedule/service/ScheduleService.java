@@ -3,6 +3,7 @@ package com.jasik.momsnaggingapi.domain.schedule.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jasik.momsnaggingapi.domain.schedule.Category;
 import com.jasik.momsnaggingapi.domain.schedule.Category.CategoryResponse;
+import com.jasik.momsnaggingapi.domain.schedule.Interface.ScheduleNaggingInterface;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule.ArrayListRequest;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule.CategoryListResponse;
@@ -379,4 +380,20 @@ public class ScheduleService extends RejectedExecutionException {
             .map(Schedule -> modelMapper.map(Schedule, CategoryListResponse.class))
             .collect(Collectors.toList());
     }
+
+    @Transactional(readOnly = true)
+    public List<Schedule.CategoryListAdminResponse> getTemplateSchedulesByCategory(Long categoryId) {
+
+        List<ScheduleNaggingInterface> schedules = scheduleRepository.findDetailsAllByCategoryId(categoryId);
+
+        return schedules.stream()
+                .map(s -> new Schedule.CategoryListAdminResponse(
+                        s.getSchedule().getId(),
+                        s.getSchedule().getScheduleName(),
+                        s.getNagging().getLevel1(),
+                        s.getNagging().getLevel2(),
+                        s.getNagging().getLevel3()))
+                .collect(Collectors.toList());
+    }
+
 }
