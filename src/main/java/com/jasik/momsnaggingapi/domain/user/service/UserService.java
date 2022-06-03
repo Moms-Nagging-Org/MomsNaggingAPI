@@ -1,6 +1,5 @@
 package com.jasik.momsnaggingapi.domain.user.service;
 
-import com.jasik.momsnaggingapi.domain.auth.service.AuthService;
 import com.jasik.momsnaggingapi.domain.user.User;
 import com.jasik.momsnaggingapi.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -26,6 +27,11 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
         return modelMapper.map(user, User.UserResponse.class);
+    }
+
+    public List<User.AdminResponse> findAllUsers() {
+        List<User> users = userRepository.findAll();
+        return users.stream().map(p -> modelMapper.map(p, User.AdminResponse.class)).collect(Collectors.toList());
     }
 
     @Transactional
