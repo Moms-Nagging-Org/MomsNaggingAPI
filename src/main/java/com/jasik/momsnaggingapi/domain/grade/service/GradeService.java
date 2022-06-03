@@ -1,5 +1,6 @@
 package com.jasik.momsnaggingapi.domain.grade.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jasik.momsnaggingapi.domain.grade.Grade;
 import com.jasik.momsnaggingapi.domain.grade.Grade.GradesOfMonthResponse;
 import com.jasik.momsnaggingapi.domain.grade.Grade.Performance;
@@ -35,6 +36,7 @@ public class GradeService {
     private final GradeRepository gradeRepository;
     private final ScheduleRepository scheduleRepository;
     private final ModelMapper modelMapper;
+    private final ObjectMapper objectMapper;
     private final AsyncService asyncService;
 
     private final Utils utils;
@@ -57,18 +59,29 @@ public class GradeService {
         int createdWeek) {
         List<Grade.Performance> performances = gradeRepository.findPerformanceOfPeriodByUserIdAndStartDateAndEndDate(
             userId, startDate, endDate);
+        double sum = 0.0;
+        double performanceAvg;
+        for (Performance performance : performances) {
+            Optional<Integer> optionalInteger = Optional.ofNullable(performance.getAvg());
+            if (optionalInteger.isPresent()) {
+                performanceAvg = optionalInteger.get();
+            } else {
+                performanceAvg = 0;
+            }
+            sum += performanceAvg;
+        }
         double avg =
-            performances.stream().mapToDouble(Performance::getAvg).sum() / performances.size();
+            sum / performances.size();
 
-        int gradeLevel = 1;
+        int gradeLevel = 5;
         if (90 <= avg) {
-            gradeLevel = 5;
+            gradeLevel = 1;
         } else if (70 <= avg) {
-            gradeLevel = 4;
+            gradeLevel = 2;
         } else if (50 <= avg) {
             gradeLevel = 3;
         } else if (30 <= avg) {
-            gradeLevel = 2;
+            gradeLevel = 4;
         }
         return gradeRepository.save(
             Grade.builder().userId(userId).gradeLevel(gradeLevel).createdYear(createdYear)
@@ -104,7 +117,7 @@ public class GradeService {
         int createdYear = weekAgoDate.getYear();
         int createdWeek = weekAgoDate.get(WeekFields.ISO.weekOfYear());
         int awardLevel = 0;
-
+        boolean isNew = false;
         Grade grade;
         Optional<Grade> optionalGrade = gradeRepository.findByCreatedYearAndCreatedWeekAndUserId(
             createdYear, createdWeek, userId);
@@ -124,10 +137,11 @@ public class GradeService {
             if (grade.getGradeLevel() == 5) {
                 awardLevel = getAwardLevel(userId);
             }
+            isNew = true;
         }
         Grade.GradeResponse gradeResponse = modelMapper.map(grade, Grade.GradeResponse.class);
         gradeResponse.setAwardLevel(awardLevel);
-
+        gradeResponse.setNew(isNew);
         return gradeResponse;
     }
 
@@ -160,13 +174,13 @@ public class GradeService {
 
         List<GradesOfMonthResponse> response = new ArrayList<>();
         int weekIndex = 1;
-        int gradeOfWeek;
-        for (int i = startWeek; i <= endWeek; i++) {
-            gradeOfWeek = 1;
+        Optional<Integer> gradeOfWeek;
+        for (int i = startWeek; i < endWeek; i++) {
+            gradeOfWeek = null;
             if (retrieveItr.hasNext()) {
                 Grade nextGrade = retrieveItr.next();
                 if (nextGrade.getCreatedWeek() == i) {
-                    gradeOfWeek = nextGrade.getGradeLevel();
+                    gradeOfWeek = Optional.of(nextGrade.getGradeLevel());
                 } else {
                     retrieveItr.previous();
                 }
@@ -174,7 +188,6 @@ public class GradeService {
             response.add(new GradesOfMonthResponse(weekIndex, gradeOfWeek));
             weekIndex++;
         }
-
         return response;
     }
 
