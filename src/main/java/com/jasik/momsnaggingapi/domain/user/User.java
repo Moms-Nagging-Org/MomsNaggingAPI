@@ -4,20 +4,10 @@ import com.jasik.momsnaggingapi.infra.common.BaseTime;
 
 import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
 
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.DynamicUpdate;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.security.core.GrantedAuthority;
-
-import javax.persistence.*;
-import javax.security.auth.Subject;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Collection;
 import com.jasik.momsnaggingapi.infra.common.StringListConverter;
-import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -190,5 +180,20 @@ public class User extends BaseTime {
     public static class ValidateResponse {
         @Schema(description = "존재 유무")
         private Boolean isExist;
+    }
+
+    @Schema(description = "사용자 조회 시 응답 클래스")
+    @Getter @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class AdminResponse {
+        private Long id;
+        private String provider;
+        private String nickName;
+        private String personalId;
+        private Integer naggingLevel;
+        private String device;
+        private LocalDateTime createdAt;
+        // TODO: 성적표, 상장 데이터
     }
 }
