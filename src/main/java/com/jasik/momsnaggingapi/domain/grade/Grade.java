@@ -7,6 +7,7 @@ import com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleListResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import javax.persistence.Column;
 import javax.persistence.ColumnResult;
 import javax.persistence.ConstructorResult;
@@ -24,9 +25,9 @@ import org.hibernate.annotations.NamedNativeQuery;
 
 @Entity
 @NamedNativeQuery(name = "findPerformanceOfPeriod", query =
-    "select IF(a.performance is null, 100, a.performance) as avg, b.date "
+    "select IF(a.performance is null, null, a.performance) as avg, b.date "
         + "from "
-        + "(select ((count(if(status=1,1,null))/count(*))*100) as performance, schedule_date "
+        + "(select IF(schedule_date > CURDATE(), null, ((count(if(status=1,1,null))/count(*))*100)) as performance, schedule_date "
         + "from schedule "
         + "where user_id = :userId "
         + "and schedule_date >= :startDate "
@@ -53,7 +54,8 @@ import org.hibernate.annotations.NamedNativeQuery;
         + "avg(a.performance) as performanceAvg, "
         + "b.todo_count as todoDoneCount, "
         + "b.routine_count as routineDoneCount, "
-        + "c.writen_cnt as diaryCount "
+        + "c.writen_cnt as diaryCount, "
+        + "d.together_count as togetherCount "
         + "from("
         + "        select (count(if(status=1, 1, NULL))/count(*))*100 as performance, schedule_date"
         + "        from schedule"
@@ -72,7 +74,12 @@ import org.hibernate.annotations.NamedNativeQuery;
         + "        where user_id = :userId"
         + "          and title is not null"
         + "          and context is not null"
-        + "    ) c",
+        + "    ) c,"
+        + "    ("
+        + "        select TIMESTAMPDIFF(DAY, created_at, CURDATE()) + 1 as together_count"
+        + "        from user"
+        + "        where id = :userId"
+        + "    ) d",
     resultSetMapping = "StatisticsResponse")
 @SqlResultSetMapping(name = "StatisticsResponse", classes = @ConstructorResult(targetClass = StatisticsResponse.class, columns = {
     @ColumnResult(name = "fullDoneCount", type = Long.class),
@@ -80,7 +87,8 @@ import org.hibernate.annotations.NamedNativeQuery;
     @ColumnResult(name = "performanceAvg", type = Integer.class),
     @ColumnResult(name = "todoDoneCount", type = Long.class),
     @ColumnResult(name = "routineDoneCount", type = Long.class),
-    @ColumnResult(name = "diaryCount", type = Long.class)
+    @ColumnResult(name = "diaryCount", type = Long.class),
+    @ColumnResult(name = "togetherCount", type = Integer.class)
 }))
 @Getter
 @NoArgsConstructor
@@ -111,7 +119,7 @@ public class Grade extends BaseTime {
     @NoArgsConstructor
     public static class GradeResponse {
 
-        @Schema(description = "평가 단계(오름차순)", defaultValue = "3", allowableValues = {"1", "2", "3",
+        @Schema(description = "평가 단계\n\n1:수, 2:우, 3:미, 4:양, 5:가", defaultValue = "3", allowableValues = {"1", "2", "3",
             "4", "5"})
         private int gradeLevel;
         @Schema(description = "년도", defaultValue = "2022")
@@ -120,6 +128,8 @@ public class Grade extends BaseTime {
         private int createdWeek;
         @Schema(description = "새롭게 달성한 상장의 단계\n\n0인 경우 새로 달성한 상장 없음\n\n주간평가 생성 시에만 사용되는 컬럼", defaultValue = "0")
         private int awardLevel;
+        @Schema(description = "주간 평가 신규 생성 여부", defaultValue = "True")
+        private boolean isNew;
     }
     @Schema(description = "월간 달력 성적표 조회 시 응답 클래스")
     @Getter
@@ -154,6 +164,8 @@ public class Grade extends BaseTime {
         private Long routineDoneCount;
         @Schema(description = "일기장 작성 횟수")
         private Long diaryCount;
+        @Schema(description = "유저 서비스 이용 일수")
+        private Integer togetherCount;
     }
     @Schema(description = "월간 주간 평가 리스트 조회 시 응답 클래스")
     @Getter
@@ -164,8 +176,8 @@ public class Grade extends BaseTime {
 
         @Schema(description = "월의 주차 번호\n\n월요일 ~ 일요일을 한 주차로 계산합니다.")
         private Integer weekOfMonth;
-        @Schema(description = "주간 평가 등급")
-        private Integer gradeOfWeek;
+        @Schema(description = "주간 평가 등급\n\n1:수, 2:우, 3:미, 4:양, 5:가")
+        private Optional<Integer> gradeOfWeek;
     }
 
     @Schema(description = "수행률 조회 시 응답 클래스")

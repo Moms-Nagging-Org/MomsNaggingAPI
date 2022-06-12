@@ -1,11 +1,15 @@
 package com.jasik.momsnaggingapi.domain.grade.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jasik.momsnaggingapi.domain.grade.Grade;
+import com.jasik.momsnaggingapi.domain.grade.Grade.GradeResponse;
 import com.jasik.momsnaggingapi.domain.grade.Grade.GradesOfMonthResponse;
 import com.jasik.momsnaggingapi.domain.grade.Grade.Performance;
 import com.jasik.momsnaggingapi.domain.grade.repository.GradeRepository;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
 import com.jasik.momsnaggingapi.domain.schedule.repository.ScheduleRepository;
+import com.jasik.momsnaggingapi.domain.user.User;
+import com.jasik.momsnaggingapi.domain.user.repository.UserRepository;
 import com.jasik.momsnaggingapi.infra.common.AsyncService;
 import com.jasik.momsnaggingapi.infra.common.ErrorCode;
 import com.jasik.momsnaggingapi.infra.common.Utils;
@@ -22,8 +26,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 
 @Slf4j
@@ -33,8 +39,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class GradeService {
 
     private final GradeRepository gradeRepository;
+    private final UserRepository userRepository;
     private final ScheduleRepository scheduleRepository;
     private final ModelMapper modelMapper;
+    private final ObjectMapper objectMapper;
     private final AsyncService asyncService;
 
     private final Utils utils;
@@ -57,18 +65,29 @@ public class GradeService {
         int createdWeek) {
         List<Grade.Performance> performances = gradeRepository.findPerformanceOfPeriodByUserIdAndStartDateAndEndDate(
             userId, startDate, endDate);
+        double sum = 0.0;
+        double performanceAvg;
+        for (Performance performance : performances) {
+            Optional<Integer> optionalInteger = Optional.ofNullable(performance.getAvg());
+            if (optionalInteger.isPresent()) {
+                performanceAvg = optionalInteger.get();
+            } else {
+                performanceAvg = 0;
+            }
+            sum += performanceAvg;
+        }
         double avg =
-            performances.stream().mapToDouble(Performance::getAvg).sum() / performances.size();
+            sum / performances.size();
 
-        int gradeLevel = 1;
+        int gradeLevel = 5;
         if (90 <= avg) {
-            gradeLevel = 5;
+            gradeLevel = 1;
         } else if (70 <= avg) {
-            gradeLevel = 4;
+            gradeLevel = 2;
         } else if (50 <= avg) {
             gradeLevel = 3;
         } else if (30 <= avg) {
-            gradeLevel = 2;
+            gradeLevel = 4;
         }
         return gradeRepository.save(
             Grade.builder().userId(userId).gradeLevel(gradeLevel).createdYear(createdYear)
@@ -98,13 +117,18 @@ public class GradeService {
     @Transactional
     public Grade.GradeResponse getGradeOfLastWeek(Long userId) {
 
-        // TODO: '수' 등급의 상수 환경변수로 관리
-        // 프론트 로직 : 로그인 시 마지막 평가 주차 조회(16주차) -> 프론트에서 오늘의 주차 계산(18주차) -> 오늘 주차(18주차) - 1 != 마지막 평가 주차(16) -> 주간 평가 요청
+        User user = userRepository.findById(userId)
+            .orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
+        LocalDate userCreatedAt = LocalDate.from(user.getCreatedAt());
+        if ((userCreatedAt.get(WeekFields.ISO.weekOfYear())) == (LocalDate.now().get(WeekFields.ISO.weekOfYear()))) {
+            return new GradeResponse();
+        }
         LocalDate weekAgoDate = LocalDate.now().minusDays(7);
         int createdYear = weekAgoDate.getYear();
         int createdWeek = weekAgoDate.get(WeekFields.ISO.weekOfYear());
         int awardLevel = 0;
-
+        boolean isNew = false;
         Grade grade;
         Optional<Grade> optionalGrade = gradeRepository.findByCreatedYearAndCreatedWeekAndUserId(
             createdYear, createdWeek, userId);
@@ -124,10 +148,11 @@ public class GradeService {
             if (grade.getGradeLevel() == 5) {
                 awardLevel = getAwardLevel(userId);
             }
+            isNew = true;
         }
         Grade.GradeResponse gradeResponse = modelMapper.map(grade, Grade.GradeResponse.class);
         gradeResponse.setAwardLevel(awardLevel);
-
+        gradeResponse.setNew(isNew);
         return gradeResponse;
     }
 
@@ -160,13 +185,13 @@ public class GradeService {
 
         List<GradesOfMonthResponse> response = new ArrayList<>();
         int weekIndex = 1;
-        int gradeOfWeek;
-        for (int i = startWeek; i <= endWeek; i++) {
-            gradeOfWeek = 1;
+        Optional<Integer> gradeOfWeek;
+        for (int i = startWeek; i < endWeek; i++) {
+            gradeOfWeek = null;
             if (retrieveItr.hasNext()) {
                 Grade nextGrade = retrieveItr.next();
                 if (nextGrade.getCreatedWeek() == i) {
-                    gradeOfWeek = nextGrade.getGradeLevel();
+                    gradeOfWeek = Optional.of(nextGrade.getGradeLevel());
                 } else {
                     retrieveItr.previous();
                 }
@@ -174,7 +199,6 @@ public class GradeService {
             response.add(new GradesOfMonthResponse(weekIndex, gradeOfWeek));
             weekIndex++;
         }
-
         return response;
     }
 
