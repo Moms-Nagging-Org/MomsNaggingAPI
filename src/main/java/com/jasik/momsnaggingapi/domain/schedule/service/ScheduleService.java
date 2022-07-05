@@ -111,11 +111,16 @@ public class ScheduleService extends RejectedExecutionException {
         ArrayList<Integer> nextDayList = new ArrayList<>();
         // 반복 요일마다 기준 날짜에서 더해야 하는 일수
         for (boolean i : repeatDays) {
+
             if (i) {
                 nextDayList.add(nextDay);
             }
             nextDay += 1;
+            if (nextDay > 7){
+                nextDay -= 7;
+            }
         }
+        Collections.sort(nextDayList);
         List<Schedule> nextSchedules = new ArrayList<>();
         int weekCount = 0;
         boolean limitDateFlag = true;
