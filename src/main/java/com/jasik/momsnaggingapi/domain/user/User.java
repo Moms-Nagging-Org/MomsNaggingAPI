@@ -43,7 +43,7 @@ public class User extends BaseTime {
 
     @Column(columnDefinition = "varchar(30) default 'MEMBER'")
     private String role = "MEMBER";
-    @Column(columnDefinition = "TEXT default '오늘 하루도 파이팅 🔥")
+    @Column(columnDefinition = "varchar(255) default '오늘 하루도 파이팅 🔥'")
     private String statusMsg = "";
 
     @Column(columnDefinition = "boolean default true")
