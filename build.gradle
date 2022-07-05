@@ -46,7 +46,7 @@ dependencies {
 
     // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
     implementation 'com.squareup.okhttp3:okhttp:4.9.3'
-
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.9.6'
     //Json 라이브러리로 Jackson 사용시 JSR-374 Serialize/Deserialize 를 처리하기 위한 의존성 추가
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr353'
     runtimeOnly 'org.springframework.boot:spring-boot-devtools:2.6.4'

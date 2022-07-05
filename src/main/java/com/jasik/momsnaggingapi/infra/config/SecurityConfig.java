@@ -26,7 +26,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(HttpMethod.OPTIONS).permitAll()
 //                .antMatchers("/api/v1/**").permitAll() // 로컬 개발용
-                .antMatchers("/api/v1/auth/**").permitAll() // 로그인/회원가입 쪽은 인증 없이
+                .antMatchers("/api/v1/auth/**", "/api/v1/admin/**").permitAll() // 로그인/회원가입 쪽은 인증 없이
                 .antMatchers(
                         "/",
                         "/api-docs/**", "/swagger-resources/**", "/swagger-ui.html", "/swagger-ui/**", "/webjars/**", "/swagger/**",   // swagger
