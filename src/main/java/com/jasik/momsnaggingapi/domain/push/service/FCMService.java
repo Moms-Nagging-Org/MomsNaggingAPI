@@ -50,7 +50,10 @@ public class FCMService {
                 .addHeader(HttpHeaders.CONTENT_TYPE, "application/json; UTF-8")
                 .build();
 
-        client.newCall(request).execute();
+        try (AutoCloseable response = client.newCall(request).execute()) {
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // FCM message 생성, String 반환
