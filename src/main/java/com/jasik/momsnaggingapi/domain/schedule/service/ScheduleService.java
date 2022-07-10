@@ -256,10 +256,14 @@ public class ScheduleService extends RejectedExecutionException {
             // 완료 -> 미완료, 미룸/건너뜀
             if (beforeStatus == 1 && (modifiedSchedule.getStatus() == 0) || (modifiedSchedule.getStatus() == 2) ) {
                 originSchedule.minusDoneCount();
+                // 다음날 생성
+                if (modifiedSchedule.getScheduleDate().plusDays(1).get(WeekFields.ISO.weekOfYear())
+                    == originSchedule.getScheduleDate().get(WeekFields.ISO.weekOfYear())) {
+                    createNextNRoutine(userId, modifiedSchedule);
+                }
             }
             // 미완료 -> 미룸/건너뜀
             else if (beforeStatus == 0 && modifiedSchedule.getStatus() == 2) {
-                // 다음날 생성
                 if (modifiedSchedule.getScheduleDate().plusDays(1).get(WeekFields.ISO.weekOfYear())
                     == originSchedule.getScheduleDate().get(WeekFields.ISO.weekOfYear())) {
                     createNextNRoutine(userId, modifiedSchedule);
