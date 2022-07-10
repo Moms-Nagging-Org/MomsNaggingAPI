@@ -9,6 +9,8 @@ import com.jasik.momsnaggingapi.domain.grade.Grade;
 import com.jasik.momsnaggingapi.infra.common.Utils;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +34,8 @@ public class DiaryService {
     @Transactional(readOnly = true)
     public Diary.DiaryResponse getDiary(Long userId, LocalDate retrieveDate) {
 
-        boolean isToday = LocalDate.now().isEqual(retrieveDate);
+        // 한국 타임존으로 고정해서 비교
+        boolean isToday = ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDate().isEqual(retrieveDate);
 
         Optional<Diary> diary = diaryRepository.findByUserIdAndDiaryDate(userId, retrieveDate);
         if (diary.isPresent()) {
