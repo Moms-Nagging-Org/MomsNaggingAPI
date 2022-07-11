@@ -27,7 +27,7 @@ import org.hibernate.annotations.NamedNativeQuery;
 @NamedNativeQuery(name = "findPerformanceOfPeriod", query =
     "select IF(a.performance is null, null, a.performance) as avg, b.date "
         + "from "
-        + "(select IF(schedule_date > CURDATE(), null, ((count(if(status=1,1,null))/count(*))*100)) as performance, schedule_date "
+        + "(select (count(if(status=1,1,null))/count(*))*100 as performance, schedule_date "
         + "from schedule "
         + "where user_id = :userId "
         + "and schedule_date >= :startDate "
@@ -50,7 +50,7 @@ import org.hibernate.annotations.NamedNativeQuery;
 }))
 @NamedNativeQuery(name = "findStatisticsResponse", query =
     "select count(if(a.performance=100.0,1,NULL)) as fullDoneCount, "
-        + "count(if(a.performance!=100,1,NULL)) as partialDoneCount, "
+        + "count(if(a.performance<100 and a.performance>0,1,NULL)) as partialDoneCount, "
         + "avg(a.performance) as performanceAvg, "
         + "b.todo_count as todoDoneCount, "
         + "b.routine_count as routineDoneCount, "

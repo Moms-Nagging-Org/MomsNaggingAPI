@@ -46,7 +46,7 @@ public class DiaryController {
             + "홈 → 일기장 → 특정 일 선택 → 삭제\n\n"
             + "<설명>\n\n"
             + "해당 일자의 일기장 내용을 수정합니다.\n\n"
-            + "삭제인 경우 title, context 컬럼에 null 대신 '' 값으로 요청합니다.")
+            + "삭제인 경우 title, context 컬럼에 null 값으로 요청합니다.")
     public ResponseEntity<DiaryResponse> putDiary(
         @AuthenticationPrincipal User user,
         final @Valid @RequestBody Diary.DiaryRequest request
