@@ -1,5 +1,6 @@
 package com.jasik.momsnaggingapi.domain.admin.service;
 
+import com.jasik.momsnaggingapi.domain.admin.Admin;
 import com.jasik.momsnaggingapi.domain.question.Question;
 import com.jasik.momsnaggingapi.domain.question.service.QuestionService;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
@@ -22,6 +23,19 @@ public class AdminService {
     private final UserService userService;
     private final QuestionService questionService;
     private final ScheduleService scheduleService;
+
+    public Admin.ServiceData getServiceData() {
+        Admin.ServiceData serviceData = new Admin.ServiceData();
+        serviceData.setNOfUsers(userService.countUser());
+        serviceData.setNOfQuestions((long) questionService.findAllQuestions().size());
+        return serviceData;
+    }
+
+    public Admin.GradeData getGradeData() {
+        Admin.GradeData gradeData = new Admin.GradeData();
+        // TODO: grade 별 유저 수
+        return gradeData;
+    }
 
     public List<User.AdminResponse> getUsers() {
         return userService.findAllUsers();
