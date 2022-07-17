@@ -51,13 +51,13 @@ import org.hibernate.annotations.NamedNativeQuery;
 @NamedNativeQuery(name = "findStatisticsResponse", query =
     "select count(if(a.performance=100.0,1,NULL)) as fullDoneCount, "
         + "count(if(a.performance<100 and a.performance>0,1,NULL)) as partialDoneCount, "
-        + "avg(a.performance) as performanceAvg, "
         + "b.todo_count as todoDoneCount, "
         + "b.routine_count as routineDoneCount, "
         + "c.writen_cnt as diaryCount, "
-        + "d.together_count as togetherCount "
+        + "d.together_count as togetherCount, "
+        + "e.avg_performance as performanceAvg "
         + "from("
-        + "        select (count(if(status=1, 1, NULL))/count(*))*100 as performance, schedule_date"
+        + "        select (count(if(status=1, 1, NULL))/count(*))*100 as performance"
         + "        from schedule"
         + "        where user_id = :userId"
         + "        group by schedule_date"
@@ -79,7 +79,13 @@ import org.hibernate.annotations.NamedNativeQuery;
         + "        select TIMESTAMPDIFF(DAY, created_at, CURDATE()) + 1 as together_count"
         + "        from user"
         + "        where id = :userId"
-        + "    ) d",
+        + "    ) d,"
+        + "    ("
+        + "        select ROUND(count(if(status=1,1,NULL)) / count(*) * 100) as avg_performance"
+        + "        from schedule"
+        + "        where user_id = :userId"
+        + "          and schedule_date <= :endDate "
+        + "    ) e",
     resultSetMapping = "StatisticsResponse")
 @SqlResultSetMapping(name = "StatisticsResponse", classes = @ConstructorResult(targetClass = StatisticsResponse.class, columns = {
     @ColumnResult(name = "fullDoneCount", type = Long.class),

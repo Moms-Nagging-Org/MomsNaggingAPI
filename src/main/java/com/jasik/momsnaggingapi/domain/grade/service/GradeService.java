@@ -205,7 +205,7 @@ public class GradeService {
     @Transactional(readOnly = true)
     public Grade.StatisticsResponse getStatistics(Long userId) {
 
-        return gradeRepository.findStatisticsByUserId(userId);
+        return gradeRepository.findStatisticsByUserId(userId, LocalDate.now());
     }
 }
 
