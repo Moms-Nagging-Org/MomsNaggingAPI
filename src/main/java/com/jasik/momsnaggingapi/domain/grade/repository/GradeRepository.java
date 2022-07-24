@@ -22,7 +22,10 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
 
     @Transactional(readOnly = true)
     @Query(name = "findStatisticsResponse", nativeQuery = true)
-    Grade.StatisticsResponse findStatisticsByUserId(@Param("userId") Long userId);
+    Grade.StatisticsResponse findStatisticsByUserId(
+        @Param("userId") Long userId,
+        @Param("endDate") LocalDate endDate
+        );
 
     @Transactional(readOnly = true)
     @Query(name = "findPerformanceOfPeriod", nativeQuery = true)

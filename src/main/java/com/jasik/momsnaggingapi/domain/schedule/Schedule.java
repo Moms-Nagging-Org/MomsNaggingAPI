@@ -8,6 +8,8 @@ import com.jasik.momsnaggingapi.infra.common.exception.NotValidRoutineException;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import javax.persistence.Column;
 import javax.persistence.ColumnResult;
 import javax.persistence.ConstructorResult;
@@ -131,6 +133,58 @@ public class Schedule extends BaseTime {
         return this.doneCount >= this.goalCount;
     }
 
+    public boolean checkOriginalSchedule() {
+        return this.id.equals(this.originalId);
+    }
+    public boolean checkNumberRepeatSchedule() {
+        return (this.goalCount > 0) && (this.scheduleType == ScheduleType.ROUTINE);
+    }
+    public boolean achievedGoalCount() {
+        return this.goalCount <= this.doneCount;
+    }
+
+    public ArrayList<Integer> getNextRoutineDays() {
+        int dayOfWeekNumber = this.scheduleDate.getDayOfWeek().getValue() - 1;
+        boolean[] repeatDays = {this.mon, this.tue, this.wed, this.thu, this.fri, this.sat, this.sun};
+        int nextDay = (7 - dayOfWeekNumber);
+        ArrayList<Integer> nextDayList = new ArrayList<>();
+        // 반복 요일마다 기준 날짜에서 더해야 하는 일수
+        for (boolean i : repeatDays) {
+            if (i) {
+                nextDayList.add(nextDay);
+            }
+            nextDay += 1;
+            if (nextDay > 7) {
+                nextDay -= 7;
+            }
+        }
+        Collections.sort(nextDayList);
+        return nextDayList;
+    }
+
+    public void initNextSchedule() {
+        this.scheduleDate = this.scheduleDate.plusDays(1);
+        this.status = 0;
+    }
+
+    public void verifyRoutine() {
+        if ((this.mon | this.tue | this.wed | this.thu | this.fri | this.sat | this.sun) && (
+            this.goalCount > 0)) {
+            throw new NotValidRoutineException("Repeat option of routine is not valid",
+                ErrorCode.ROUTINE_NOT_VALID);
+        }
+    }
+
+    public enum ScheduleType {
+        TODO, ROUTINE
+    }
+
+    public void minusDoneCount() {
+        if (this.doneCount > 0) {
+            this.doneCount -= 1;
+        }
+    }
+
     @Builder
     public Schedule(Long userId, Long originalId, Long categoryId, int goalCount,
         int doneCount, String scheduleName, String scheduleTime, LocalDate scheduleDate,
@@ -155,36 +209,6 @@ public class Schedule extends BaseTime {
         this.sat = sat;   // 수정가능 -> 이후 전부 변경 -> delete -> create
         this.sun = sun;   // 수정가능 -> 이후 전부 변경 -> delete -> create
         this.naggingId = naggingId;
-    }
-
-    public void initNextSchedule() {
-        this.scheduleDate = this.scheduleDate.plusDays(1);
-        this.status = 0;
-    }
-
-    // getRepeatDays() -> objectMapper.convertValue() 에서 컬럼으로 인식하고 변환해버림.. -.-
-    public boolean[] calculateRepeatDays() {
-        boolean[] dayArray = {mon, tue, wed, thu, fri, sat, sun};
-
-        return dayArray;
-    }
-
-    public void verifyRoutine() {
-        if ((this.mon | this.tue | this.wed | this.thu | this.fri | this.sat | this.sun) && (
-            this.goalCount > 0)) {
-            throw new NotValidRoutineException("Repeat option of routine is not valid",
-                ErrorCode.ROUTINE_NOT_VALID);
-        }
-    }
-
-    public enum ScheduleType {
-        TODO, ROUTINE
-    }
-
-    public void minusDoneCount() {
-        if (this.doneCount > 0) {
-            this.doneCount -= 1;
-        }
     }
 
     @Schema(description = "스케줄 생성 시 요청 클래스")
