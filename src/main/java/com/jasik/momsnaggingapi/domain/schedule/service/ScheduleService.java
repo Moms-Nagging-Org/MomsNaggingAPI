@@ -416,4 +416,38 @@ public class ScheduleService extends RejectedExecutionException {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public void createNumberRepeatSchedulesOfNewWeek(Long userId) {
+        try {
+            LocalDate weekAgoDate = LocalDate.now().minusDays(7);
+            List<String> daysOfWeek = utils.getDaysOfWeek(weekAgoDate);
+            LocalDate startDate = LocalDate.parse(daysOfWeek.get(0), DateTimeFormatter.ISO_DATE);
+            LocalDate endDate = LocalDate.parse(daysOfWeek.get(1), DateTimeFormatter.ISO_DATE);
+            asyncService.run(()->createNRoutines(userId, startDate, endDate));
+        } catch (RejectedExecutionException e) {
+            throw new ThreadFullException("Async Thread was fulled", ErrorCode.THREAD_FULL);
+        }
+    }
+
+    public void createNRoutines(Long userId, LocalDate startDate, LocalDate endDate) {
+        List<Schedule> nRoutineSchedules = scheduleRepository.findAllByUserIdAndGoalCountGreaterThanAndScheduleDateGreaterThanEqualAndScheduleDateLessThanEqual(
+            userId, 0, startDate, endDate);
+        ArrayList<Schedule> newSchedules = new ArrayList<>();
+        for (Schedule schedule : nRoutineSchedules) {
+            if (schedule.checkOriginalSchedule()) {
+                newSchedules.addAll(getNumberRepeatSchedules(copyNewOriginSchedule(schedule, "id", "scheduleDate")));
+            }
+        }
+        scheduleRepository.saveAll(newSchedules);
+    }
+
+    public Schedule copyNewOriginSchedule(Schedule schedule, String... ignoreProperties) {
+        Schedule newSchedule = Schedule.builder().build();
+        BeanUtils.copyProperties(schedule, newSchedule, ignoreProperties);
+        newSchedule.initScheduleDate(LocalDate.now());
+        newSchedule = scheduleRepository.save(newSchedule);
+        newSchedule.initOriginalId();
+        return newSchedule;
+    }
+
 }

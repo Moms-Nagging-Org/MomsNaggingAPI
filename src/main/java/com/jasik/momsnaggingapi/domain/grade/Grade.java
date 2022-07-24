@@ -135,7 +135,7 @@ public class Grade extends BaseTime {
         @Schema(description = "새롭게 달성한 상장의 단계\n\n0인 경우 새로 달성한 상장 없음\n\n주간평가 생성 시에만 사용되는 컬럼", defaultValue = "0")
         private int awardLevel;
         @Schema(description = "주간 평가 신규 생성 여부", defaultValue = "True")
-        private boolean isNew;
+        private boolean newGrade;
     }
     @Schema(description = "월간 달력 성적표 조회 시 응답 클래스")
     @Getter

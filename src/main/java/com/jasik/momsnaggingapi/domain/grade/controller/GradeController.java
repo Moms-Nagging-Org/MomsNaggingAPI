@@ -3,6 +3,7 @@ package com.jasik.momsnaggingapi.domain.grade.controller;
 import com.jasik.momsnaggingapi.domain.grade.Grade;
 import com.jasik.momsnaggingapi.domain.grade.Grade.GradesOfMonthResponse;
 import com.jasik.momsnaggingapi.domain.grade.service.GradeService;
+import com.jasik.momsnaggingapi.domain.schedule.service.ScheduleService;
 import com.jasik.momsnaggingapi.domain.user.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class GradeController {
 
     private final GradeService gradeService;
+    private final ScheduleService scheduleService;
 
     @GetMapping("/lastWeek")
     @Operation(summary = "직전 주의 주간평가 조회", description = ""
@@ -37,11 +39,15 @@ public class GradeController {
         + "직전 주차의 주간평가를 조회합니다. \n\n"
         + "새롭게 달성한 상장 달성도를 함께 반환합니다.\n\n"
         + "<프론트 로직>\n\n"
-        + "로그인 시 마지막 평가 주차 조회(16주차) -> 프론트에서 오늘의 주차 계산(18주차) -> 오늘 주차(18주차) - 1 != 마지막 평가 주차(16주차) -> 주간 평가 요청")
+        + "로그인 시 항상 해당 API를 요청합니다.")
     public ResponseEntity<Grade.GradeResponse> getGradeOfLastWeek(
         @AuthenticationPrincipal User user
         ) {
-        return ResponseEntity.ok().body(gradeService.getGradeOfLastWeek(user.getId()));
+        Grade.GradeResponse gradeResponse = gradeService.getGradeOfLastWeek(user.getId());
+        if (gradeResponse.isNewGrade()) {
+            scheduleService.createNumberRepeatSchedulesOfNewWeek(user.getId());
+        }
+        return ResponseEntity.ok().body(gradeResponse);
     }
     @GetMapping("/monthly")
     @Operation(summary = "월간 주간평가 조회", description = ""

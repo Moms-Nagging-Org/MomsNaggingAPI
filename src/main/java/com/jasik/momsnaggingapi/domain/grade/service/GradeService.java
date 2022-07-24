@@ -40,26 +40,9 @@ public class GradeService {
 
     private final GradeRepository gradeRepository;
     private final UserRepository userRepository;
-    private final ScheduleRepository scheduleRepository;
     private final ModelMapper modelMapper;
-    private final ObjectMapper objectMapper;
-    private final AsyncService asyncService;
 
     private final Utils utils;
-
-
-    public void createNRoutines(Long userId, LocalDate startDate, LocalDate endDate) {
-        List<Schedule> nRoutineSchedules = scheduleRepository.findAllByUserIdAndGoalCountGreaterThanAndScheduleDateGreaterThanEqualAndScheduleDateLessThanEqual(
-            userId, 0, startDate, endDate);
-        for (Schedule schedule : nRoutineSchedules) {
-            Schedule newSchedule = Schedule.builder().build();
-            BeanUtils.copyProperties(schedule, newSchedule, "id", "scheduleDate");
-            newSchedule.initScheduleDate(LocalDate.now());
-            newSchedule = scheduleRepository.save(newSchedule);
-            newSchedule.initOriginalId();
-            scheduleRepository.save(newSchedule);
-        }
-    }
 
     public Grade createGrade(Long userId, LocalDate startDate, LocalDate endDate, int createdYear,
         int createdWeek) {
@@ -113,7 +96,6 @@ public class GradeService {
         }
         return awardLevel;
     }
-
     @Transactional
     public Grade.GradeResponse getGradeOfLastWeek(Long userId) {
 
@@ -138,12 +120,6 @@ public class GradeService {
             List<String> daysOfWeek = utils.getDaysOfWeek(weekAgoDate);
             LocalDate startDate = LocalDate.parse(daysOfWeek.get(0), DateTimeFormatter.ISO_DATE);
             LocalDate endDate = LocalDate.parse(daysOfWeek.get(1), DateTimeFormatter.ISO_DATE);
-            try {
-                asyncService.run(()->createNRoutines(userId, startDate, endDate));
-            } catch (RejectedExecutionException e) {
-                throw new ThreadFullException("Async Thread was fulled", ErrorCode.THREAD_FULL);
-            }
-            // 주간 평가 생성
             grade = createGrade(userId, startDate, endDate, createdYear, createdWeek);
             if (grade.getGradeLevel() == 5) {
                 awardLevel = getAwardLevel(userId);
@@ -152,7 +128,7 @@ public class GradeService {
         }
         Grade.GradeResponse gradeResponse = modelMapper.map(grade, Grade.GradeResponse.class);
         gradeResponse.setAwardLevel(awardLevel);
-        gradeResponse.setNew(isNew);
+        gradeResponse.setNewGrade(isNew);
         return gradeResponse;
     }
 
