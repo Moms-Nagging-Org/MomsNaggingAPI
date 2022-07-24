@@ -55,6 +55,7 @@ public class User extends BaseTime {
     @Column(columnDefinition = "boolean default true")
     private Boolean allowOtherNotice;
 
+    // 컬럼명과 다르게 습관과 할일 전체의 순서 기억
     @Convert(converter = StringListConverter.class)
     @Column(columnDefinition = "json")
     private List<String> routineOrder;
