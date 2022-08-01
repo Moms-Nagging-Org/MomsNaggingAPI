@@ -8,6 +8,7 @@ import com.jasik.momsnaggingapi.domain.schedule.Schedule;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule.ArrayListRequest;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule.CategoryListResponse;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleListResponse;
+import com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleResponse;
 import com.jasik.momsnaggingapi.domain.schedule.repository.CategoryRepository;
 import com.jasik.momsnaggingapi.domain.schedule.repository.ScheduleRepository;
 import com.jasik.momsnaggingapi.domain.user.User;
@@ -170,7 +171,7 @@ public class ScheduleService extends RejectedExecutionException {
                 .collect(Collectors.toList());
         } else {
             return getScheduleListByOrder(routineOrder, schedules).stream().map(Schedule -> modelMapper.map(Schedule,
-                    com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleListResponse.class))
+                ScheduleListResponse.class))
                 .collect(Collectors.toList());
         }
     }
@@ -191,24 +192,21 @@ public class ScheduleService extends RejectedExecutionException {
     public Schedule.ScheduleResponse getSchedule(Long scheduleId) {
 
         return scheduleRepository.findById(scheduleId)
-            .map(value -> modelMapper.map(value, Schedule.ScheduleResponse.class)).orElseThrow(
+            .map(value -> modelMapper.map(value, ScheduleResponse.class)).orElseThrow(
                 () -> new ScheduleNotFoundException("schedule was not found",
                     ErrorCode.SCHEDULE_NOT_FOUND));
     }
 
-    private Schedule createNextOriginNumberRepeatRoutine(Long userId, Schedule schedule) {
-        Schedule nextSchedule = Schedule.builder().build();
-        BeanUtils.copyProperties(schedule, nextSchedule, "id", "doneCount");
-        nextSchedule.initNextSchedule();
-        Optional<Schedule> optionalSchedule = scheduleRepository.findByUserIdAndOriginalIdAndScheduleDate(
-            userId,
-            nextSchedule.getOriginalId(), nextSchedule.getScheduleDate());
-        if (!optionalSchedule.isPresent()) {
-            scheduleRepository.save(nextSchedule);
-        }
-        return nextSchedule;
+    @Transactional(readOnly = true)
+    public int getRemainSkipDays(Long scheduleId) {
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+            .orElseThrow(() -> new ScheduleNotFoundException("schedule was not found",
+            ErrorCode.SCHEDULE_NOT_FOUND));
+        Schedule originalSchedule = scheduleRepository.findById(schedule.getOriginalId())
+            .orElseThrow(() -> new ScheduleNotFoundException("schedule was not found",
+                ErrorCode.SCHEDULE_NOT_FOUND));
+        return originalSchedule.getRemainSkipDays(schedule.getScheduleDate().getDayOfWeek().getValue());
     }
-
     @Transactional
     public Schedule.ScheduleResponse patchSchedule(Long userId, Long scheduleId, JsonPatch jsonPatch) {
 

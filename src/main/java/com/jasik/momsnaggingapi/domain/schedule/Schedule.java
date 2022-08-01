@@ -185,6 +185,10 @@ public class Schedule extends BaseTime {
         }
     }
 
+    public int getRemainSkipDays(int numberOfWeek) {
+        int remainDays = 7 - numberOfWeek + 1 - (this.goalCount - this.doneCount);
+        return Math.max(remainDays, 0);
+    }
     @Builder
     public Schedule(Long userId, Long originalId, Long categoryId, int goalCount,
         int doneCount, String scheduleName, String scheduleTime, LocalDate scheduleDate,
@@ -235,12 +239,10 @@ public class Schedule extends BaseTime {
         @Schema(description = "스케줄 수행 일자")
         @NotBlank
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-//        @JsonFormat(shape = Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate scheduleDate;
 
         @Schema(description = "스케줄 알람 시간", defaultValue = "12:00:00")
         @DateTimeFormat(iso = ISO.TIME)
-//        @JsonFormat(shape = Shape.STRING, pattern = "HH:mm:ss", timezone = "Asia/Seoul")
         private LocalTime alarmTime;
 
         @Schema(description = "월요일 반복 여부", defaultValue = "false")
@@ -278,8 +280,6 @@ public class Schedule extends BaseTime {
         private Long naggingId;
         @Schema(description = "n회 습관의 수행 목표 수", defaultValue = "0")
         private int goalCount;
-        //        @Schema(description = "n회 습관의 수행 완료 수", defaultValue = "0")
-//        private int doneCount;
         @Schema(description = "스케줄 이름", defaultValue = "술 마시기")
         private String scheduleName;
         @Schema(description = "스케줄 수행 시간", defaultValue = "아무때나")
@@ -292,8 +292,6 @@ public class Schedule extends BaseTime {
         private LocalTime alarmTime;
         @Schema(description = "스케줄 상태, 0: 미완, 1: 완료, 2: 미룸/건너뜀", defaultValue = "0")
         private int status;
-//        @Schema(description = "스케줄 수행 여부", defaultValue = "false")
-//        private boolean done;
         @Schema(description = "월요일 반복 여부", defaultValue = "false")
         private boolean mon;
         @Schema(description = "화요일 반복 여부", defaultValue = "false")
@@ -321,14 +319,8 @@ public class Schedule extends BaseTime {
 
         @Schema(description = "스케줄 ID", defaultValue = "22")
         private Long id;
-        @Schema(description = "스케줄 원본 ID", defaultValue = "1")
-        private Long originalId;
         @Schema(description = "n회 습관의 수행 목표 수", defaultValue = "0")
         private int goalCount;
-        //        @Schema(description = "n회 습관의 수행 완료 수", defaultValue = "0")
-//        private int doneCount;
-//        @Schema(description = "잔소리 Id", defaultValue = "1")
-//        private Long naggingId;
         @Schema(description = "스케줄 이름", defaultValue = "술 마시기")
         private String scheduleName;
         @Schema(description = "스케줄 수행 시간", defaultValue = "아무때나")
@@ -337,7 +329,6 @@ public class Schedule extends BaseTime {
         private int status;
         @Schema(description = "스케줄 유형(할일/습관)", defaultValue = "todo")
         private ScheduleType scheduleType;
-
     }
 
     @Schema(description = "추천 스케줄 리스트 조회 시 응답 클래스")
