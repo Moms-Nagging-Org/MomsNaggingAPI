@@ -94,6 +94,21 @@ public class ScheduleController {
 
         return ResponseEntity.ok().body(result);
     }
+    @GetMapping("/{scheduleId}/remainSkipDays")
+    @Operation(summary = "습관의 이번주 남은 건너뜀 횟수 조회", description = ""
+        + "<페이지>\n\n"
+        + "홈 → 습관 건너뜀\n\n"
+        + "<설명>\n\n"
+        + "이번주에 해당 습관을 건너뛸 수 있는 남은 횟수를 조회합니다.")
+    public ResponseEntity<Integer> getScheduleRemainSkipDays(
+        @Schema(description = "조회할 스케줄 ID", example = "2", required = true)
+        @Parameter(name = "scheduleId", description = "조회할 스케줄 ID", in = ParameterIn.PATH)
+        @PathVariable Long scheduleId
+    ) {
+        int result = scheduleService.getRemainSkipDays(scheduleId);
+
+        return ResponseEntity.ok().body(result);
+    }
 
     // TODO: Request DTO로 만들기
     @PatchMapping(value = "/{scheduleId}", consumes = "application/json-patch+json")
