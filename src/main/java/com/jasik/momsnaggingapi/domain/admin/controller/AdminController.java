@@ -30,7 +30,9 @@ public class AdminController {
     private final AdminService adminService;
 
     @GetMapping("/dashboard")
-    @Operation(summary = "대시보드 정보 가져오기", description = "관리자 대시보드에서 보여줄 데이터를 조회합니다.")
+    @Operation(summary = "대시보드 정보 가져오기", description = "관리자 대시보드에서 보여줄 데이터를 조회합니다." +
+            "\n\n nofUsers - 총 회원 수 | nofQuestions - 문의사항 개수 " +
+            "\n\n nofLv1 - 우리 집 엄친아 수 | nofLv2 - 우리 동네 엄친아 수 | nofLv3 - 지구 엄친아 수 | nofLv4 - 우주 엄친아 수")
     public ResponseEntity<Admin.DashBoardResponse> getAdmin() {
         Admin.DashBoardResponse response = new Admin.DashBoardResponse();
         Admin.ServiceData serviceData = adminService.getServiceData();
