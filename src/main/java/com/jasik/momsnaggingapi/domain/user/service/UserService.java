@@ -26,6 +26,10 @@ public class UserService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
 
+    public Long countUser() {
+        return userRepository.count();
+    }
+
     public User.UserResponse findUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));

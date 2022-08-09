@@ -1,5 +1,6 @@
 package com.jasik.momsnaggingapi.domain.admin.controller;
 
+import com.jasik.momsnaggingapi.domain.admin.Admin;
 import com.jasik.momsnaggingapi.domain.admin.service.AdminService;
 import com.jasik.momsnaggingapi.domain.question.Question;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
@@ -27,6 +28,19 @@ import java.util.List;
 @Tag(name = "AdminAPI ~.~", description = "관리자페이지 API")
 public class AdminController {
     private final AdminService adminService;
+
+    @GetMapping("/dashboard")
+    @Operation(summary = "대시보드 정보 가져오기", description = "관리자 대시보드에서 보여줄 데이터를 조회합니다." +
+            "\n\n nofUsers - 총 회원 수 | nofQuestions - 문의사항 개수 " +
+            "\n\n nofLv1 - 우리 집 엄친아 수 | nofLv2 - 우리 동네 엄친아 수 | nofLv3 - 지구 엄친아 수 | nofLv4 - 우주 엄친아 수")
+    public ResponseEntity<Admin.DashBoardResponse> getAdmin() {
+        Admin.DashBoardResponse response = new Admin.DashBoardResponse();
+        Admin.ServiceData serviceData = adminService.getServiceData();
+        Admin.GradeData gradeData = adminService.getGradeData();
+        response.setGrade(gradeData);
+        response.setService(serviceData);
+        return ResponseEntity.ok().body(response);
+    }
 
     @GetMapping("/users")
     @Operation(summary = "회원 정보 전체 가져오기", description = "관리자에서 보여줄 유저 리스트를 조회합니다.")
