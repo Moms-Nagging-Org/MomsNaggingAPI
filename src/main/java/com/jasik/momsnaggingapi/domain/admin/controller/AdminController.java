@@ -29,13 +29,14 @@ import java.util.List;
 public class AdminController {
     private final AdminService adminService;
 
-    @GetMapping("/")
+    @GetMapping("/dashboard")
     @Operation(summary = "대시보드 정보 가져오기", description = "관리자 대시보드에서 보여줄 데이터를 조회합니다.")
     public ResponseEntity<Admin.DashBoardResponse> getAdmin() {
         Admin.DashBoardResponse response = new Admin.DashBoardResponse();
         Admin.ServiceData serviceData = adminService.getServiceData();
-        Admin.GradeData gradeData = new Admin.GradeData();
-
+        Admin.GradeData gradeData = adminService.getGradeData();
+        response.setGrade(gradeData);
+        response.setService(serviceData);
         return ResponseEntity.ok().body(response);
     }
 

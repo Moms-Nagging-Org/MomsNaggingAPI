@@ -23,10 +23,10 @@ public class Admin {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class GradeData {
-        private Long nOfLv0;
-        private Long nOfLv1;
-        private Long nOfLv2;
-        private Long nOfLv3;
+        private int nOfLv1;
+        private int nOfLv2;
+        private int nOfLv3;
+        private int nOfLv4;
     }
 
     @Schema(description = "대시보드 조회 시 응답 클래스")

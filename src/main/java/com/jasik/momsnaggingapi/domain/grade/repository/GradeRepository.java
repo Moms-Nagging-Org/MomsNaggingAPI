@@ -17,6 +17,8 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
 
     long countByUserIdAndGradeLevel(Long userId, int gradeLevel);
 
+    List<Grade> findByGradeLevel(int gradeLevel);
+
     List<Grade> findAllByUserIdAndCreatedYearAndCreatedWeekGreaterThanEqualAndCreatedWeekLessThanEqualOrderByCreatedYearAscCreatedWeekAsc(
         Long userId, int createdYear, int startCreatedWeek, int endCreatedWeek);
 

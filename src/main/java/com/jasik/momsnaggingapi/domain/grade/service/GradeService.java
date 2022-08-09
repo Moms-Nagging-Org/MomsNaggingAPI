@@ -183,5 +183,10 @@ public class GradeService {
 
         return gradeRepository.findStatisticsByUserId(userId);
     }
+
+    @Transactional
+    public List<Grade> getAllGrades() {
+        return gradeRepository.findByGradeLevel(5);
+    }
 }
 
