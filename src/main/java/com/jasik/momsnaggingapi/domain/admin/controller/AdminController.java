@@ -2,6 +2,9 @@ package com.jasik.momsnaggingapi.domain.admin.controller;
 
 import com.jasik.momsnaggingapi.domain.admin.Admin;
 import com.jasik.momsnaggingapi.domain.admin.service.AdminService;
+import com.jasik.momsnaggingapi.domain.push.Push;
+import com.jasik.momsnaggingapi.domain.push.Push.PushType;
+import com.jasik.momsnaggingapi.domain.push.service.PushService;
 import com.jasik.momsnaggingapi.domain.question.Question;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
 import com.jasik.momsnaggingapi.domain.user.User;
@@ -10,16 +13,22 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.net.URI;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Slf4j
 @RestController
@@ -28,6 +37,7 @@ import java.util.List;
 @Tag(name = "AdminAPI ~.~", description = "관리자페이지 API")
 public class AdminController {
     private final AdminService adminService;
+    private final PushService pushService;
 
     @GetMapping("/dashboard")
     @Operation(summary = "대시보드 정보 가져오기", description = "관리자 대시보드에서 보여줄 데이터를 조회합니다." +
@@ -54,7 +64,7 @@ public class AdminController {
         return ResponseEntity.ok().body(adminService.getQuestions());
     }
 
-    @GetMapping("/singout")
+    @GetMapping("/sign-out")
     @Operation(summary = "탈퇴사유 전체 가져오기", description = "관리자에서 보여줄 탈퇴사유 리스트를 조회합니다.")
     public ResponseEntity<List<Question.SignOutReasonResponse>> getAllSignOutReasons() {
         return ResponseEntity.ok().body(adminService.getSignOutReasons());
@@ -68,5 +78,25 @@ public class AdminController {
             @PathVariable Long categoryId
     ) {
         return ResponseEntity.ok().body(adminService.getTemplateSchedulesByCategory(categoryId));
+    }
+
+    @GetMapping("/push")
+    @Operation(summary = "푸시 알림 전체 가져오기", description = "관리자에서 보여줄 푸시 알림 리스트를 조회합니다.")
+    public ResponseEntity<List<Push.PushListAdminResponse>> getAllPushes(
+        @Parameter(name = "pushType", description = "조회할 푸시 종류, repeat: 정기성, one: 일회성")
+        @RequestParam PushType pushType
+        ) {
+        return ResponseEntity.ok().body(pushService.getPushes(pushType));
+    }
+    @PostMapping("push")
+    @Operation(summary = "푸시 알림 생성", description = "관리자에서 푸시 알림을 생성합니다.")
+    public ResponseEntity<Push.PushListAdminResponse> postSchedules(
+        final @Valid @RequestBody Push.PushListAdminRequest pushRequest
+    ) {
+        Push.PushListAdminResponse result = pushService.postPush(pushRequest);
+        URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath()
+            .path("/api/v1/admin/push/" + result.getId()).toUriString());
+
+        return ResponseEntity.created(uri).body(result);
     }
 }
