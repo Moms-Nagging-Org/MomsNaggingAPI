@@ -85,7 +85,6 @@ public class FCMService {
         googleCredentials.refreshIfExpired();
         return googleCredentials.getAccessToken().getTokenValue();
     }
-
     @Scheduled(initialDelay = 1000, fixedRate = 60000)
     @Async
     public void fixedRateJob(){
