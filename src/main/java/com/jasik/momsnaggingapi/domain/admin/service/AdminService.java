@@ -3,6 +3,10 @@ package com.jasik.momsnaggingapi.domain.admin.service;
 import com.jasik.momsnaggingapi.domain.admin.Admin;
 import com.jasik.momsnaggingapi.domain.grade.Grade;
 import com.jasik.momsnaggingapi.domain.grade.service.GradeService;
+import com.jasik.momsnaggingapi.domain.nagging.Nagging;
+import com.jasik.momsnaggingapi.domain.push.Push;
+import com.jasik.momsnaggingapi.domain.push.Push.PushType;
+import com.jasik.momsnaggingapi.domain.push.service.PushService;
 import com.jasik.momsnaggingapi.domain.question.Question;
 import com.jasik.momsnaggingapi.domain.question.service.QuestionService;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
@@ -24,6 +28,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class AdminService {
+
     private final UserService userService;
     private final QuestionService questionService;
     private final ScheduleService scheduleService;
@@ -42,8 +47,9 @@ public class AdminService {
         // TODO: grade 별 유저 수
         List<Grade> allGrades = gradeService.getAllGrades();
         for (int i = 0; i < allGrades.size(); i++) {
-            if(userGrades.containsKey(allGrades.get(i).getUserId())) { // 이미 있을 때
-                userGrades.put(allGrades.get(i).getUserId(), userGrades.get(allGrades.get(i).getUserId())+1);
+            if (userGrades.containsKey(allGrades.get(i).getUserId())) { // 이미 있을 때
+                userGrades.put(allGrades.get(i).getUserId(),
+                    userGrades.get(allGrades.get(i).getUserId()) + 1);
             } else {
                 userGrades.put(allGrades.get(i).getUserId(), 1);
             }
@@ -69,7 +75,8 @@ public class AdminService {
         return questionService.findAllQuestions();
     }
 
-    public List<Schedule.CategoryListAdminResponse> getTemplateSchedulesByCategory(Long categoryId) {
+    public List<Schedule.CategoryListAdminResponse> getTemplateSchedulesByCategory(
+        Long categoryId) {
         return scheduleService.getTemplateSchedulesByCategory(categoryId);
     }
 }

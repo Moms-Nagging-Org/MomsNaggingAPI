@@ -18,8 +18,8 @@ public class Nagging extends BaseTime {
 //    @Column(name = "user_id")
 //    private Long userId;
 
-//    @Column(columnDefinition = "TEXT")
-//    private String custom;
+    @Column(columnDefinition = "TEXT")
+    private String title;
     @Column(columnDefinition = "TEXT")
     private String level1;
     @Column(columnDefinition = "TEXT")
@@ -29,10 +29,11 @@ public class Nagging extends BaseTime {
 
     @Builder
     public Nagging(
-//        Long userId, String custom,
+//        Long userId,
+        String title,
         String level1, String level2, String level3) {
 //        this.userId = userId;
-//        this.custom = custom;
+        this.title = title;
         this.level1 = level1;
         this.level2 = level2;
         this.level3 = level3;
