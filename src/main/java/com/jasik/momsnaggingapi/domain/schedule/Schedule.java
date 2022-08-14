@@ -319,6 +319,8 @@ public class Schedule extends BaseTime {
 
         @Schema(description = "스케줄 ID", defaultValue = "22")
         private Long id;
+        @Schema(description = "원본 스케줄 ID", defaultValue = "2")
+        private Long originalId;
         @Schema(description = "n회 습관의 수행 목표 수", defaultValue = "0")
         private int goalCount;
         @Schema(description = "스케줄 이름", defaultValue = "술 마시기")
