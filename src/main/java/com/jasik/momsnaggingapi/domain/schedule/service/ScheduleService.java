@@ -19,7 +19,10 @@ import com.jasik.momsnaggingapi.infra.common.Utils;
 import com.jasik.momsnaggingapi.infra.common.exception.NotValidStatusException;
 import com.jasik.momsnaggingapi.infra.common.exception.ScheduleNotFoundException;
 import com.jasik.momsnaggingapi.infra.common.exception.ThreadFullException;
+import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -139,9 +142,13 @@ public class ScheduleService extends RejectedExecutionException {
         return nextSchedules;
     }
     private ArrayList<Schedule> getNumberRepeatSchedules(Schedule originSchedule) {
-        int createCount = originSchedule.getScheduleDate().getDayOfWeek().getValue();
+        LocalDate endOfWeek = LocalDate.now().with(DayOfWeek.SUNDAY);
+        LocalDateTime startDate = originSchedule.getScheduleDate().atStartOfDay();
+        LocalDateTime endDate = endOfWeek.atStartOfDay();
+        int betweenDays = (int) Duration.between(startDate, endDate).toDays();
+
         ArrayList<Schedule> nextSchedules = new ArrayList<>();
-        for (int i = 1; i <= 7 - createCount; i ++) {
+        for (int i = 1; i <= betweenDays; i ++) {
             Schedule nextSchedule = Schedule.builder().build();
             LocalDate nextScheduleDate = originSchedule.getScheduleDate().plusDays(i);
             BeanUtils.copyProperties(originSchedule, nextSchedule, "id", "scheduleDate");
