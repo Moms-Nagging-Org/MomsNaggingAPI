@@ -214,6 +214,19 @@ public class ScheduleService extends RejectedExecutionException {
                 ErrorCode.SCHEDULE_NOT_FOUND));
         return originalSchedule.getRemainSkipDays(schedule.getScheduleDate().getDayOfWeek().getValue());
     }
+
+    private void resetForNewRoutine(Long userId, Schedule modifiedSchedule) {
+        scheduleRepository.deleteWithIdAfter(modifiedSchedule.getId(),
+            modifiedSchedule.getUserId(), modifiedSchedule.getOriginalId());
+        modifiedSchedule.initOriginalId();
+        scheduleRepository.save(modifiedSchedule);
+        addRoutineOrder(userId, modifiedSchedule.getId());
+        try {
+            asyncService.run(() -> createRoutine(modifiedSchedule));
+        } catch (RejectedExecutionException e) {
+            throw new ThreadFullException("Async Thread was fulled", ErrorCode.THREAD_FULL);
+        }
+    }
     @Transactional
     public Schedule.ScheduleResponse patchSchedule(Long userId, Long scheduleId, JsonPatch jsonPatch) {
 
@@ -221,6 +234,7 @@ public class ScheduleService extends RejectedExecutionException {
             .orElseThrow(() -> new ScheduleNotFoundException("schedule was not found",
                 ErrorCode.SCHEDULE_NOT_FOUND));
         int beforeStatus = targetSchedule.getStatus();
+        boolean beforeIsNumberRepeatRoutine = targetSchedule.checkNumberRepeatSchedule();
         Schedule modifiedSchedule = scheduleRepository.save(
             mergeSchedule(targetSchedule, jsonPatch));
         ArrayList<String> columnList = new ArrayList<>();
@@ -261,16 +275,11 @@ public class ScheduleService extends RejectedExecutionException {
         if (columnList.contains("mon") || columnList.contains("tue") || columnList.contains("wed")
             || columnList.contains("thu") || columnList.contains("fri") || columnList.contains(
             "sat") || columnList.contains("sun")) {
-            scheduleRepository.deleteWithIdAfter(modifiedSchedule.getId(),
-                modifiedSchedule.getUserId(), modifiedSchedule.getOriginalId());
-            modifiedSchedule.initOriginalId();
-            scheduleRepository.save(modifiedSchedule);
-            addRoutineOrder(userId, modifiedSchedule.getId());
-            try {
-                asyncService.run(() -> createRoutine(modifiedSchedule));
-            } catch (RejectedExecutionException e) {
-                throw new ThreadFullException("Async Thread was fulled", ErrorCode.THREAD_FULL);
+            if (beforeIsNumberRepeatRoutine) {
+                scheduleRepository.deleteWithIdAfter(modifiedSchedule.getOriginalId(), userId, modifiedSchedule.getOriginalId());
+                removeRoutineOrder(userId, modifiedSchedule.getOriginalId());
             }
+            resetForNewRoutine(userId, modifiedSchedule);
         }
         // n회 반복 옵션이 수정된 경우 -> 원본이 같은 n회 습관들 모두 업데이트
         else if (columnList.contains("goalCount")) {
@@ -278,6 +287,9 @@ public class ScheduleService extends RejectedExecutionException {
                 modifiedSchedule.getGoalCount(), modifiedSchedule.getScheduleName(),
                 modifiedSchedule.getScheduleTime(), modifiedSchedule.getAlarmTime(),
                 modifiedSchedule.getUserId(), modifiedSchedule.getOriginalId());
+            if (!beforeIsNumberRepeatRoutine) {
+                resetForNewRoutine(userId, modifiedSchedule);
+            }
         }
         // 반복 옵션은 수정하지 않고 이름, 시간대, 알람시간 만 수정하는 경우 -> 이후 스케줄도 업데이트
         else if (columnList.contains("scheduleName") || columnList.contains("scheduleTime")
@@ -304,20 +316,11 @@ public class ScheduleService extends RejectedExecutionException {
         Schedule schedule = scheduleRepository.findByIdAndUserId(scheduleId, userId).orElseThrow(
             () -> new ScheduleNotFoundException("schedule was not found",
                 ErrorCode.SCHEDULE_NOT_FOUND));
-        // n회 습관인 경우 원본의 goalCount를 0으로 해야 다음 주차에 생성 안됨
-        if ((schedule.getGoalCount() > 0) && (!Objects.equals(schedule.getId(),
-            schedule.getOriginalId()))) {
-            Optional<Schedule> optionalSchedule = scheduleRepository.findByIdAndUserId(schedule.getOriginalId(), userId);
-            if (optionalSchedule.isPresent()) {
-                Schedule originSchedule = optionalSchedule.get();
-                originSchedule.initGoalCount();
-                if (schedule.getStatus() == 1) {
-                    originSchedule.minusDoneCount();
-                }
-                scheduleRepository.save(originSchedule);
-            }
+        if (schedule.checkNumberRepeatSchedule()) {
+            scheduleId = schedule.getOriginalId();
         }
         scheduleRepository.deleteWithIdAfter(scheduleId, userId, schedule.getOriginalId());
+        removeRoutineOrder(userId, schedule.getOriginalId());
     }
 
     @Transactional
