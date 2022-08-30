@@ -39,7 +39,8 @@ import org.springframework.lang.Nullable;
     name = "findSchedulePush",
     query = "select a.schedule_name as title, "
         + "       b.firebase_token as targetToken, "
-        + "       case b.nagging_level when 1 then c.level1 when 2 then c.level2 when 3 then c.level3 else c.level1 end as body "
+        + "       case b.nagging_level when 1 then c.level1 when 2 then c.level2 when 3 then c.level3 else c.level1 end as body,"
+        + "       b.nick_name as nickName "
         + "from schedule a inner join user b on a.user_id = b.id inner join nagging c on a.nagging_id = c.id\n"
         + "where a.schedule_date = :scheduleDate "
         + "and a.alarm_time = :alarmTime",
@@ -47,7 +48,8 @@ import org.springframework.lang.Nullable;
 @SqlResultSetMapping(name = "SchedulePush", classes = @ConstructorResult(targetClass = SchedulePush.class, columns = {
     @ColumnResult(name = "title", type = String.class),
     @ColumnResult(name = "targetToken", type = String.class),
-    @ColumnResult(name = "body", type = String.class)}))
+    @ColumnResult(name = "body", type = String.class),
+    @ColumnResult(name = "nickName", type = String.class)}))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -344,6 +346,8 @@ public class Schedule extends BaseTime {
         private Long id;
         @Schema(description = "스케줄 이름", defaultValue = "술 마시기")
         private String scheduleName;
+        @Schema(description = "잔소리 ID", defaultValue = "1")
+        private Long naggingId;
     }
 
     @Schema(description = "관리자에서 추천 스케줄 리스트 조회 시 응답 클래스")
@@ -388,5 +392,6 @@ public class Schedule extends BaseTime {
         private String title;
         private String targetToken;
         private String body;
+        private String nickName;
     }
 }
