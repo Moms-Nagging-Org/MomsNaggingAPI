@@ -346,6 +346,8 @@ public class Schedule extends BaseTime {
         private Long id;
         @Schema(description = "스케줄 이름", defaultValue = "술 마시기")
         private String scheduleName;
+        @Schema(description = "잔소리 ID", defaultValue = "1")
+        private Long naggingId;
     }
 
     @Schema(description = "관리자에서 추천 스케줄 리스트 조회 시 응답 클래스")
