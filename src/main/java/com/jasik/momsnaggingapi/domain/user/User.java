@@ -183,8 +183,8 @@ public class User extends BaseTime {
         private Boolean isExist;
     }
 
-    @Schema(description = "사용자 조회 시 응답 클래스")
-    @Getter @Setter
+    @Schema(description = "어드민 사용자 조회 시 응답 클래스")
+    @Getter @Setter @Builder
     @AllArgsConstructor
     @NoArgsConstructor
     public static class AdminResponse {

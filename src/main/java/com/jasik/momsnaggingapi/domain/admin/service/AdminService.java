@@ -15,6 +15,8 @@ import com.jasik.momsnaggingapi.domain.user.User;
 import com.jasik.momsnaggingapi.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,15 +39,15 @@ public class AdminService {
     public Admin.ServiceData getServiceData() {
         Admin.ServiceData serviceData = new Admin.ServiceData();
         serviceData.setNOfUsers(userService.countUser());
-        serviceData.setNOfQuestions((long) questionService.findAllQuestions().size());
+        serviceData.setNOfQuestions(questionService.countAllQuestions());
         return serviceData;
     }
 
     public Admin.GradeData getGradeData() {
         Admin.GradeData gradeData = new Admin.GradeData();
         HashMap<Long, Integer> userGrades = new HashMap<Long, Integer>();
-        // TODO: grade 별 유저 수
         List<Grade> allGrades = gradeService.getAllGrades();
+
         for (int i = 0; i < allGrades.size(); i++) {
             if (userGrades.containsKey(allGrades.get(i).getUserId())) { // 이미 있을 때
                 userGrades.put(allGrades.get(i).getUserId(),
@@ -63,16 +65,39 @@ public class AdminService {
         return gradeData;
     }
 
-    public List<User.AdminResponse> getUsers() {
-        return userService.findAllUsers();
+    public Page<User.AdminResponse> getUsers(Pageable pageable) {
+        Page<User> userPage = userService.findAllUsers(pageable);
+        Page<User.AdminResponse> userDataList = userPage.map(m -> User.AdminResponse.builder()
+                .id(m.getId())
+                .provider(m.getProvider())
+                .nickName(m.getNickName())
+                .personalId(m.getPersonalId())
+                .naggingLevel(m.getNaggingLevel())
+                .device(m.getDevice())
+                .createdAt(m.getCreatedAt())
+                .build());
+        return userDataList;
     }
 
-    public List<Question.SignOutReasonResponse> getSignOutReasons() {
-        return questionService.findAllSignOutReasons();
+    public Page<Question.SignOutReasonResponse> getSignOutReasons(Pageable pageable) {
+        Page<Question> questionPage = questionService.findAllSignOutReasons(pageable);
+        return questionPage.map(q -> Question.SignOutReasonResponse.builder()
+                .id(q.getId())
+                .title(q.getTitle())
+                .context(q.getContext())
+                .createdAt(q.getCreatedAt())
+                .build());
     }
 
-    public List<Question.QuestionResponse> getQuestions() {
-        return questionService.findAllQuestions();
+    public Page<Question.QuestionResponse> getQuestions(Pageable pageable) {
+        Page<Question> questionPage = questionService.findAllQuestions(pageable);
+        return questionPage.map(q -> Question.QuestionResponse.builder()
+                .id(q.getId())
+                .title(q.getTitle())
+                .context(q.getContext())
+                .createdAt(q.getCreatedAt())
+                .userId(q.getUserId()) // TODO: userId -> personalId 값으로 변경
+                .build());
     }
 
     public List<Schedule.CategoryListAdminResponse> getTemplateSchedulesByCategory(

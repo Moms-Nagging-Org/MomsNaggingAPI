@@ -78,7 +78,7 @@ public class Question extends BaseTime {
 
     @Schema(description = "문의 조회 시 응답 클래스")
     @Getter
-    @Setter
+    @Setter @Builder
     @AllArgsConstructor
     @NoArgsConstructor
     public static class QuestionResponse {
@@ -117,7 +117,7 @@ public class Question extends BaseTime {
     }
 
     @Schema(description = "탈퇴사유 조회 응답 클래스")
-    @Getter
+    @Getter @Builder
     @Setter
     @AllArgsConstructor
     @NoArgsConstructor

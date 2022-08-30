@@ -1,13 +1,15 @@
 package com.jasik.momsnaggingapi.domain.admin;
 
+import com.jasik.momsnaggingapi.domain.user.User;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.springframework.data.domain.Page;
+
+import java.time.LocalDateTime;
 
 public class Admin {
-    @Schema(description = "대시보드 서비스 정보")
+
+    @Schema(description = "가입자 정보 목록")
     @Getter
     @Setter
     @AllArgsConstructor
