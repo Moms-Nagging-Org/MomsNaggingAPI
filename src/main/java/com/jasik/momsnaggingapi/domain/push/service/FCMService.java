@@ -99,7 +99,7 @@ public class FCMService {
                 try {
                     asyncService.run(() -> {
                         try {
-                            sendMessageTo(push.getTargetToken(), push.getTitle(), String.format("%s~, %s", push.getNickName(), push.getBody()));
+                            sendMessageTo(push.getTargetToken(), push.getTitle(), String.format("%s, %s", push.getNickName(), push.getBody()));
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
