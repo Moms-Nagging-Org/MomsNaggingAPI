@@ -17,6 +17,10 @@ import java.net.URI;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -54,20 +58,20 @@ public class AdminController {
 
     @GetMapping("/users")
     @Operation(summary = "회원 정보 전체 가져오기", description = "관리자에서 보여줄 유저 리스트를 조회합니다.")
-    public ResponseEntity<List<User.AdminResponse>> getAllUsers() {
-        return ResponseEntity.ok().body(adminService.getUsers());
+    public ResponseEntity<Page<User.AdminResponse>> getAllUsers(@PageableDefault(size=10, sort="id", direction = Sort.Direction.ASC) Pageable pageable) {
+        return ResponseEntity.ok().body(adminService.getUsers(pageable));
     }
 
     @GetMapping("/questions")
     @Operation(summary = "문의사항 전체 가져오기", description = "관리자에서 보여줄 문의사항 리스트를 조회합니다.")
-    public ResponseEntity<List<Question.QuestionResponse>> getAllQuestions() {
-        return ResponseEntity.ok().body(adminService.getQuestions());
+    public ResponseEntity<Page<Question.QuestionResponse>> getAllQuestions(@PageableDefault(size=10, sort="id", direction = Sort.Direction.ASC) Pageable pageable) {
+        return ResponseEntity.ok().body(adminService.getQuestions(pageable));
     }
 
     @GetMapping("/sign-out")
     @Operation(summary = "탈퇴사유 전체 가져오기", description = "관리자에서 보여줄 탈퇴사유 리스트를 조회합니다.")
-    public ResponseEntity<List<Question.SignOutReasonResponse>> getAllSignOutReasons() {
-        return ResponseEntity.ok().body(adminService.getSignOutReasons());
+    public ResponseEntity<Page<Question.SignOutReasonResponse>> getAllSignOutReasons(@PageableDefault(size=10, sort="id", direction = Sort.Direction.ASC) Pageable pageable) {
+        return ResponseEntity.ok().body(adminService.getSignOutReasons(pageable));
     }
 
     @GetMapping("/schedules/categories/{categoryId}")

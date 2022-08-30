@@ -17,6 +17,8 @@ import com.jasik.momsnaggingapi.domain.user.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,14 +54,17 @@ public class QuestionService {
     }
 
     @Transactional
-    public List<Question.QuestionResponse> findAllQuestions() {
-        List<Question> questions = questionRepository.findAllByIsQ(true);
-        return questions.stream().map(p -> modelMapper.map(p, Question.QuestionResponse.class)).collect(Collectors.toList());
+    public Long countAllQuestions() {
+        return questionRepository.countByIsQ(true);
     }
 
     @Transactional
-    public List<Question.SignOutReasonResponse> findAllSignOutReasons() {
-        List<Question> reasons = questionRepository.findAllByIsQ(false);
-        return reasons.stream().map(p -> modelMapper.map(p, Question.SignOutReasonResponse.class)).collect(Collectors.toList());
+    public Page<Question> findAllQuestions(Pageable pageable) {
+        return questionRepository.findAllByIsQ(true, pageable);
+    }
+
+    @Transactional
+    public Page<Question> findAllSignOutReasons(Pageable pageable) {
+        return questionRepository.findAllByIsQ(false, pageable);
     }
 }
