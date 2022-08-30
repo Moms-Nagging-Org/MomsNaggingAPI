@@ -93,13 +93,31 @@ public class ScheduleService extends RejectedExecutionException {
         Optional<List<String>> optionalList = Optional.ofNullable(user.getRoutineOrder());
         if (optionalList.isPresent()) {
             orderList = optionalList.get();
+            if (orderList.contains(String.valueOf(scheduleId))) {
+                return;
+            }
             orderList.add(String.valueOf(scheduleId));
+            orderList = orderList.stream().distinct().collect(Collectors.toList());
         } else {
             orderList = Collections.singletonList(
                 String.valueOf(scheduleId));
         }
         user.updateRoutineOrder(orderList);
         userRepository.save(user);
+    }
+    private void removeRoutineOrder(Long userId, Long scheduleId) {
+        //            User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userRepository.findById(userId)
+            .orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
+        List<String> orderList;
+        Optional<List<String>> optionalList = Optional.ofNullable(user.getRoutineOrder());
+        if (optionalList.isPresent()) {
+            orderList = optionalList.get();
+            orderList.remove(String.valueOf(scheduleId));
+            user.updateRoutineOrder(orderList);
+            userRepository.save(user);
+        }
     }
 
     private void createRoutine(Schedule originSchedule) {
