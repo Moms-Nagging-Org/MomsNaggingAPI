@@ -15,10 +15,12 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import javax.json.JsonPatch;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -205,7 +207,7 @@ public class ScheduleController {
     ) {
         List<Category.CategoryResponse> result = scheduleService.getCategories();
 
-        return ResponseEntity.ok().body(result);
+        return ResponseEntity.ok().cacheControl(CacheControl.maxAge(1, TimeUnit.DAYS)).body(result);
     }
 
     @GetMapping("/categories/{categoryId}")
@@ -223,6 +225,6 @@ public class ScheduleController {
         List<Schedule.CategoryListResponse> result = scheduleService.getCategorySchedules(
             categoryId);
 
-        return ResponseEntity.ok().body(result);
+        return ResponseEntity.ok().cacheControl(CacheControl.maxAge(1, TimeUnit.DAYS)).body(result);
     }
 }
