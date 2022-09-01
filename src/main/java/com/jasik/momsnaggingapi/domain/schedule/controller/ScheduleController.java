@@ -88,11 +88,12 @@ public class ScheduleController {
         + "<설명>\n\n"
         + "할일 또는 습관 정보를 조회합니다.")
     public ResponseEntity<Schedule.ScheduleResponse> getSchedule(
+        @AuthenticationPrincipal User user,
         @Schema(description = "조회할 스케줄 ID", example = "2", required = true)
         @Parameter(name = "scheduleId", description = "조회할 스케줄 ID", in = ParameterIn.PATH)
         @PathVariable Long scheduleId
     ) {
-        Schedule.ScheduleResponse result = scheduleService.getSchedule(scheduleId);
+        Schedule.ScheduleResponse result = scheduleService.getSchedule(user.getId(), scheduleId);
 
         return ResponseEntity.ok().body(result);
     }

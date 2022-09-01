@@ -214,21 +214,22 @@ public class ScheduleService extends RejectedExecutionException {
     }
 
     @Transactional(readOnly = true)
-    public Schedule.ScheduleResponse getSchedule(Long scheduleId) {
+    public Schedule.ScheduleResponse getSchedule(Long userId, Long scheduleId) {
 
         return scheduleRepository.findById(scheduleId)
             .map(value -> modelMapper.map(value, ScheduleResponse.class)).orElseThrow(
-                () -> new ScheduleNotFoundException("schedule was not found",
+                () -> new ScheduleNotFoundException(String.format("userId: %d, scheduleId: %d", userId, scheduleId),
                     ErrorCode.SCHEDULE_NOT_FOUND));
     }
 
     @Transactional(readOnly = true)
     public int getRemainSkipDays(Long scheduleId) {
+        //TODO: User 객체 접근되면 userId 포함
         Schedule schedule = scheduleRepository.findById(scheduleId)
-            .orElseThrow(() -> new ScheduleNotFoundException("schedule was not found",
+            .orElseThrow(() -> new ScheduleNotFoundException(String.format("schedule %d was not found", scheduleId),
             ErrorCode.SCHEDULE_NOT_FOUND));
         Schedule originalSchedule = scheduleRepository.findById(schedule.getOriginalId())
-            .orElseThrow(() -> new ScheduleNotFoundException("schedule was not found",
+            .orElseThrow(() -> new ScheduleNotFoundException(String.format("original schedule %d was not found", scheduleId),
                 ErrorCode.SCHEDULE_NOT_FOUND));
         return originalSchedule.getRemainSkipDays(schedule.getScheduleDate().getDayOfWeek().getValue());
     }
@@ -249,7 +250,7 @@ public class ScheduleService extends RejectedExecutionException {
     public Schedule.ScheduleResponse patchSchedule(Long userId, Long scheduleId, JsonPatch jsonPatch) {
 
         Schedule targetSchedule = scheduleRepository.findByIdAndUserId(scheduleId, userId)
-            .orElseThrow(() -> new ScheduleNotFoundException("schedule was not found",
+            .orElseThrow(() -> new ScheduleNotFoundException(String.format("userId: %d, scheduleId: %d", userId, scheduleId),
                 ErrorCode.SCHEDULE_NOT_FOUND));
         int beforeStatus = targetSchedule.getStatus();
         boolean beforeIsNumberRepeatRoutine = targetSchedule.checkNumberRepeatSchedule();
@@ -266,7 +267,7 @@ public class ScheduleService extends RejectedExecutionException {
             modifiedSchedule.checkNumberRepeatSchedule())) {
             Schedule originSchedule = scheduleRepository.findByIdAndUserId(
                 modifiedSchedule.getOriginalId(), userId).orElseThrow(
-                () -> new ScheduleNotFoundException("schedule was not found",
+                () -> new ScheduleNotFoundException(String.format("userId: %d, scheduleId: %d", userId, scheduleId),
                     ErrorCode.SCHEDULE_NOT_FOUND));
             if (modifiedSchedule.getStatus() == 1) {
                 if (beforeStatus != 1){
@@ -332,12 +333,14 @@ public class ScheduleService extends RejectedExecutionException {
     public void deleteSchedule(Long userId, Long scheduleId) {
 
         Schedule schedule = scheduleRepository.findByIdAndUserId(scheduleId, userId).orElseThrow(
-            () -> new ScheduleNotFoundException("schedule was not found",
+            () -> new ScheduleNotFoundException(String.format("userId: %d, scheduleId: %d", userId, scheduleId),
                 ErrorCode.SCHEDULE_NOT_FOUND));
         if (schedule.checkNumberRepeatSchedule()) {
-            scheduleId = schedule.getOriginalId();
+            scheduleRepository.deleteWithIdAfter(schedule.getOriginalId(), userId,
+                schedule.getOriginalId());
+        } else {
+            scheduleRepository.deleteWithIdAfter(scheduleId, userId, schedule.getOriginalId());
         }
-        scheduleRepository.deleteWithIdAfter(scheduleId, userId, schedule.getOriginalId());
         removeRoutineOrder(userId, schedule.getOriginalId());
     }
 
@@ -353,10 +356,6 @@ public class ScheduleService extends RejectedExecutionException {
             int oneIndex = routineOrder.indexOf(String.valueOf(changedMap.getOneOriginalId()));
             int theOtherIndex = routineOrder.indexOf(
                 String.valueOf(changedMap.getTheOtherOriginalId()));
-            if ((oneIndex == -1) || (theOtherIndex == -1)) {
-                throw new ScheduleNotFoundException("schedule was not found",
-                    ErrorCode.SCHEDULE_NOT_FOUND);
-            }
             Collections.swap(routineOrder, oneIndex, theOtherIndex);
         }
         user.updateRoutineOrder(routineOrder);
