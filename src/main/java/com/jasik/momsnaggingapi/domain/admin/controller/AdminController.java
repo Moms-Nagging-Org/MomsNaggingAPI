@@ -58,30 +58,38 @@ public class AdminController {
 
     @GetMapping("/users")
     @Operation(summary = "회원 정보 전체 가져오기", description = "관리자에서 보여줄 유저 리스트를 조회합니다.")
-    public ResponseEntity<Page<User.AdminResponse>> getAllUsers(@PageableDefault(size=10, sort="id", direction = Sort.Direction.ASC) Pageable pageable) {
+    public ResponseEntity<Page<User.AdminResponse>> getAllUsers(
+            @PageableDefault(size=10, sort="id", direction = Sort.Direction.ASC) Pageable pageable
+    ) {
         return ResponseEntity.ok().body(adminService.getUsers(pageable));
     }
 
     @GetMapping("/questions")
     @Operation(summary = "문의사항 전체 가져오기", description = "관리자에서 보여줄 문의사항 리스트를 조회합니다.")
-    public ResponseEntity<Page<Question.QuestionResponse>> getAllQuestions(@PageableDefault(size=10, sort="id", direction = Sort.Direction.ASC) Pageable pageable) {
+    public ResponseEntity<Page<Question.QuestionResponse>> getAllQuestions(
+            @PageableDefault(size=10, sort="id", direction = Sort.Direction.ASC) Pageable pageable
+    ) {
         return ResponseEntity.ok().body(adminService.getQuestions(pageable));
     }
 
     @GetMapping("/sign-out")
     @Operation(summary = "탈퇴사유 전체 가져오기", description = "관리자에서 보여줄 탈퇴사유 리스트를 조회합니다.")
-    public ResponseEntity<Page<Question.SignOutReasonResponse>> getAllSignOutReasons(@PageableDefault(size=10, sort="id", direction = Sort.Direction.ASC) Pageable pageable) {
+    public ResponseEntity<Page<Question.SignOutReasonResponse>> getAllSignOutReasons(
+            @PageableDefault(size=10, sort="id", direction = Sort.Direction.ASC) Pageable pageable
+    ) {
         return ResponseEntity.ok().body(adminService.getSignOutReasons(pageable));
     }
 
     @GetMapping("/schedules/categories/{categoryId}")
     @Operation(summary = "추천 습관 카테고리 별 가져오기", description = "관리자에서 보여줄 카테고리 별 추천 습관 리스트를 조회합니다.")
-    public ResponseEntity<List<Schedule.CategoryListAdminResponse>> getTemplateSchedulesByCategories(
+    public ResponseEntity<Page<Schedule.CategoryListAdminResponse>> getTemplateSchedulesByCategories(
             @Schema(description = "조회할 습관 종류 ID", example = "1", required = true)
             @Parameter(name = "categoryId", description = "조회할 습관 종류 ID", in = ParameterIn.PATH)
-            @PathVariable Long categoryId
+            @PathVariable Long categoryId,
+            @PageableDefault(size=10, sort="id", direction = Sort.Direction.ASC)
+            Pageable pageable
     ) {
-        return ResponseEntity.ok().body(adminService.getTemplateSchedulesByCategory(categoryId));
+        return ResponseEntity.ok().body(adminService.getTemplateSchedulesByCategory(categoryId, pageable));
     }
 
     @GetMapping("/push")

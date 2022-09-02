@@ -8,6 +8,9 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -66,6 +69,6 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     @Transactional
     @Query("select s as schedule, n as nagging from Schedule s left outer join Nagging n " +
             "on s.naggingId = n.id where s.categoryId = :categoryId")
-    List<ScheduleNaggingInterface> findDetailsAllByCategoryId(@Param("categoryId") Long categoryId);
+    Page<ScheduleNaggingInterface> findDetailsAllByCategoryId(@Param("categoryId") Long categoryId, Pageable pageable);
 
 }

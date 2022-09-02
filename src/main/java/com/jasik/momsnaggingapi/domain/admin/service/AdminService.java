@@ -9,6 +9,7 @@ import com.jasik.momsnaggingapi.domain.push.Push.PushType;
 import com.jasik.momsnaggingapi.domain.push.service.PushService;
 import com.jasik.momsnaggingapi.domain.question.Question;
 import com.jasik.momsnaggingapi.domain.question.service.QuestionService;
+import com.jasik.momsnaggingapi.domain.schedule.Interface.ScheduleNaggingInterface;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
 import com.jasik.momsnaggingapi.domain.schedule.service.ScheduleService;
 import com.jasik.momsnaggingapi.domain.user.User;
@@ -100,8 +101,16 @@ public class AdminService {
                 .build());
     }
 
-    public List<Schedule.CategoryListAdminResponse> getTemplateSchedulesByCategory(
-        Long categoryId) {
-        return scheduleService.getTemplateSchedulesByCategory(categoryId);
+    public Page<Schedule.CategoryListAdminResponse> getTemplateSchedulesByCategory(
+        Long categoryId, Pageable pageable) {
+        Page<ScheduleNaggingInterface> schedules = scheduleService.getTemplateSchedulesByCategory(categoryId, pageable);
+
+        return schedules.map(s -> Schedule.CategoryListAdminResponse.builder()
+                .id(s.getSchedule().getId())
+                .scheduleName(s.getSchedule().getScheduleName())
+                .level1(s.getNagging().getLevel1())
+                .level2(s.getNagging().getLevel2())
+                .level3(s.getNagging().getLevel3())
+                .build());
     }
 }

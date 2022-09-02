@@ -38,6 +38,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -383,18 +385,9 @@ public class ScheduleService extends RejectedExecutionException {
     }
 
     @Transactional(readOnly = true)
-    public List<Schedule.CategoryListAdminResponse> getTemplateSchedulesByCategory(Long categoryId) {
+    public Page<ScheduleNaggingInterface> getTemplateSchedulesByCategory(Long categoryId, Pageable pageable) {
 
-        List<ScheduleNaggingInterface> schedules = scheduleRepository.findDetailsAllByCategoryId(categoryId);
-
-        return schedules.stream()
-                .map(s -> new Schedule.CategoryListAdminResponse(
-                        s.getSchedule().getId(),
-                        s.getSchedule().getScheduleName(),
-                        s.getNagging().getLevel1(),
-                        s.getNagging().getLevel2(),
-                        s.getNagging().getLevel3()))
-                .collect(Collectors.toList());
+        return scheduleRepository.findDetailsAllByCategoryId(categoryId, pageable);
     }
 
     @Transactional
