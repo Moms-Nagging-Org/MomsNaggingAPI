@@ -353,6 +353,7 @@ public class Schedule extends BaseTime {
     @Schema(description = "관리자에서 추천 스케줄 리스트 조회 시 응답 클래스")
     @Getter
     @Setter
+    @Builder
     @AllArgsConstructor
     @NoArgsConstructor
     public static class CategoryListAdminResponse {
