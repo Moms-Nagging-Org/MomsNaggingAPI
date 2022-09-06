@@ -94,11 +94,13 @@ public class AdminController {
 
     @GetMapping("/push")
     @Operation(summary = "푸시 알림 전체 가져오기", description = "관리자에서 보여줄 푸시 알림 리스트를 조회합니다.")
-    public ResponseEntity<List<Push.PushListAdminResponse>> getAllPushes(
-        @Parameter(name = "pushType", description = "조회할 푸시 종류, repeat: 정기성, one: 일회성")
-        @RequestParam PushType pushType
+    public ResponseEntity<Page<Push.PushListAdminResponse>> getAllPushes(
+            @Parameter(name = "pushType", description = "조회할 푸시 종류, repeat: 정기성, one: 일회성")
+            @RequestParam PushType pushType,
+            @PageableDefault(size=10, sort="id", direction = Sort.Direction.ASC)
+            Pageable pageable
         ) {
-        return ResponseEntity.ok().body(pushService.getPushes(pushType));
+        return ResponseEntity.ok().body(pushService.getPushes(pushType, pageable));
     }
     @PostMapping("push")
     @Operation(summary = "푸시 알림 생성", description = "관리자에서 푸시 알림을 생성합니다.")

@@ -3,6 +3,7 @@ package com.jasik.momsnaggingapi.domain.push.service;
 import com.jasik.momsnaggingapi.domain.grade.Grade;
 import com.jasik.momsnaggingapi.domain.nagging.Nagging;
 import com.jasik.momsnaggingapi.domain.nagging.repository.NaggingRepository;
+import com.jasik.momsnaggingapi.domain.push.Interface.PushNaggingInterface;
 import com.jasik.momsnaggingapi.domain.push.Push;
 import com.jasik.momsnaggingapi.domain.push.Push.PushListAdminRequest;
 import com.jasik.momsnaggingapi.domain.push.Push.PushListAdminResponse;
@@ -13,6 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,19 +30,26 @@ public class PushService {
     private final ModelMapper modelMapper;
 
     @Transactional(readOnly = true)
-    public List<PushListAdminResponse> getPushes(PushType pushType) {
-        ArrayList<PushListAdminResponse> pushResponseList = new ArrayList<>();
-        List<Push> pushes = pushRepository.findAllByPushTypeOrderByIdDesc(pushType);
-        for (Push push : pushes) {
-            Nagging nagging = naggingRepository.getNaggingById(push.getNaggingId());
-            PushListAdminResponse pushResponse = modelMapper.map(push, PushListAdminResponse.class);
-            pushResponse.setTitle(nagging.getTitle());
-            pushResponse.setLevel1(nagging.getLevel1());
-            pushResponse.setLevel2(nagging.getLevel2());
-            pushResponse.setLevel3(nagging.getLevel3());
-            pushResponseList.add(pushResponse);
-        }
-        return pushResponseList;
+    public Page<PushListAdminResponse> getPushes(PushType pushType, Pageable pageable) {
+        Page<PushNaggingInterface> pushPage = pushRepository.findAllByPushTypeOrderByIdDesc(pushType, pageable);
+
+        return pushPage.map(p -> PushListAdminResponse.builder()
+                .id(p.getPush().getId())
+                .pushDate(p.getPush().getPushDate())
+                .pushTime(p.getPush().getPushTime())
+                .pushType(p.getPush().getPushType())
+                .mon(p.getPush().isMon())
+                .tue(p.getPush().isTue())
+                .wed(p.getPush().isWed())
+                .thu(p.getPush().isThu())
+                .fri(p.getPush().isFri())
+                .sat(p.getPush().isSat())
+                .sun(p.getPush().isSun())
+                .title(p.getNagging().getTitle())
+                .level1(p.getNagging().getLevel1())
+                .level2(p.getNagging().getLevel2())
+                .level3(p.getNagging().getLevel3())
+                .build());
     }
 
     @Transactional
