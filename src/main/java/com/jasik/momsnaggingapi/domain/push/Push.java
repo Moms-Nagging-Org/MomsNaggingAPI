@@ -120,6 +120,7 @@ public class Push extends BaseTime {
     @Schema(description = "관리자에서 Push 리스트 조회 시 응답 클래스")
     @Getter
     @Setter
+    @Builder
     @AllArgsConstructor
     @NoArgsConstructor
     public static class PushListAdminResponse {
