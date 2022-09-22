@@ -59,12 +59,12 @@ public class QuestionService {
     }
 
     @Transactional
-    public Page<Question> findAllQuestions(Pageable pageable) {
+    public Page<Question> findAllQuestions(Pageable pageable, String search) {
         return questionRepository.findAllByIsQ(true, pageable);
     }
 
     @Transactional
-    public Page<Question> findAllSignOutReasons(Pageable pageable) {
+    public Page<Question> findAllSignOutReasons(Pageable pageable, String search) {
         return questionRepository.findAllByIsQ(false, pageable);
     }
 }

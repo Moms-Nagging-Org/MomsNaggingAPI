@@ -66,8 +66,8 @@ public class AdminService {
         return gradeData;
     }
 
-    public Page<User.AdminResponse> getUsers(Pageable pageable) {
-        Page<User> userPage = userService.findAllUsers(pageable);
+    public Page<User.AdminResponse> getUsers(Pageable pageable, String search) {
+        Page<User> userPage = userService.findAllUsers(pageable, search);
         Page<User.AdminResponse> userDataList = userPage.map(m -> User.AdminResponse.builder()
                 .id(m.getId())
                 .provider(m.getProvider())
@@ -80,8 +80,8 @@ public class AdminService {
         return userDataList;
     }
 
-    public Page<Question.SignOutReasonResponse> getSignOutReasons(Pageable pageable) {
-        Page<Question> questionPage = questionService.findAllSignOutReasons(pageable);
+    public Page<Question.SignOutReasonResponse> getSignOutReasons(Pageable pageable, String search) {
+        Page<Question> questionPage = questionService.findAllSignOutReasons(pageable, search);
         return questionPage.map(q -> Question.SignOutReasonResponse.builder()
                 .id(q.getId())
                 .title(q.getTitle())
@@ -90,8 +90,8 @@ public class AdminService {
                 .build());
     }
 
-    public Page<Question.QuestionResponse> getQuestions(Pageable pageable) {
-        Page<Question> questionPage = questionService.findAllQuestions(pageable);
+    public Page<Question.QuestionResponse> getQuestions(Pageable pageable, String search) {
+        Page<Question> questionPage = questionService.findAllQuestions(pageable, search);
         return questionPage.map(q -> Question.QuestionResponse.builder()
                 .id(q.getId())
                 .title(q.getTitle())

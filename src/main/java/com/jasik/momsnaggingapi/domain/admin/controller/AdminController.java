@@ -59,25 +59,28 @@ public class AdminController {
     @GetMapping("/users")
     @Operation(summary = "회원 정보 전체 가져오기", description = "관리자에서 보여줄 유저 리스트를 조회합니다.")
     public ResponseEntity<Page<User.AdminResponse>> getAllUsers(
-            @PageableDefault(size=10, sort="id", direction = Sort.Direction.ASC) Pageable pageable
+            @PageableDefault(size=10, sort="id", direction = Sort.Direction.ASC) Pageable pageable,
+            @RequestParam(value = "search") String search
     ) {
-        return ResponseEntity.ok().body(adminService.getUsers(pageable));
+        return ResponseEntity.ok().body(adminService.getUsers(pageable, search));
     }
 
     @GetMapping("/questions")
     @Operation(summary = "문의사항 전체 가져오기", description = "관리자에서 보여줄 문의사항 리스트를 조회합니다.")
     public ResponseEntity<Page<Question.QuestionResponse>> getAllQuestions(
-            @PageableDefault(size=10, sort="id", direction = Sort.Direction.ASC) Pageable pageable
+            @PageableDefault(size=10, sort="id", direction = Sort.Direction.ASC) Pageable pageable,
+            @RequestParam(value = "search") String search
     ) {
-        return ResponseEntity.ok().body(adminService.getQuestions(pageable));
+        return ResponseEntity.ok().body(adminService.getQuestions(pageable, search));
     }
 
     @GetMapping("/sign-out")
     @Operation(summary = "탈퇴사유 전체 가져오기", description = "관리자에서 보여줄 탈퇴사유 리스트를 조회합니다.")
     public ResponseEntity<Page<Question.SignOutReasonResponse>> getAllSignOutReasons(
-            @PageableDefault(size=10, sort="id", direction = Sort.Direction.ASC) Pageable pageable
+            @PageableDefault(size=10, sort="id", direction = Sort.Direction.ASC) Pageable pageable,
+            @RequestParam(value = "search") String search
     ) {
-        return ResponseEntity.ok().body(adminService.getSignOutReasons(pageable));
+        return ResponseEntity.ok().body(adminService.getSignOutReasons(pageable, search));
     }
 
     @GetMapping("/schedules/categories/{categoryId}")
