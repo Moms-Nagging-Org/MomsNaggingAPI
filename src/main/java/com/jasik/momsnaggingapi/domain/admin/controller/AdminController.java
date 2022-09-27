@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -59,8 +60,12 @@ public class AdminController {
     @GetMapping("/users")
     @Operation(summary = "회원 정보 전체 가져오기", description = "관리자에서 보여줄 유저 리스트를 조회합니다.")
     public ResponseEntity<Page<User.AdminResponse>> getAllUsers(
+            @Parameter(description = "페이지 정보 \n\n page - 페이지 번호. 0부터 시작 \n\n " +
+                    "size - default 10으로 설정. 다를 경우에만 전송 \n\n " +
+                    "sort - 해당 칼럼 오름차순 정렬. default id 이므로 다를 경우에만 전송")
             @PageableDefault(size=10, sort="id", direction = Sort.Direction.ASC) Pageable pageable,
-            @RequestParam(value = "search") String search
+            @Parameter(required = false, description = "검색할 아이디")
+            @RequestParam(value = "search", required = false) String search
     ) {
         return ResponseEntity.ok().body(adminService.getUsers(pageable, search));
     }
@@ -68,8 +73,12 @@ public class AdminController {
     @GetMapping("/questions")
     @Operation(summary = "문의사항 전체 가져오기", description = "관리자에서 보여줄 문의사항 리스트를 조회합니다.")
     public ResponseEntity<Page<Question.QuestionResponse>> getAllQuestions(
+            @Parameter(description = "페이지 정보 \n\n page - 페이지 번호. 0부터 시작 \n\n " +
+                    "size - default 10으로 설정. 다를 경우에만 전송 \n\n " +
+                    "sort - 해당 칼럼 오름차순 정렬. default id 이므로 다를 경우에만 전송")
             @PageableDefault(size=10, sort="id", direction = Sort.Direction.ASC) Pageable pageable,
-            @RequestParam(value = "search") String search
+            @Parameter(required = false, description = "검색할 아이디")
+            @RequestParam(value = "search", required = false) String search
     ) {
         return ResponseEntity.ok().body(adminService.getQuestions(pageable, search));
     }
@@ -77,8 +86,12 @@ public class AdminController {
     @GetMapping("/sign-out")
     @Operation(summary = "탈퇴사유 전체 가져오기", description = "관리자에서 보여줄 탈퇴사유 리스트를 조회합니다.")
     public ResponseEntity<Page<Question.SignOutReasonResponse>> getAllSignOutReasons(
+            @Parameter(description = "페이지 정보 \n\n page - 페이지 번호. 0부터 시작 \n\n " +
+                    "size - default 10으로 설정. 다를 경우에만 전송 \n\n " +
+                    "sort - 해당 칼럼 오름차순 정렬. default id 이므로 다를 경우에만 전송")
             @PageableDefault(size=10, sort="id", direction = Sort.Direction.ASC) Pageable pageable,
-            @RequestParam(value = "search") String search
+            @Parameter(required = false, description = "검색할 아이디")
+            @RequestParam(value = "search", required = false) String search
     ) {
         return ResponseEntity.ok().body(adminService.getSignOutReasons(pageable, search));
     }
