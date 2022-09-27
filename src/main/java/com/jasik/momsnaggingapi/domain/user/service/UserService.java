@@ -39,7 +39,7 @@ public class UserService {
     }
 
     public Page<User> findAllUsers(Pageable pageable, String search) {
-        return userRepository.findAll(pageable);
+        return userRepository.findByPersonalIdContainingIgnoreCase(search, pageable);
     }
 
     @Transactional
