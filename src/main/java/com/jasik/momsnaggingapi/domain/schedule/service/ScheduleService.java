@@ -265,32 +265,43 @@ public class ScheduleService extends RejectedExecutionException {
         }
         // n회 반복 습관의 상태 변경인 경우
         // 미룸 -> 수요일(3)의 습관을 미룸 상태로 변경할 경우, 목표 카운트(5) > 주차의 남은 일 수(7-3=4) 이고 목표 미달성일 때 에러
-        if (columnList.contains("status") && (
-            modifiedSchedule.checkNumberRepeatSchedule())) {
+        if (columnList.contains("status")) {
             Schedule originSchedule = scheduleRepository.findByIdAndUserId(
                 modifiedSchedule.getOriginalId(), userId).orElseThrow(
                 () -> new ScheduleNotFoundException(String.format("userId: %d, scheduleId: %d", userId, scheduleId),
                     ErrorCode.SCHEDULE_NOT_FOUND));
-            if (modifiedSchedule.getStatus() == 1) {
-                if (beforeStatus != 1){
-                    originSchedule.plusDoneCount();
-                }
+            if ((originSchedule.getScheduleType() == ScheduleType.TODO) & (modifiedSchedule.getStatus() == 2)) {
+                Schedule nextSchedule = Schedule.builder().build();
+                LocalDate nextScheduleDate = originSchedule.getScheduleDate().plusDays(1);
+                BeanUtils.copyProperties(originSchedule, nextSchedule, "id", "scheduleDate", "status", "originalId");
+                nextSchedule.initScheduleDate(nextScheduleDate);
+                nextSchedule = scheduleRepository.save(nextSchedule);
+                nextSchedule.initOriginalId();
+                nextSchedule = scheduleRepository.save(nextSchedule);
+                addRoutineOrder(userId, nextSchedule.getId());
             }
-            else{
-                if (beforeStatus == 1){
-                    originSchedule.minusDoneCount();
-                }
-                // TODO: 이후 날짜뿐만 아니라 이전 날짜에서 status 2로 변경 시에도 막아야 함
-                if (modifiedSchedule.getStatus() == 2) {
-                    int modified_date = modifiedSchedule.getScheduleDate().getDayOfWeek().getValue();
-                    int remain_days = 7 - modified_date;
-                    if ((originSchedule.getGoalCount() - originSchedule.getDoneCount() > remain_days) && (
-                        !originSchedule.achievedGoalCount())) {
-                            throw new NotValidStatusException("You can't postpone your schedule.", ErrorCode.NOT_VALID_STATUS);
+            else if (modifiedSchedule.checkNumberRepeatSchedule()){
+                if (modifiedSchedule.getStatus() == 1) {
+                    if (beforeStatus != 1){
+                        originSchedule.plusDoneCount();
                     }
                 }
+                else{
+                    if (beforeStatus == 1){
+                        originSchedule.minusDoneCount();
+                    }
+                    // TODO: 이후 날짜뿐만 아니라 이전 날짜에서 status 2로 변경 시에도 막아야 함
+                    if (modifiedSchedule.getStatus() == 2) {
+                        int modified_date = modifiedSchedule.getScheduleDate().getDayOfWeek().getValue();
+                        int remain_days = 7 - modified_date;
+                        if ((originSchedule.getGoalCount() - originSchedule.getDoneCount() > remain_days) && (
+                            !originSchedule.achievedGoalCount())) {
+                            throw new NotValidStatusException("You can't postpone your schedule.", ErrorCode.NOT_VALID_STATUS);
+                        }
+                    }
+                }
+                scheduleRepository.save(originSchedule);
             }
-            scheduleRepository.save(originSchedule);
         }
         // 요일 반복 옵션 수정이 포함된 경우 삭제 후 재 생성
         if (columnList.contains("mon") || columnList.contains("tue") || columnList.contains("wed")
