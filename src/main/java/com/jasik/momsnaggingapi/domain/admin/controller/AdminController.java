@@ -62,7 +62,8 @@ public class AdminController {
     public ResponseEntity<Page<User.AdminResponse>> getAllUsers(
             @Parameter(description = "페이지 정보 \n\n page - 페이지 번호. 0부터 시작 \n\n " +
                     "size - default 10으로 설정. 다를 경우에만 전송 \n\n " +
-                    "sort - 해당 칼럼 오름차순 정렬. default id 이므로 다를 경우에만 전송")
+                    "sort - 해당 칼럼 오름차순 정렬. default id 이므로 다를 경우에만 전송" +
+                    "(ex. a 칼럼으로 오름차순 정렬 - [\"a\"], 내림차순 정렬 - [\"a,DESC\"]")
             @PageableDefault(size=10, sort="id", direction = Sort.Direction.ASC) Pageable pageable,
             @Parameter(required = false, description = "검색할 아이디")
             @RequestParam(value = "search", required = false) String search
@@ -75,7 +76,8 @@ public class AdminController {
     public ResponseEntity<Page<Admin.QuestionResponse>> getAllQuestions(
             @Parameter(description = "페이지 정보 \n\n page - 페이지 번호. 0부터 시작 \n\n " +
                     "size - default 10으로 설정. 다를 경우에만 전송 \n\n " +
-                    "sort - 해당 칼럼 오름차순 정렬. default id 이므로 다를 경우에만 전송")
+                    "sort - 해당 칼럼 오름차순 정렬. default id 이므로 다를 경우에만 전송" +
+                    "(ex. a 칼럼으로 오름차순 정렬 - [\"a\"], 내림차순 정렬 - [\"a,DESC\"]")
             @PageableDefault(size=10, sort="id", direction = Sort.Direction.ASC) Pageable pageable,
             @Parameter(required = false, description = "검색할 아이디")
             @RequestParam(value = "search", required = false) String search
@@ -88,7 +90,8 @@ public class AdminController {
     public ResponseEntity<Page<Question.SignOutReasonResponse>> getAllSignOutReasons(
             @Parameter(description = "페이지 정보 \n\n page - 페이지 번호. 0부터 시작 \n\n " +
                     "size - default 10으로 설정. 다를 경우에만 전송 \n\n " +
-                    "sort - 해당 칼럼 오름차순 정렬. default id 이므로 다를 경우에만 전송")
+                    "sort - 해당 칼럼 오름차순 정렬. default id 이므로 다를 경우에만 전송 " +
+                    "(ex. a 칼럼으로 오름차순 정렬 - [\"a\"], 내림차순 정렬 - [\"a,DESC\"])")
             @PageableDefault(size=10, sort="id", direction = Sort.Direction.ASC) Pageable pageable
     ) {
         return ResponseEntity.ok().body(adminService.getSignOutReasons(pageable));
