@@ -9,6 +9,7 @@ import com.jasik.momsnaggingapi.domain.schedule.Schedule.ArrayListRequest;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule.CategoryListResponse;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleListResponse;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleResponse;
+import com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleType;
 import com.jasik.momsnaggingapi.domain.schedule.repository.CategoryRepository;
 import com.jasik.momsnaggingapi.domain.schedule.repository.ScheduleRepository;
 import com.jasik.momsnaggingapi.domain.user.User;
@@ -29,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.stream.Collectors;
 import javax.json.JsonPatch;
@@ -57,14 +59,17 @@ public class ScheduleService extends RejectedExecutionException {
     private final ObjectMapper objectMapper;
     private final AsyncService asyncService;
     private final Utils utils;
+    // TODO: 상수 저장
+    private Long[] defaultPushIds = new Long[]{1L, 30L, 31L, 32L, 33L};
+    private Random rand = new Random();
 
     @Transactional
     public Schedule.ScheduleResponse postSchedule(Long userId, Schedule.ScheduleRequest dto) {
         // TODO: nagging ID 연동
         // TODO: 하루 최대 생성갯수 조건 추가
-        // 커스텀 할일/습관일 경우 nagging 지정
+        // 커스텀 할일/습관일 경우 nagging 지정 -> 랜덤으로
         if (dto.getNaggingId() == null || dto.getNaggingId() == 0) {
-            dto.setNaggingId(1L);
+            dto.setNaggingId(defaultPushIds[rand.nextInt(defaultPushIds.length)]);
         }
         Schedule newSchedule = modelMapper.map(dto, Schedule.class);
         Schedule originSchedule = scheduleRepository.save(newSchedule);
