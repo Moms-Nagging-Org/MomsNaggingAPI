@@ -72,7 +72,7 @@ public class AdminController {
 
     @GetMapping("/questions")
     @Operation(summary = "문의사항 전체 가져오기", description = "관리자에서 보여줄 문의사항 리스트를 조회합니다.")
-    public ResponseEntity<Page<Question.QuestionResponse>> getAllQuestions(
+    public ResponseEntity<Page<Admin.QuestionResponse>> getAllQuestions(
             @Parameter(description = "페이지 정보 \n\n page - 페이지 번호. 0부터 시작 \n\n " +
                     "size - default 10으로 설정. 다를 경우에만 전송 \n\n " +
                     "sort - 해당 칼럼 오름차순 정렬. default id 이므로 다를 경우에만 전송")
@@ -89,11 +89,9 @@ public class AdminController {
             @Parameter(description = "페이지 정보 \n\n page - 페이지 번호. 0부터 시작 \n\n " +
                     "size - default 10으로 설정. 다를 경우에만 전송 \n\n " +
                     "sort - 해당 칼럼 오름차순 정렬. default id 이므로 다를 경우에만 전송")
-            @PageableDefault(size=10, sort="id", direction = Sort.Direction.ASC) Pageable pageable,
-            @Parameter(required = false, description = "검색할 아이디")
-            @RequestParam(value = "search", required = false) String search
+            @PageableDefault(size=10, sort="id", direction = Sort.Direction.ASC) Pageable pageable
     ) {
-        return ResponseEntity.ok().body(adminService.getSignOutReasons(pageable, search));
+        return ResponseEntity.ok().body(adminService.getSignOutReasons(pageable));
     }
 
     @GetMapping("/schedules/categories/{categoryId}")

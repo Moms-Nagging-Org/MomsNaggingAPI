@@ -7,6 +7,7 @@ import com.jasik.momsnaggingapi.domain.nagging.Nagging;
 import com.jasik.momsnaggingapi.domain.push.Push;
 import com.jasik.momsnaggingapi.domain.push.Push.PushType;
 import com.jasik.momsnaggingapi.domain.push.service.PushService;
+import com.jasik.momsnaggingapi.domain.question.Interface.QuestionUserInterface;
 import com.jasik.momsnaggingapi.domain.question.Question;
 import com.jasik.momsnaggingapi.domain.question.service.QuestionService;
 import com.jasik.momsnaggingapi.domain.schedule.Interface.ScheduleNaggingInterface;
@@ -80,8 +81,8 @@ public class AdminService {
         return userDataList;
     }
 
-    public Page<Question.SignOutReasonResponse> getSignOutReasons(Pageable pageable, String search) {
-        Page<Question> questionPage = questionService.findAllSignOutReasons(pageable, search);
+    public Page<Question.SignOutReasonResponse> getSignOutReasons(Pageable pageable) {
+        Page<Question> questionPage = questionService.findAllSignOutReasons(pageable);
         return questionPage.map(q -> Question.SignOutReasonResponse.builder()
                 .id(q.getId())
                 .title(q.getTitle())
@@ -90,14 +91,15 @@ public class AdminService {
                 .build());
     }
 
-    public Page<Question.QuestionResponse> getQuestions(Pageable pageable, String search) {
-        Page<Question> questionPage = questionService.findAllQuestions(pageable, search);
-        return questionPage.map(q -> Question.QuestionResponse.builder()
-                .id(q.getId())
-                .title(q.getTitle())
-                .context(q.getContext())
-                .createdAt(q.getCreatedAt())
-                .userId(q.getUserId()) // TODO: userId -> personalId 값으로 변경
+    public Page<Admin.QuestionResponse> getQuestions(Pageable pageable, String search) {
+        Page<QuestionUserInterface> questionPage = questionService.findAllQuestions(pageable, search);
+
+        return questionPage.map(q -> Admin.QuestionResponse.builder()
+                .id(q.getQuestion().getId())
+                .title(q.getQuestion().getTitle())
+                .context(q.getQuestion().getContext())
+                .createdAt(q.getQuestion().getCreatedAt())
+                .userId(q.getUser().getPersonalId())
                 .build());
     }
 
