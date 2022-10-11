@@ -1,19 +1,10 @@
 package com.jasik.momsnaggingapi.domain.question.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jasik.momsnaggingapi.domain.diary.Diary;
-import com.jasik.momsnaggingapi.domain.diary.Diary.DiaryResponse;
+import com.jasik.momsnaggingapi.domain.question.Interface.QuestionUserInterface;
 import com.jasik.momsnaggingapi.domain.question.Question;
-import com.jasik.momsnaggingapi.domain.question.Question.QuestionResponse;
 import com.jasik.momsnaggingapi.domain.question.repository.QuestionRepository;
-import com.jasik.momsnaggingapi.domain.schedule.Schedule;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
-import com.jasik.momsnaggingapi.domain.user.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -59,8 +50,8 @@ public class QuestionService {
     }
 
     @Transactional
-    public Page<Question> findAllQuestions(Pageable pageable) {
-        return questionRepository.findAllByIsQ(true, pageable);
+    public Page<QuestionUserInterface> findAllQuestions(Pageable pageable, String search) {
+        return questionRepository.findAllQuestions(search, true, pageable);
     }
 
     @Transactional

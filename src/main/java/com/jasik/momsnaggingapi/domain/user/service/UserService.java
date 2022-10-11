@@ -38,8 +38,8 @@ public class UserService {
         return modelMapper.map(user, User.UserResponse.class);
     }
 
-    public Page<User> findAllUsers(Pageable pageable) {
-        return userRepository.findAll(pageable);
+    public Page<User> findAllUsers(Pageable pageable, String search) {
+        return userRepository.findByPersonalIdContainingIgnoreCase(search, pageable);
     }
 
     @Transactional
