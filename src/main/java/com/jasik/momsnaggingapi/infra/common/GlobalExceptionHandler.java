@@ -1,5 +1,6 @@
 package com.jasik.momsnaggingapi.infra.common;
 
+import com.jasik.momsnaggingapi.infra.common.exception.NotValidException;
 import com.jasik.momsnaggingapi.infra.common.exception.NotValidRoutineException;
 import com.jasik.momsnaggingapi.infra.common.exception.NotValidStatusException;
 import com.jasik.momsnaggingapi.infra.common.exception.ScheduleNotFoundException;
@@ -43,6 +44,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NotValidStatusException.class)
     public ResponseEntity<ErrorResponse> handleNotValidStatusException(NotValidStatusException ex) {
         log.error("handleNotValidStatusException", ex);
+        ErrorResponse response = new ErrorResponse(ex.getErrorCode());
+        return new ResponseEntity<>(response, HttpStatus.valueOf(ex.getErrorCode().getStatus()));
+    }
+
+    @ExceptionHandler(NotValidException.class)
+    public ResponseEntity<ErrorResponse> handleNotValidException(NotValidException ex) {
+        log.error("handleNotValidException", ex);
         ErrorResponse response = new ErrorResponse(ex.getErrorCode());
         return new ResponseEntity<>(response, HttpStatus.valueOf(ex.getErrorCode().getStatus()));
     }

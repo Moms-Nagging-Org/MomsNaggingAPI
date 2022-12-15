@@ -13,6 +13,8 @@ public enum ErrorCode {
     THREAD_FULL(400,"COMMON-ERR-500","ASYNC THREAD FULLED"),
     ROUTINE_NOT_VALID(400,"SCHEDULE-ERR-400","WRONG REPEAT OPTION"),
     NOT_VALID_STATUS(400,"SCHEDULE-ERR-400","WRONG STATUS VALUE"),
+    FOLLOW_NOT_VALID(400,"FOLLOW-ERR-400","계정을 팔로우 할 수 없습니다."),
+    FOLLOW_NOT_FOUND(404,"FOLLOW-ERR-404","계정 팔로우 정보가 없습니다."),
     ;
 
     private final int status;
