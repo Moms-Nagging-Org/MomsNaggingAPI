@@ -58,11 +58,14 @@ public class Follow extends BaseTime {
     @Column(columnDefinition = "boolean default false")
     private boolean isBlocked;
 
+    public boolean checkBlocked() {
+        return isBlocked;
+    }
+
     @Builder
-    public Follow(Long fromUser, Long toUser, boolean isBlocked) {
+    public Follow(Long fromUser, Long toUser) {
         this.fromUser = fromUser;
         this.toUser = toUser;
-        this.isBlocked = isBlocked;
     }
 
     @Schema(description = "팔로워 조회 시 응답 클래스")

@@ -4,11 +4,11 @@ import com.jasik.momsnaggingapi.infra.common.ErrorCode;
 import lombok.Getter;
 
 @Getter
-public class NotValidRoutineException extends RuntimeException{
+public class NotValidException extends RuntimeException{
 
     private final ErrorCode errorCode;
 
-    public NotValidRoutineException(String message, ErrorCode errorCode){
+    public NotValidException(String message, ErrorCode errorCode){
         super(message);
         this.errorCode = errorCode;
     }

@@ -4,7 +4,7 @@ import com.jasik.momsnaggingapi.domain.nagging.Nagging;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule.SchedulePush;
 import com.jasik.momsnaggingapi.infra.common.BaseTime;
 import com.jasik.momsnaggingapi.infra.common.ErrorCode;
-import com.jasik.momsnaggingapi.infra.common.exception.NotValidRoutineException;
+import com.jasik.momsnaggingapi.infra.common.exception.NotValidException;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -172,7 +172,7 @@ public class Schedule extends BaseTime {
     public void verifyRoutine() {
         if ((this.mon | this.tue | this.wed | this.thu | this.fri | this.sat | this.sun) && (
             this.goalCount > 0)) {
-            throw new NotValidRoutineException("Repeat option of routine is not valid",
+            throw new NotValidException("Repeat option of routine is not valid",
                 ErrorCode.ROUTINE_NOT_VALID);
         }
     }

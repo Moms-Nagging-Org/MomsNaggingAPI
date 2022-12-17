@@ -4,11 +4,11 @@ import com.jasik.momsnaggingapi.infra.common.ErrorCode;
 import lombok.Getter;
 
 @Getter
-public class ScheduleNotFoundException extends RuntimeException{
+public class NotFoundException extends RuntimeException{
 
     private final ErrorCode errorCode;
 
-    public ScheduleNotFoundException(String message, ErrorCode errorCode){
+    public NotFoundException(String message, ErrorCode errorCode){
         super(message);
         this.errorCode = errorCode;
     }

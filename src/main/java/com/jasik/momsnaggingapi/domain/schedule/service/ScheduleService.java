@@ -17,8 +17,8 @@ import com.jasik.momsnaggingapi.domain.user.repository.UserRepository;
 import com.jasik.momsnaggingapi.infra.common.AsyncService;
 import com.jasik.momsnaggingapi.infra.common.ErrorCode;
 import com.jasik.momsnaggingapi.infra.common.Utils;
-import com.jasik.momsnaggingapi.infra.common.exception.NotValidStatusException;
-import com.jasik.momsnaggingapi.infra.common.exception.ScheduleNotFoundException;
+import com.jasik.momsnaggingapi.infra.common.exception.NotFoundException;
+import com.jasik.momsnaggingapi.infra.common.exception.NotValidException;
 import com.jasik.momsnaggingapi.infra.common.exception.ThreadFullException;
 import java.time.DayOfWeek;
 import java.time.Duration;
@@ -225,7 +225,7 @@ public class ScheduleService extends RejectedExecutionException {
 
         return scheduleRepository.findById(scheduleId)
             .map(value -> modelMapper.map(value, ScheduleResponse.class)).orElseThrow(
-                () -> new ScheduleNotFoundException(String.format("userId: %d, scheduleId: %d", userId, scheduleId),
+                () -> new NotFoundException(String.format("userId: %d, scheduleId: %d", userId, scheduleId),
                     ErrorCode.SCHEDULE_NOT_FOUND));
     }
 
@@ -233,10 +233,10 @@ public class ScheduleService extends RejectedExecutionException {
     public int getRemainSkipDays(Long scheduleId) {
         //TODO: User 객체 접근되면 userId 포함
         Schedule schedule = scheduleRepository.findById(scheduleId)
-            .orElseThrow(() -> new ScheduleNotFoundException(String.format("schedule %d was not found", scheduleId),
+            .orElseThrow(() -> new NotFoundException(String.format("schedule %d was not found", scheduleId),
             ErrorCode.SCHEDULE_NOT_FOUND));
         Schedule originalSchedule = scheduleRepository.findById(schedule.getOriginalId())
-            .orElseThrow(() -> new ScheduleNotFoundException(String.format("original schedule %d was not found", scheduleId),
+            .orElseThrow(() -> new NotFoundException(String.format("original schedule %d was not found", scheduleId),
                 ErrorCode.SCHEDULE_NOT_FOUND));
         return originalSchedule.getRemainSkipDays(schedule.getScheduleDate().getDayOfWeek().getValue());
     }
@@ -257,7 +257,7 @@ public class ScheduleService extends RejectedExecutionException {
     public Schedule.ScheduleResponse patchSchedule(Long userId, Long scheduleId, JsonPatch jsonPatch) {
 
         Schedule targetSchedule = scheduleRepository.findByIdAndUserId(scheduleId, userId)
-            .orElseThrow(() -> new ScheduleNotFoundException(String.format("userId: %d, scheduleId: %d", userId, scheduleId),
+            .orElseThrow(() -> new NotFoundException(String.format("userId: %d, scheduleId: %d", userId, scheduleId),
                 ErrorCode.SCHEDULE_NOT_FOUND));
         int beforeStatus = targetSchedule.getStatus();
         boolean beforeIsNumberRepeatRoutine = targetSchedule.checkNumberRepeatSchedule();
@@ -273,7 +273,7 @@ public class ScheduleService extends RejectedExecutionException {
         if (columnList.contains("status")) {
             Schedule originSchedule = scheduleRepository.findByIdAndUserId(
                 modifiedSchedule.getOriginalId(), userId).orElseThrow(
-                () -> new ScheduleNotFoundException(String.format("userId: %d, scheduleId: %d", userId, scheduleId),
+                () -> new NotFoundException(String.format("userId: %d, scheduleId: %d", userId, scheduleId),
                     ErrorCode.SCHEDULE_NOT_FOUND));
             if ((originSchedule.getScheduleType() == ScheduleType.TODO) & (modifiedSchedule.getStatus() == 2)) {
                 Schedule nextSchedule = Schedule.builder().build();
@@ -301,7 +301,7 @@ public class ScheduleService extends RejectedExecutionException {
                         int remain_days = 7 - modified_date;
                         if ((originSchedule.getGoalCount() - originSchedule.getDoneCount() > remain_days) && (
                             !originSchedule.achievedGoalCount())) {
-                            throw new NotValidStatusException("You can't postpone your schedule.", ErrorCode.NOT_VALID_STATUS);
+                            throw new NotValidException("You can't postpone your schedule.", ErrorCode.NOT_VALID_STATUS);
                         }
                     }
                 }
@@ -351,7 +351,7 @@ public class ScheduleService extends RejectedExecutionException {
     public void deleteSchedule(Long userId, Long scheduleId) {
 
         Schedule schedule = scheduleRepository.findByIdAndUserId(scheduleId, userId).orElseThrow(
-            () -> new ScheduleNotFoundException(String.format("userId: %d, scheduleId: %d", userId, scheduleId),
+            () -> new NotFoundException(String.format("userId: %d, scheduleId: %d", userId, scheduleId),
                 ErrorCode.SCHEDULE_NOT_FOUND));
         if (schedule.checkNumberRepeatSchedule()) {
             scheduleRepository.deleteWithIdAfter(schedule.getOriginalId(), userId,
