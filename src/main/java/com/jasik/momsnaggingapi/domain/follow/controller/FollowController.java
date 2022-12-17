@@ -15,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -69,7 +68,7 @@ public class FollowController {
     public ResponseEntity<?> postFollowing(
         @AuthenticationPrincipal User user,
         @Schema(description = "유저 번호", example = "22", required = true)
-        @Parameter(name = "toUserId", description = "유저 번호", in = ParameterIn.QUERY)
+        @Parameter(name = "toUserId", description = "대상 유저 번호", in = ParameterIn.QUERY)
         @RequestParam Long toUserId
         ) {
         followService.postFollowing(user, toUserId);
@@ -88,10 +87,59 @@ public class FollowController {
     public ResponseEntity<?> deleteFollowing(
         @AuthenticationPrincipal User user,
         @Schema(description = "유저 번호", example = "22", required = true)
-        @Parameter(name = "toUserId", description = "유저 번호", in = ParameterIn.QUERY)
+        @Parameter(name = "toUserId", description = "대상 유저 번호", in = ParameterIn.QUERY)
         @RequestParam Long toUserId
     ) {
         followService.deleteFollowing(user, toUserId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("block")
+    @Operation(summary = "차단 목록 조회",
+        description = ""
+            + "<페이지>\n\n"
+            + "홈 → 식구 → 내 식구 목록 → 차단 목록\n\n"
+            + "<설명>\n\n"
+            + "유저가 차단하는 유저 목록을 조회합니다")
+    public ResponseEntity<List<FollowResponse>> getBlock(
+        @AuthenticationPrincipal User user
+    ) {
+        return ResponseEntity.ok().body(followService.getBlock(user.getId()));
+    }
+
+    @PostMapping("block")
+    @Operation(summary = "계정 차단",
+        description = ""
+            + "<페이지>\n\n"
+            + "홈 → 식구 → 내 식구 목록 → 팔로워\n\n"
+            + "<설명>\n\n"
+            + "유저를 차단 합니다")
+    @ApiResponse(responseCode = "204", description = "차단 성공")
+    public ResponseEntity<?> postBlock(
+        @AuthenticationPrincipal User user,
+        @Schema(description = "유저 번호", example = "22", required = true)
+        @Parameter(name = "toUserId", description = "대상 유저 번호", in = ParameterIn.QUERY)
+        @RequestParam Long toUserId
+    ) {
+        followService.postBlock(user, toUserId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("block")
+    @Operation(summary = "계정 차단 취소",
+        description = ""
+            + "<페이지>\n\n"
+            + "홈 → 식구 → 내 식구 목록 → 차단 목록\n\n"
+            + "<설명>\n\n"
+            + "유저를 차단 해제합니다")
+    @ApiResponse(responseCode = "204", description = "차단 해제 성공")
+    public ResponseEntity<?> deleteBlock(
+        @AuthenticationPrincipal User user,
+        @Schema(description = "유저 번호", example = "22", required = true)
+        @Parameter(name = "toUserId", description = "대상 유저 번호", in = ParameterIn.QUERY)
+        @RequestParam Long toUserId
+    ) {
+        followService.deleteBlock(user, toUserId);
         return ResponseEntity.noContent().build();
     }
 }

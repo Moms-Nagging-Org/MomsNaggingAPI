@@ -26,15 +26,9 @@ import org.hibernate.annotations.NamedNativeQuery;
     "select b.id as userId, b.nick_name as nickName, b.personal_id as personalId, b.status_msg as statusMsg\n"
     + "from follow a inner join user b on a.from_user = b.id\n"
     + "where a.to_user = :userId\n"
-    + "and a.is_blocked = False\n"
+    + "and a.is_blocked = :isBlocked\n"
     + "order by a.created_at desc;",
     resultSetMapping = "FollowResponse")
-@SqlResultSetMapping(name = "FollowResponse", classes = @ConstructorResult(targetClass = FollowResponse.class, columns = {
-    @ColumnResult(name = "userId", type = Long.class),
-    @ColumnResult(name = "nickName", type = String.class),
-    @ColumnResult(name = "personalId", type = String.class),
-    @ColumnResult(name = "statusMsg", type = String.class)
-}))
 @NamedNativeQuery(
     name = "findFollowings",
     query =
@@ -44,6 +38,13 @@ import org.hibernate.annotations.NamedNativeQuery;
             + "and a.is_blocked = False\n"
             + "order by a.created_at desc;",
     resultSetMapping = "FollowResponse")
+
+@SqlResultSetMapping(name = "FollowResponse", classes = @ConstructorResult(targetClass = FollowResponse.class, columns = {
+    @ColumnResult(name = "userId", type = Long.class),
+    @ColumnResult(name = "nickName", type = String.class),
+    @ColumnResult(name = "personalId", type = String.class),
+    @ColumnResult(name = "statusMsg", type = String.class)
+}))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -62,10 +63,20 @@ public class Follow extends BaseTime {
         return isBlocked;
     }
 
+    public void setBlock(boolean bool) {
+        isBlocked = bool;
+    }
+
     @Builder
     public Follow(Long fromUser, Long toUser) {
         this.fromUser = fromUser;
         this.toUser = toUser;
+    }
+    @Builder(builderMethodName = "threeBuilder")
+    public Follow(Long fromUser, Long toUser, Boolean isBlocked) {
+        this.fromUser = fromUser;
+        this.toUser = toUser;
+        this.isBlocked = isBlocked;
     }
 
     @Schema(description = "팔로워 조회 시 응답 클래스")
