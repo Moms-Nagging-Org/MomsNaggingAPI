@@ -12,4 +12,9 @@ public class NotValidException extends RuntimeException{
         super(message);
         this.errorCode = errorCode;
     }
+
+    public NotValidException(ErrorCode errorCode){
+        super(errorCode.getMessage());
+        this.errorCode = errorCode;
+    }
 }

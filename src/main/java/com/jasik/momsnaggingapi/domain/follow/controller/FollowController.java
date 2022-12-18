@@ -65,14 +65,13 @@ public class FollowController {
             + "<설명>\n\n"
             + "유저를 팔로우 합니다")
     @ApiResponse(responseCode = "204", description = "추가 성공")
-    public ResponseEntity<?> postFollowing(
+    public ResponseEntity<FollowResponse> postFollowing(
         @AuthenticationPrincipal User user,
         @Schema(description = "유저 번호", example = "22", required = true)
         @Parameter(name = "toUserId", description = "대상 유저 번호", in = ParameterIn.QUERY)
         @RequestParam Long toUserId
         ) {
-        followService.postFollowing(user, toUserId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().body(followService.postFollowing(user, toUserId));
     }
 
     @DeleteMapping("following")
@@ -115,14 +114,14 @@ public class FollowController {
             + "<설명>\n\n"
             + "유저를 차단 합니다")
     @ApiResponse(responseCode = "204", description = "차단 성공")
-    public ResponseEntity<?> postBlock(
+    public ResponseEntity<FollowResponse> postBlock(
         @AuthenticationPrincipal User user,
         @Schema(description = "유저 번호", example = "22", required = true)
         @Parameter(name = "toUserId", description = "대상 유저 번호", in = ParameterIn.QUERY)
         @RequestParam Long toUserId
     ) {
         followService.postBlock(user, toUserId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().body(followService.postBlock(user, toUserId));
     }
 
     @DeleteMapping("block")
