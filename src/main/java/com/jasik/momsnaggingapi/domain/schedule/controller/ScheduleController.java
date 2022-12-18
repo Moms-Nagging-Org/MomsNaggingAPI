@@ -1,6 +1,9 @@
 package com.jasik.momsnaggingapi.domain.schedule.controller;
 
 import com.jasik.momsnaggingapi.domain.schedule.Category;
+import com.jasik.momsnaggingapi.domain.schedule.Reaction;
+import com.jasik.momsnaggingapi.domain.schedule.Reaction.ReactionInfoResponse;
+import com.jasik.momsnaggingapi.domain.schedule.Reaction.ReactionResponse;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule.ArrayListRequest;
 import com.jasik.momsnaggingapi.domain.schedule.service.ScheduleService;
@@ -74,7 +77,8 @@ public class ScheduleController {
         @Schema(description = "일자", example = "2022-04-16", required = true)
         @Parameter(name = "retrieveDate", description = "조회 일자", in = ParameterIn.QUERY) @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate retrieveDate
     ) {
-        List<Schedule.ScheduleListResponse> result = scheduleService.getSchedules(user.getId(), retrieveDate);
+        List<Schedule.ScheduleListResponse> result = scheduleService.getSchedules(user.getId(),
+            retrieveDate);
 
         return ResponseEntity.ok().body(result);
     }
@@ -97,6 +101,7 @@ public class ScheduleController {
 
         return ResponseEntity.ok().body(result);
     }
+
     @GetMapping("/{scheduleId}/remainSkipDays")
     @Operation(summary = "습관의 이번주 남은 건너뜀 횟수 조회", description = ""
         + "<페이지>\n\n"
@@ -143,7 +148,8 @@ public class ScheduleController {
         @PathVariable Long scheduleId,
         @RequestBody JsonPatch jsonPatch
     ) {
-        Schedule.ScheduleResponse result = scheduleService.patchSchedule(user.getId(), scheduleId, jsonPatch);
+        Schedule.ScheduleResponse result = scheduleService.patchSchedule(user.getId(), scheduleId,
+            jsonPatch);
 
         return ResponseEntity.ok().body(result);
     }
@@ -228,4 +234,76 @@ public class ScheduleController {
 
         return ResponseEntity.ok().cacheControl(CacheControl.maxAge(1, TimeUnit.DAYS)).body(result);
     }
+
+    @GetMapping("/reaction")
+    @Operation(summary = "해당 일자 스케줄의 반응 조회", description = ""
+        + "<페이지>\n\n"
+        + "홈\n\n"
+        + "홈 → 성적표 → 달력 → 특정 일 선택\n\n"
+        + "<설명>\n\n"
+        + "해당 일자의 반응을 조회합니다.")
+    public ResponseEntity<ReactionInfoResponse> getReaction(
+        @AuthenticationPrincipal User user,
+        @Schema(description = "유저 번호", example = "22", required = true)
+        @Parameter(name = "toUserId", description = "대상 유저 번호", in = ParameterIn.QUERY)
+        @RequestParam Long toUserId,
+        @Schema(description = "일자", example = "2022-04-16", required = true)
+        @Parameter(name = "scheduleDate", description = "대상 일자", in = ParameterIn.QUERY)
+        @RequestParam
+        @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate scheduleDate
+    ){
+        ReactionInfoResponse result = scheduleService.getReaction(user, toUserId, scheduleDate);
+
+        return ResponseEntity.ok().body(result);
+    }
+
+    @PostMapping("/reaction")
+    @Operation(summary = "해당 일자 스케줄의 반응 추가", description = ""
+        + "<페이지>\n\n"
+        + "홈\n\n"
+        + "홈 → 식구 → 달력 → 반응\n\n"
+        + "<설명>\n\n"
+        + "해당 일자의 반응을 추가합니다.")
+    public ResponseEntity<ReactionResponse> postReaction(
+        @AuthenticationPrincipal User user,
+        @Schema(description = "일자", example = "2022-04-16", required = true)
+        @Parameter(name = "scheduleDate", description = "대상 일자", in = ParameterIn.QUERY)
+        @RequestParam
+        @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate scheduleDate,
+        @Schema(description = "반응 유형 번호", example = "1", required = true)
+        @Parameter(name = "typeId", description = "반응 유형 번호", in = ParameterIn.QUERY)
+        @RequestParam int typeId,
+        @Schema(description = "유저 번호", example = "22", required = true)
+        @Parameter(name = "toUserId", description = "대상 유저 번호", in = ParameterIn.QUERY)
+        @RequestParam Long toUserId
+    ){
+        ReactionResponse result = scheduleService.postReaction(user, scheduleDate, typeId, toUserId);
+
+        return ResponseEntity.ok().body(result);
+    }
+
+    @DeleteMapping("/reaction")
+    @Operation(summary = "해당 일자 스케줄의 반응 취소", description = ""
+        + "<페이지>\n\n"
+        + "홈\n\n"
+        + "홈 → 식구 → 달력 → 반응\n\n"
+        + "<설명>\n\n"
+        + "해당 일자의 반응을 취소합니다.")
+    public ResponseEntity<?> deleteReaction(
+        @AuthenticationPrincipal User user,
+        @Schema(description = "일자", example = "2022-04-16", required = true)
+        @Parameter(name = "scheduleDate", description = "대상 일자", in = ParameterIn.QUERY)
+        @RequestParam
+        @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate scheduleDate,
+        @Schema(description = "반응 유형 번호", example = "1", required = true)
+        @Parameter(name = "typeId", description = "반응 유형 번호", in = ParameterIn.QUERY)
+        @RequestParam int typeId,
+        @Schema(description = "유저 번호", example = "22", required = true)
+        @Parameter(name = "toUserId", description = "대상 유저 번호", in = ParameterIn.QUERY)
+        @RequestParam Long toUserId
+    ){
+        scheduleService.deleteReaction(user, scheduleDate, typeId, toUserId);
+        return ResponseEntity.noContent().build();
+    }
+
 }

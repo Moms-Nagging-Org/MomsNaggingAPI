@@ -3,7 +3,13 @@ package com.jasik.momsnaggingapi.domain.schedule.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jasik.momsnaggingapi.domain.schedule.Category;
 import com.jasik.momsnaggingapi.domain.schedule.Category.CategoryResponse;
+import com.jasik.momsnaggingapi.domain.schedule.Interface.ReactionUserInterface;
 import com.jasik.momsnaggingapi.domain.schedule.Interface.ScheduleNaggingInterface;
+import com.jasik.momsnaggingapi.domain.schedule.Reaction;
+import com.jasik.momsnaggingapi.domain.schedule.Reaction.ReactionInfo;
+import com.jasik.momsnaggingapi.domain.schedule.Reaction.ReactionInfoByType;
+import com.jasik.momsnaggingapi.domain.schedule.Reaction.ReactionInfoResponse;
+import com.jasik.momsnaggingapi.domain.schedule.Reaction.ReactionResponse;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule.ArrayListRequest;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule.CategoryListResponse;
@@ -11,12 +17,14 @@ import com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleListResponse;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleResponse;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleType;
 import com.jasik.momsnaggingapi.domain.schedule.repository.CategoryRepository;
+import com.jasik.momsnaggingapi.domain.schedule.repository.ReactionRepository;
 import com.jasik.momsnaggingapi.domain.schedule.repository.ScheduleRepository;
 import com.jasik.momsnaggingapi.domain.user.User;
 import com.jasik.momsnaggingapi.domain.user.repository.UserRepository;
 import com.jasik.momsnaggingapi.infra.common.AsyncService;
 import com.jasik.momsnaggingapi.infra.common.ErrorCode;
 import com.jasik.momsnaggingapi.infra.common.Utils;
+import com.jasik.momsnaggingapi.infra.common.exception.DuplicateException;
 import com.jasik.momsnaggingapi.infra.common.exception.NotFoundException;
 import com.jasik.momsnaggingapi.infra.common.exception.NotValidException;
 import com.jasik.momsnaggingapi.infra.common.exception.ThreadFullException;
@@ -28,6 +36,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
@@ -55,6 +64,7 @@ public class ScheduleService extends RejectedExecutionException {
     private final ScheduleRepository scheduleRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final ReactionRepository reactionRepository;
     private final ModelMapper modelMapper;
     private final ObjectMapper objectMapper;
     private final AsyncService asyncService;
@@ -440,4 +450,59 @@ public class ScheduleService extends RejectedExecutionException {
         return newSchedule;
     }
 
+    @Transactional(readOnly = true)
+    public ReactionInfoResponse getReaction(User user, Long toUserId, LocalDate scheduleDate) {
+
+        ReactionInfoResponse result = ReactionInfoResponse.builder().build();
+
+        List<Reaction> myReactions = reactionRepository.findByFromUserAndToUserAndScheduleDate(user.getId(), toUserId,
+            scheduleDate);
+
+        result.setReactedTypeIds(myReactions.stream().map(Reaction::getTypeId).collect(Collectors.toList()));
+
+        List<ReactionUserInterface> allReactions = reactionRepository.findWithUserByToUserAndScheduleDate(toUserId,
+            scheduleDate);
+
+        List<ReactionInfo> reactionTotalInfos = allReactions.stream().map(s -> ReactionInfo.builder()
+            .typeId(s.getReaction().getTypeId())
+            .userId(s.getUser().getId())
+            .personalId(s.getUser().getPersonalId())
+            .build()).collect(Collectors.toList());
+
+        result.setReactionTotalInfos(reactionTotalInfos);
+        result.setReactionTotalCnt(reactionTotalInfos.size());
+
+        List<ReactionInfoByType> reactionInfosByType = new ArrayList<>();
+
+        Map<Integer, List<ReactionInfo>> mapReactionInfo = reactionTotalInfos.stream().collect(Collectors.groupingBy(ReactionInfo::getTypeId));
+
+        for(Map.Entry<Integer, List<ReactionInfo>> entry : mapReactionInfo.entrySet()){
+            Integer key = entry.getKey();
+            List<ReactionInfo> reactionInfos = entry.getValue();
+            reactionInfosByType.add(ReactionInfoByType.builder().typeId(key).cnt(reactionInfos.size()).reactionInfos(reactionInfos).build());
+        }
+        result.setReactionInfos(reactionInfosByType);
+
+        return result;
+    }
+
+    @Transactional
+    public ReactionResponse postReaction(User user, LocalDate scheduleDate, int typeId, Long toUserId) {
+        Optional<Reaction> optionalReaction = reactionRepository.findByFromUserAndToUserAndTypeIdAndScheduleDate(
+            user.getId(), toUserId, typeId, scheduleDate);
+        if (optionalReaction.isPresent()) {
+            throw new DuplicateException(ErrorCode.REACTION_DUPLICATED);
+        } else {
+            Reaction reaction = Reaction.builder().typeId(typeId).fromUser(user.getId())
+                .toUser(toUserId).scheduleDate(scheduleDate).build();
+            reactionRepository.save(reaction);
+            return modelMapper.map(reaction, ReactionResponse.class);
+        }
+    }
+
+    @Transactional
+    public void deleteReaction(User user, LocalDate scheduleDate, int typeId, Long toUserId) {
+        reactionRepository.deleteByFromUserAndToUserAndTypeIdAndScheduleDate(
+            user.getId(), toUserId, typeId, scheduleDate);
+    }
 }
