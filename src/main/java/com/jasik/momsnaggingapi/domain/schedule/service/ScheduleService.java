@@ -3,7 +3,13 @@ package com.jasik.momsnaggingapi.domain.schedule.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jasik.momsnaggingapi.domain.schedule.Category;
 import com.jasik.momsnaggingapi.domain.schedule.Category.CategoryResponse;
+import com.jasik.momsnaggingapi.domain.schedule.Interface.ReactionUserInterface;
 import com.jasik.momsnaggingapi.domain.schedule.Interface.ScheduleNaggingInterface;
+import com.jasik.momsnaggingapi.domain.schedule.Reaction;
+import com.jasik.momsnaggingapi.domain.schedule.Reaction.ReactionInfo;
+import com.jasik.momsnaggingapi.domain.schedule.Reaction.ReactionInfoByType;
+import com.jasik.momsnaggingapi.domain.schedule.Reaction.ReactionInfoResponse;
+import com.jasik.momsnaggingapi.domain.schedule.Reaction.ReactionResponse;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule.ArrayListRequest;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule.CategoryListResponse;
@@ -11,14 +17,16 @@ import com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleListResponse;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleResponse;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule.ScheduleType;
 import com.jasik.momsnaggingapi.domain.schedule.repository.CategoryRepository;
+import com.jasik.momsnaggingapi.domain.schedule.repository.ReactionRepository;
 import com.jasik.momsnaggingapi.domain.schedule.repository.ScheduleRepository;
 import com.jasik.momsnaggingapi.domain.user.User;
 import com.jasik.momsnaggingapi.domain.user.repository.UserRepository;
 import com.jasik.momsnaggingapi.infra.common.AsyncService;
 import com.jasik.momsnaggingapi.infra.common.ErrorCode;
 import com.jasik.momsnaggingapi.infra.common.Utils;
-import com.jasik.momsnaggingapi.infra.common.exception.NotValidStatusException;
-import com.jasik.momsnaggingapi.infra.common.exception.ScheduleNotFoundException;
+import com.jasik.momsnaggingapi.infra.common.exception.DuplicateException;
+import com.jasik.momsnaggingapi.infra.common.exception.NotFoundException;
+import com.jasik.momsnaggingapi.infra.common.exception.NotValidException;
 import com.jasik.momsnaggingapi.infra.common.exception.ThreadFullException;
 import java.time.DayOfWeek;
 import java.time.Duration;
@@ -28,6 +36,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
@@ -55,6 +64,7 @@ public class ScheduleService extends RejectedExecutionException {
     private final ScheduleRepository scheduleRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final ReactionRepository reactionRepository;
     private final ModelMapper modelMapper;
     private final ObjectMapper objectMapper;
     private final AsyncService asyncService;
@@ -225,7 +235,7 @@ public class ScheduleService extends RejectedExecutionException {
 
         return scheduleRepository.findById(scheduleId)
             .map(value -> modelMapper.map(value, ScheduleResponse.class)).orElseThrow(
-                () -> new ScheduleNotFoundException(String.format("userId: %d, scheduleId: %d", userId, scheduleId),
+                () -> new NotFoundException(String.format("userId: %d, scheduleId: %d", userId, scheduleId),
                     ErrorCode.SCHEDULE_NOT_FOUND));
     }
 
@@ -233,10 +243,10 @@ public class ScheduleService extends RejectedExecutionException {
     public int getRemainSkipDays(Long scheduleId) {
         //TODO: User 객체 접근되면 userId 포함
         Schedule schedule = scheduleRepository.findById(scheduleId)
-            .orElseThrow(() -> new ScheduleNotFoundException(String.format("schedule %d was not found", scheduleId),
+            .orElseThrow(() -> new NotFoundException(String.format("schedule %d was not found", scheduleId),
             ErrorCode.SCHEDULE_NOT_FOUND));
         Schedule originalSchedule = scheduleRepository.findById(schedule.getOriginalId())
-            .orElseThrow(() -> new ScheduleNotFoundException(String.format("original schedule %d was not found", scheduleId),
+            .orElseThrow(() -> new NotFoundException(String.format("original schedule %d was not found", scheduleId),
                 ErrorCode.SCHEDULE_NOT_FOUND));
         return originalSchedule.getRemainSkipDays(schedule.getScheduleDate().getDayOfWeek().getValue());
     }
@@ -257,7 +267,7 @@ public class ScheduleService extends RejectedExecutionException {
     public Schedule.ScheduleResponse patchSchedule(Long userId, Long scheduleId, JsonPatch jsonPatch) {
 
         Schedule targetSchedule = scheduleRepository.findByIdAndUserId(scheduleId, userId)
-            .orElseThrow(() -> new ScheduleNotFoundException(String.format("userId: %d, scheduleId: %d", userId, scheduleId),
+            .orElseThrow(() -> new NotFoundException(String.format("userId: %d, scheduleId: %d", userId, scheduleId),
                 ErrorCode.SCHEDULE_NOT_FOUND));
         int beforeStatus = targetSchedule.getStatus();
         boolean beforeIsNumberRepeatRoutine = targetSchedule.checkNumberRepeatSchedule();
@@ -273,7 +283,7 @@ public class ScheduleService extends RejectedExecutionException {
         if (columnList.contains("status")) {
             Schedule originSchedule = scheduleRepository.findByIdAndUserId(
                 modifiedSchedule.getOriginalId(), userId).orElseThrow(
-                () -> new ScheduleNotFoundException(String.format("userId: %d, scheduleId: %d", userId, scheduleId),
+                () -> new NotFoundException(String.format("userId: %d, scheduleId: %d", userId, scheduleId),
                     ErrorCode.SCHEDULE_NOT_FOUND));
             if ((originSchedule.getScheduleType() == ScheduleType.TODO) & (modifiedSchedule.getStatus() == 2)) {
                 Schedule nextSchedule = Schedule.builder().build();
@@ -301,7 +311,7 @@ public class ScheduleService extends RejectedExecutionException {
                         int remain_days = 7 - modified_date;
                         if ((originSchedule.getGoalCount() - originSchedule.getDoneCount() > remain_days) && (
                             !originSchedule.achievedGoalCount())) {
-                            throw new NotValidStatusException("You can't postpone your schedule.", ErrorCode.NOT_VALID_STATUS);
+                            throw new NotValidException("You can't postpone your schedule.", ErrorCode.NOT_VALID_STATUS);
                         }
                     }
                 }
@@ -351,7 +361,7 @@ public class ScheduleService extends RejectedExecutionException {
     public void deleteSchedule(Long userId, Long scheduleId) {
 
         Schedule schedule = scheduleRepository.findByIdAndUserId(scheduleId, userId).orElseThrow(
-            () -> new ScheduleNotFoundException(String.format("userId: %d, scheduleId: %d", userId, scheduleId),
+            () -> new NotFoundException(String.format("userId: %d, scheduleId: %d", userId, scheduleId),
                 ErrorCode.SCHEDULE_NOT_FOUND));
         if (schedule.checkNumberRepeatSchedule()) {
             scheduleRepository.deleteWithIdAfter(schedule.getOriginalId(), userId,
@@ -440,4 +450,59 @@ public class ScheduleService extends RejectedExecutionException {
         return newSchedule;
     }
 
+    @Transactional(readOnly = true)
+    public ReactionInfoResponse getReaction(User user, Long toUserId, LocalDate scheduleDate) {
+
+        ReactionInfoResponse result = ReactionInfoResponse.builder().build();
+
+        List<Reaction> myReactions = reactionRepository.findByFromUserAndToUserAndScheduleDate(user.getId(), toUserId,
+            scheduleDate);
+
+        result.setReactedTypeIds(myReactions.stream().map(Reaction::getTypeId).collect(Collectors.toList()));
+
+        List<ReactionUserInterface> allReactions = reactionRepository.findWithUserByToUserAndScheduleDate(toUserId,
+            scheduleDate);
+
+        List<ReactionInfo> reactionTotalInfos = allReactions.stream().map(s -> ReactionInfo.builder()
+            .typeId(s.getReaction().getTypeId())
+            .userId(s.getUser().getId())
+            .personalId(s.getUser().getPersonalId())
+            .build()).collect(Collectors.toList());
+
+        result.setReactionTotalInfos(reactionTotalInfos);
+        result.setReactionTotalCnt(reactionTotalInfos.size());
+
+        List<ReactionInfoByType> reactionInfosByType = new ArrayList<>();
+
+        Map<Integer, List<ReactionInfo>> mapReactionInfo = reactionTotalInfos.stream().collect(Collectors.groupingBy(ReactionInfo::getTypeId));
+
+        for(Map.Entry<Integer, List<ReactionInfo>> entry : mapReactionInfo.entrySet()){
+            Integer key = entry.getKey();
+            List<ReactionInfo> reactionInfos = entry.getValue();
+            reactionInfosByType.add(ReactionInfoByType.builder().typeId(key).cnt(reactionInfos.size()).reactionInfos(reactionInfos).build());
+        }
+        result.setReactionInfos(reactionInfosByType);
+
+        return result;
+    }
+
+    @Transactional
+    public ReactionResponse postReaction(User user, LocalDate scheduleDate, int typeId, Long toUserId) {
+        Optional<Reaction> optionalReaction = reactionRepository.findByFromUserAndToUserAndTypeIdAndScheduleDate(
+            user.getId(), toUserId, typeId, scheduleDate);
+        if (optionalReaction.isPresent()) {
+            throw new DuplicateException(ErrorCode.REACTION_DUPLICATED);
+        } else {
+            Reaction reaction = Reaction.builder().typeId(typeId).fromUser(user.getId())
+                .toUser(toUserId).scheduleDate(scheduleDate).build();
+            reactionRepository.save(reaction);
+            return modelMapper.map(reaction, ReactionResponse.class);
+        }
+    }
+
+    @Transactional
+    public void deleteReaction(User user, LocalDate scheduleDate, int typeId, Long toUserId) {
+        reactionRepository.deleteByFromUserAndToUserAndTypeIdAndScheduleDate(
+            user.getId(), toUserId, typeId, scheduleDate);
+    }
 }

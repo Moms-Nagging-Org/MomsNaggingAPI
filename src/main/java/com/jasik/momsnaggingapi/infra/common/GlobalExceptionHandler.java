@@ -1,8 +1,7 @@
 package com.jasik.momsnaggingapi.infra.common;
 
-import com.jasik.momsnaggingapi.infra.common.exception.NotValidRoutineException;
-import com.jasik.momsnaggingapi.infra.common.exception.NotValidStatusException;
-import com.jasik.momsnaggingapi.infra.common.exception.ScheduleNotFoundException;
+import com.jasik.momsnaggingapi.infra.common.exception.DuplicateException;
+import com.jasik.momsnaggingapi.infra.common.exception.NotValidException;
 import com.jasik.momsnaggingapi.infra.common.exception.ThreadFullException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -28,21 +27,16 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.valueOf(ex.getErrorCode().getStatus()));
     }
 
-    @ExceptionHandler(ScheduleNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleScheduleNotFoundException(ScheduleNotFoundException ex) {
-        log.error("handleScheduleNotFoundException", ex);
+    @ExceptionHandler(NotValidException.class)
+    public ResponseEntity<ErrorResponse> handleNotValidException(NotValidException ex) {
+        log.error("handleNotValidException", ex);
         ErrorResponse response = new ErrorResponse(ex.getErrorCode());
         return new ResponseEntity<>(response, HttpStatus.valueOf(ex.getErrorCode().getStatus()));
     }
-    @ExceptionHandler(NotValidRoutineException.class)
-    public ResponseEntity<ErrorResponse> handleNotValidRoutineException(NotValidRoutineException ex) {
-        log.error("handleNotValidRoutineException", ex);
-        ErrorResponse response = new ErrorResponse(ex.getErrorCode());
-        return new ResponseEntity<>(response, HttpStatus.valueOf(ex.getErrorCode().getStatus()));
-    }
-    @ExceptionHandler(NotValidStatusException.class)
-    public ResponseEntity<ErrorResponse> handleNotValidStatusException(NotValidStatusException ex) {
-        log.error("handleNotValidStatusException", ex);
+
+    @ExceptionHandler(DuplicateException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateException(DuplicateException ex) {
+        log.error("handleDuplicateException", ex);
         ErrorResponse response = new ErrorResponse(ex.getErrorCode());
         return new ResponseEntity<>(response, HttpStatus.valueOf(ex.getErrorCode().getStatus()));
     }
