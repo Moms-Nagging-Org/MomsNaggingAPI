@@ -42,8 +42,6 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .components(new Components().addSecuritySchemes("bearerAuth", securityScheme))
                 .security(Arrays.asList(securityRequirement))
-                .addServersItem(new Server().url("https://api.momsnagging.ml"))
-                .addServersItem(new Server().url("http://localhost:8081"))
                 .info(info);
     }
 
