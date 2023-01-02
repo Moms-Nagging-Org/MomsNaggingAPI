@@ -91,8 +91,8 @@ public class UserService {
         return res;
     }
 
-    public List<User.PublicUserResponse> findUserByPersonalId(String personalId) {
-        List<User> users = userRepository.findAllByPersonalIdContainingIgnoreCase(personalId);
+    public List<User.PublicUserResponse> findUserByPersonalId(Long id, String personalId) {
+        List<User> users = userRepository.findAllByPersonalIdContainingIgnoreCaseAndIdNot(personalId, id);
         return users.stream()
                 .map(user -> modelMapper.map(user, User.PublicUserResponse.class))
                 .collect(Collectors.toList());

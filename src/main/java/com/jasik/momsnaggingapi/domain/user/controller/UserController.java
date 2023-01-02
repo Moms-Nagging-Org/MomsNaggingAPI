@@ -42,9 +42,9 @@ public class UserController {
         return ResponseEntity.ok().body(userService.removeUser(user.getId(), req));
     }
 
-    @GetMapping("search/{userId}")
+    @GetMapping("search/{searchId}")
     @Operation(summary = "사용자 검색", description = "사용자 아이디를 검색해 조회합니다.")
-    public ResponseEntity<List<User.PublicUserResponse>> searchUser(@AuthenticationPrincipal User user, @PathVariable String userId) {
-        return ResponseEntity.ok().body(userService.findUserByPersonalId(userId));
+    public ResponseEntity<List<User.PublicUserResponse>> searchUser(@AuthenticationPrincipal User user, @PathVariable String searchId) {
+        return ResponseEntity.ok().body(userService.findUserByPersonalId(user.getId(), searchId));
     }
 }

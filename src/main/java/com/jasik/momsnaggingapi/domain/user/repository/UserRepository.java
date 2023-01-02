@@ -13,5 +13,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByProviderCode(String ProviderCode);
     Optional<User> findByProviderCodeAndProvider(String providerCode, String provider);
     Page<User> findByPersonalIdContainingIgnoreCase(String personalId, Pageable pageable);
-    List<User> findAllByPersonalIdContainingIgnoreCase(String personalId);
+    List<User> findAllByPersonalIdContainingIgnoreCaseAndIdNot(String personalId, Long id);
 }
