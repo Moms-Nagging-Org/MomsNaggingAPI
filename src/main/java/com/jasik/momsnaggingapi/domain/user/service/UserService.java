@@ -3,6 +3,7 @@ package com.jasik.momsnaggingapi.domain.user.service;
 import com.jasik.momsnaggingapi.domain.question.Question;
 import com.jasik.momsnaggingapi.domain.question.service.QuestionService;
 import com.jasik.momsnaggingapi.domain.schedule.Schedule;
+import com.jasik.momsnaggingapi.domain.user.Interface.UserFollowInterface;
 import com.jasik.momsnaggingapi.domain.user.User;
 import com.jasik.momsnaggingapi.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -92,9 +93,15 @@ public class UserService {
     }
 
     public List<User.PublicUserResponse> findUserByPersonalId(Long id, String personalId) {
-        List<User> users = userRepository.findAllByPersonalIdContainingIgnoreCaseAndIdNot(personalId, id);
-        return users.stream()
-                .map(user -> modelMapper.map(user, User.PublicUserResponse.class))
+        List<UserFollowInterface> userFollowInterfaces = userRepository.findAllByPersonalIdContainingIgnoreCaseAndIdNot(id, personalId);
+        return userFollowInterfaces.stream()
+                .map(u -> User.PublicUserResponse.builder()
+                        .personalId(u.getUser().getPersonalId())
+                        .id(u.getUser().getId())
+                        .nickName(u.getUser().getNickName())
+                        .createdAt(u.getUser().getCreatedAt())
+                        .isFollowing(u.getFollow() != null && !u.getFollow().isBlocked())
+                        .build())
                 .collect(Collectors.toList());
     }
 }
