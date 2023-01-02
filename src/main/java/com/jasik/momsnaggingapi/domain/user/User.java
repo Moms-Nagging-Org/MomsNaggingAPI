@@ -197,4 +197,16 @@ public class User extends BaseTime {
         private LocalDateTime createdAt;
         // TODO: 성적표, 상장 데이터
     }
+
+    @Schema(description = "타 사용자 조회 시 응답 클래스 - 식구")
+    @Getter @Setter @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class PublicUserResponse {
+        private Long id;
+        private String nickName;
+        private String personalId;
+        private LocalDateTime createdAt;
+        private Boolean isFollowing;
+    }
 }

@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/users")
@@ -38,5 +40,11 @@ public class UserController {
     @Operation(summary = "회원 탈퇴", description = "body 로 탈퇴사유를 전송하고, 해당 유저를 삭제합니다.")
     public ResponseEntity<User.Response> deleteUser(@AuthenticationPrincipal User user, @RequestBody Question.SignOutReasonRequest req) {
         return ResponseEntity.ok().body(userService.removeUser(user.getId(), req));
+    }
+
+    @GetMapping("search/{userId}")
+    @Operation(summary = "사용자 검색", description = "사용자 아이디를 검색해 조회합니다.")
+    public ResponseEntity<List<User.PublicUserResponse>> searchUser(@AuthenticationPrincipal User user, @PathVariable String userId) {
+        return ResponseEntity.ok().body(userService.findUserByPersonalId(userId));
     }
 }

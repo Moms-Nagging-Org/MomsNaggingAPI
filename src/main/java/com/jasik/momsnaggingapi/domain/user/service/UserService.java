@@ -2,6 +2,7 @@ package com.jasik.momsnaggingapi.domain.user.service;
 
 import com.jasik.momsnaggingapi.domain.question.Question;
 import com.jasik.momsnaggingapi.domain.question.service.QuestionService;
+import com.jasik.momsnaggingapi.domain.schedule.Schedule;
 import com.jasik.momsnaggingapi.domain.user.User;
 import com.jasik.momsnaggingapi.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -90,12 +91,10 @@ public class UserService {
         return res;
     }
 
-    public Optional<User> findUserById(Long id) {
-        return userRepository.findById(id);
-    }
-
-    public Long findUserIdByPersonalId(String personalId) {
-        Optional<User> user = userRepository.findByPersonalId(personalId);
-        return user.map(User::getId).orElse(null);
+    public List<User.PublicUserResponse> findUserByPersonalId(String personalId) {
+        List<User> users = userRepository.findAllByPersonalIdContainingIgnoreCase(personalId);
+        return users.stream()
+                .map(user -> modelMapper.map(user, User.PublicUserResponse.class))
+                .collect(Collectors.toList());
     }
 }
