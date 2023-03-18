@@ -74,7 +74,9 @@ tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
 
-bootJar {
-    mainClassName = 'com.jasik.momsnaggingapi.MomsNaggingApiApplication'
+bootJar{
+    archivesBaseName = 'momsnagging'
+    archiveFileName = 'momsnagging.jar'
+    archiveVersion = "1.0.0"
 }
 targetCompatibility = JavaVersion.VERSION_1_9
