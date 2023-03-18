@@ -11,7 +11,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .exposedHeaders("X-AUTH-TOKEN")
                 .allowCredentials(true)
-                .allowedOrigins("http://localhost:3000", "http://localhost:8081", "https://momsnagging.netlify.app")
+                .allowedOrigins("http://localhost:3000", "http://localhost:8080", "https://momsnagging.netlify.app")
                 .allowedMethods("*");
     }
 }
