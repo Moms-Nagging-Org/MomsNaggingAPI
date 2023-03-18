@@ -67,7 +67,7 @@ jobs:
 
     ## gradle build
     - name: Build with Gradle
-      run: ./gradlew build -x test -x ktlintCheck -x ktlintTestSourceSetCheck -x ktlintMainSourceSetCheck -x ktlintKotlinScriptCheck
+      run: ./gradlew clean build
     
     ## docker login
     - name: Log in to Docker Hub
