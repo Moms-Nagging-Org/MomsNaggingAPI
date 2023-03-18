@@ -26,7 +26,6 @@ jobs:
       APPLICATION: ${{ secrets.APPLICATION }}
       DOCKER_HUB_REPO: ${{ secrets.DOCKER_HUB_REPO }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      GITHUB_SHA: ${ GITHUB_SHA::7 }
       PROJECT_NAME: ${{ secrets.PROJECT_NAME }}
 
     steps:
@@ -85,8 +84,8 @@ jobs:
       if: contains(github.ref, 'develop')
       run: |
         docker build -t ${{ env.DOCKER_HUB_REPO }} .
-        docker tag ${{ env.DOCKER_HUB_REPO }} ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_HUB_REPO }}:${ GITHUB_SHA::7 }
-        docker push ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_HUB_REPO }}:${ GITHUB_SHA::7 }
+        docker tag ${{ env.DOCKER_HUB_REPO }} ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_HUB_REPO }}:latest
+        docker push ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_HUB_REPO }}:latest
 
       ## deploy to develop
     - name: Deploy to dev
@@ -103,8 +102,8 @@ jobs:
           docker stop ${{ env.PROJECT_NAME }}
           docker rm ${{ env.PROJECT_NAME }}
           docker rmi -f $(docker images -q)
-          docker pull ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_HUB_REPO }}:${ GITHUB_SHA::7 }
-          docker tag ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_HUB_REPO }}:${ GITHUB_SHA::7 } ${{ env.PROJECT_NAME }}
+          docker pull ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_HUB_REPO }}:latest
+          docker tag ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_HUB_REPO }}:latest ${{ env.PROJECT_NAME }}
           docker run -d --name ${{ env.PROJECT_NAME }} -p 8080:8080 ${{ env.PROJECT_NAME }}
 
   ## time
