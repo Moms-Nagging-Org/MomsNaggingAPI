@@ -58,6 +58,7 @@ jobs:
     ## create firebase-key.json
     - name: create firebase key
       run: |
+        mkdir ./src/main/resources/firebase
         cd ./src/main/resources/firebase
         ls -a .
         touch ./firebase-key.json
