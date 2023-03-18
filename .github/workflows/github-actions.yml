@@ -94,7 +94,7 @@ jobs:
         username: ${{ secrets.USERNAME }}
         password: ${{ secrets.PASSWORD }}
         port: 22
-        #key: ${{ secrets.PRIVATE_KEY }}
+        key: ${{ secrets.SSH_KEY }}
         script: |
           docker rmi $(docker images -q)
           docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_HUB_REPO }}:${GITHUB_SHA::7}
