@@ -76,15 +76,15 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    ## docker build & push to develop
+      ## docker build & push to develop
     - name: Docker build & push to dev
       if: contains(github.ref, 'develop')
       run: |
-        docker build -t ${{ secrets.PROJECT_NAME }} .
-        docker tag ${{ secrets.PROJECT_NAME }} ${{ secrets.DOCKER_HUB_REPO }}:${GITHUB_SHA::7}
-        docker push ${{ secrets.DOCKER_HUB_REPO }}:${GITHUB_SHA::7}
+        docker build -t ${{ secrets.DOCKER_HUB_REPO }} .
+        docker tag ${{ secrets.DOCKER_HUB_REPO }} ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_HUB_REPO }}:${GITHUB_SHA::7}
+        docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_HUB_REPO }}:${GITHUB_SHA::7}
 
-    ## deploy to develop
+      ## deploy to develop
     - name: Deploy to dev
       uses: appleboy/ssh-action@master
       id: deploy-dev
@@ -92,15 +92,16 @@ jobs:
       with:
         host: ${{ secrets.HOST_DEV }}
         username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.SSH_KEY }}
+        password: ${{ secrets.PASSWORD }}
         port: 22
+        #key: ${{ secrets.PRIVATE_KEY }}
         script: |
-          sudo docker rmi $(docker images -q)
-          sudo docker pull ${{ secrets.DOCKER_HUB_REPO }}:${GITHUB_SHA::7}
-          sudo docker tag ${{ secrets.DOCKER_HUB_REPO }}:${GITHUB_SHA::7} ${{ secrets.PROJECT_NAME }}
-          sudo docker stop ${{ secrets.PROJECT_NAME }}
-          sudo docker rm ${{ secrets.PROJECT_NAME }}
-          sudo docker run -d --name ${{ secrets.PROJECT_NAME }} -p 8080:8080 ${{ secrets.PROJECT_NAME }}
+          docker rmi $(docker images -q)
+          docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_HUB_REPO }}:${GITHUB_SHA::7}
+          docker tag ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_HUB_REPO }}:${GITHUB_SHA::7} ${{ secrets.PROJECT_NAME }}
+          docker stop ${{ secrets.PROJECT_NAME }}
+          docker rm ${{ secrets.PROJECT_NAME }}
+          docker run -d --name ${{ secrets.PROJECT_NAME }} -p 8080:8080 ${{ secrets.PROJECT_NAME }}
 
   ## time
   current-time:
