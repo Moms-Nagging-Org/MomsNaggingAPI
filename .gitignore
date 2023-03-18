@@ -344,4 +344,4 @@ secrets.yml
 .gradletasknamecache
 
 *.yml
-/src/main/resources/firebase/
+/src/main/resources/firebase/firebase-key.json
