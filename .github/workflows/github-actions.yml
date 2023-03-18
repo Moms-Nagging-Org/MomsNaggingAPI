@@ -26,7 +26,7 @@ jobs:
       APPLICATION: ${{ secrets.APPLICATION }}
       DOCKER_HUB_REPO: ${{ secrets.DOCKER_HUB_REPO }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      GITHUB_SHA: ${{ GITHUB_SHA::7 }}
+      GITHUB_SHA: ${ GITHUB_SHA::7 }
       PROJECT_NAME: ${{ secrets.PROJECT_NAME }}
 
     steps:
