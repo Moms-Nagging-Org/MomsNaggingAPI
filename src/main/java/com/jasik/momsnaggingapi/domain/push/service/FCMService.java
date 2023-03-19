@@ -47,12 +47,13 @@ public class FCMService {
     }
 
     private void sendSchedulePush(LocalTime nowTime) {
-        log.info("Push Scheduler Started");
         LocalDate pushDate = LocalDate.now();
         LocalTime pushTime = LocalTime.of(nowTime.getHour(), nowTime.getMinute(), 0);
-        scheduleRepository.findSchedulePushByScheduleDateAndAlarmTime(
-                pushDate, pushTime).forEach(this::sendAsyncMessage);
-        log.info("Push Scheduler Completed");
+
+        List<SchedulePush> schedulePushes = scheduleRepository.findSchedulePushByScheduleDateAndAlarmTime(
+            pushDate, pushTime);
+        log.info("Push Count: " + schedulePushes.size());
+        schedulePushes.forEach(this::sendAsyncMessage);
     }
 
     private void sendAsyncMessage(SchedulePush push) {
