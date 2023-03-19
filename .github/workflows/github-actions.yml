@@ -105,7 +105,7 @@ jobs:
           docker rmi -f $(docker images -q)
           docker pull ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_HUB_REPO }}:latest
           docker tag ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_HUB_REPO }}:latest ${{ env.PROJECT_NAME }}
-          docker run -d --name ${{ env.PROJECT_NAME }} -p 8080:8080 ${{ env.PROJECT_NAME }}
+          docker run --name ${{ env.PROJECT_NAME }} -p 8080:8080 ${{ env.PROJECT_NAME }}
 
   ## time
   current-time:
