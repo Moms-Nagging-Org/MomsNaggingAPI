@@ -1,3 +1,5 @@
-FROM openjdk:11
-ADD build/libs/momsnagging.jar app.jar
-ENTRYPOINT ["java","-jar","/app.jar"]
+#FROM openjdk:11
+FROM eclipse-temurin:11
+
+COPY build/libs/momsnagging.jar app.jar
+CMD ["java","-jar","/app.jar"]
