@@ -79,4 +79,7 @@ bootJar{
     archiveFileName = 'momsnagging.jar'
     archiveVersion = "1.0.0"
 }
+jar {
+    enabled = false
+}
 targetCompatibility = JavaVersion.VERSION_1_9
