@@ -85,7 +85,6 @@ jobs:
       if: contains(github.ref, 'develop')
       run: |
         docker build -t ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_HUB_REPO }} .
-#        docker tag ${{ env.DOCKER_HUB_REPO }} ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_HUB_REPO }}:latest
         docker push ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_HUB_REPO }}
 
       ## deploy to develop
@@ -104,7 +103,6 @@ jobs:
           docker rm ${{ env.PROJECT_NAME }}
           docker rmi -f $(docker images -q)
           docker pull ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_HUB_REPO }}
-#          docker tag ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_HUB_REPO }}:latest ${{ env.PROJECT_NAME }}
           docker run -d --name ${{ env.PROJECT_NAME }} -p 8080:8080 ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_HUB_REPO }}
 
   ## time
