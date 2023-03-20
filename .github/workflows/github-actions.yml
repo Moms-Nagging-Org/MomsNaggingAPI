@@ -82,10 +82,18 @@ jobs:
 
       ## docker build & push to develop
     - name: Docker build & push to dev
-      if: contains(github.ref, 'develop')
-      run: |
-        docker build -t ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_HUB_REPO }} .
-        docker push ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_HUB_REPO }}
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        push: true
+        tags: ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_HUB_REPO }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+#      if: contains(github.ref, 'develop')
+#      run: |
+#        docker build -t ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_HUB_REPO }} .
+#        docker push ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_HUB_REPO }}
 
       ## deploy to develop
     - name: Deploy to dev
