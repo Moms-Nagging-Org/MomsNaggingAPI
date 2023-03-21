@@ -14,6 +14,7 @@ on:
     branches:
 #   - master
     - develop
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -33,11 +34,11 @@ jobs:
 
     ## jdk setting
     - uses: actions/checkout@v3
-    - name: Set up JDK 11
+    - name: Set up JDK 17
       uses: actions/setup-java@v3
       with:
-        java-version: '11'
-        distribution: 'temurin' # https://github.com/actions/setup-java
+        java-version: '17'
+        distribution: 'adopt' # https://github.com/actions/setup-java
 
     ## gradle caching
     - name: Gradle Caching
@@ -69,9 +70,17 @@ jobs:
         name: firebase-key.json
         path: ./src/main/resources/firebase/firebase-key.json
 
+    ## permisstion for gradlew
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+      shell: bash
+
     ## gradle build
     - name: Build with Gradle
-      run: ./gradlew clean build -x test
+      run: |
+        ./gradlew -version
+        ./gradlew clean build -x test
+      shell: bash
 
     - name: set up docker buildx
       uses: docker/setup-buildx-action@v1

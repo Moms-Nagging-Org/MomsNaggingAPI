@@ -42,7 +42,7 @@ public class FCMService {
         LocalTime nowTime = LocalTime.now();
         // 5분 단위로 수행
         if (nowTime.getMinute() % 5 == 0) {
-//            sendSchedulePush(nowTime);
+            sendSchedulePush(nowTime);
         }
     }
 
