@@ -1,4 +1,4 @@
 FROM openjdk:11
-
-COPY build/libs/momsnagging.jar app.jar
-#CMD ["java","-jar","/app.jar"]
+ARG JAR_FILE=build/libs/*.jar
+COPY ${JAR_FILE} app.jar
+CMD ["java","-jar","/app.jar"]

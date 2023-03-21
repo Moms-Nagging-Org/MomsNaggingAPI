@@ -3,7 +3,6 @@ package com.jasik.momsnaggingapi.infra.common;
 import javax.json.Json;
 import javax.json.JsonPatch;
 import javax.json.JsonReader;
-import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
@@ -31,7 +30,7 @@ public class JsonPatchHttpMessageConverter extends AbstractHttpMessageConverter<
 
     @Override
     protected void writeInternal(JsonPatch jsonPatch, HttpOutputMessage outputMessage) throws HttpMessageNotWritableException {
-        throw new NotImplementedException("The write Json patch is not implemented");
+        throw new HttpMessageNotWritableException("The write Json patch is not implemented");
     }
 
     @Override
